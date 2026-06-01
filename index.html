@@ -852,15 +852,16 @@ function doRefresh(){
   var btn=document.querySelector(".sb");
   if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
   toast("Загружаю данные из Google Sheets...","");
-  Promise.all([
-    fetchSheet(SHEET_URLS.us),
-    fetchSheet(SHEET_URLS.ca),
-    fetchSheet(SHEET_URLS.cn)
-  ]).then(function(results){
+  function sf(k){return fetchSheet(SHEET_URLS[k]).catch(function(){return "";});}
+  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_ca"),sf("ontheway")])
+  .then(function(results){
     var days=new Date().getDate();
-    var usMap=parseLastMonths(results[0]);
-    var caMap=parseLastMonths(results[1]);
-    var cnMap=parseLastMonths(results[2]);
+    var usMap=results[0]?parseLastMonths(results[0]):{};
+    var caMap=results[1]?parseLastMonths(results[1]):{};
+    var cnMap=results[2]?parseLastMonths(results[2]):{};
+    var stockUS=results[3]?parseStockUS(results[3]):{};
+    var stockCA=results[4]?parseStockCA(results[4]):{};
+    if(results[5])_onthewayData=parseOntheway(results[5]);
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
