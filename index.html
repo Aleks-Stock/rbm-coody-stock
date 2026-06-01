@@ -624,17 +624,28 @@ function doRefresh(){
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
+      var days=daysElapsedThisMonth();
       var us=usMap[r.name];
       if(us){
+        var curNorm=0;
+        if(days>=7&&us[31]>0)curNorm=Math.round(us[31]*(30/days)*10)/10;
         o.sales_us_avg=calcAvg3WithCurrent(us,curNorm);
         o.sales_us_trend=calcTrend3(us);
         o.sales_us_season=calcSeason(us);
         o.yoy_us=calcYoY(us);
-        o.trend_us=calcTrend(us);
+        o.trend_us=calcTrendFlag(us,curNorm);
         updated++;
       }
       var ca=caMap[r.name];
-      if(ca){o.sales_ca_avg=calcAvg3(ca);o.sales_ca_trend=calcTrend3(ca);o.sales_ca_season=calcSeason_ca(ca);o.yoy_ca=calcYoY(ca);o.trend_ca=calcTrend(ca);}
+      if(ca){
+        var curNormCA=0;
+        if(days>=7&&ca[31]>0)curNormCA=Math.round(ca[31]*(30/days)*10)/10;
+        o.sales_ca_avg=calcAvg3WithCurrent(ca,curNormCA);
+        o.sales_ca_trend=calcTrend3(ca);
+        o.sales_ca_season=calcSeason_ca(ca);
+        o.yoy_ca=calcYoY(ca);
+        o.trend_ca=calcTrendFlag(ca,curNormCA);
+      }
       var cn=cnMap[r.name];
       if(cn){o.sales_cn_avg=calcAvg3(cn);}
       return o;
