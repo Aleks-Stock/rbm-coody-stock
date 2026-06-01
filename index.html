@@ -179,8 +179,8 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
       <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
     </select>
     <div class="ug">
-      <button class="obtn" style="background:#1565c0" onclick="openTransfer(1)">&#128666; &#1057;&#1064;&#1040;</button>
-      <button class="obtn ca" onclick="openTransfer(2)">&#128666; CA</button>
+      <button class="obtn" style="background:#1565c0" onclick="openTransfer(1)">&#128666; Переместить → США</button>
+      <button class="obtn ca" onclick="openTransfer(2)">&#128666; Переместить → CA</button>
     </div>
     <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
     <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
@@ -503,7 +503,7 @@ function renderTable(){
       "<tr>"+
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
-      "<td class=\"us-col\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer\" onclick=\"showOntheway(event,this,"+idx+")\">"+(it.in_transit_us)+" &#9992;</span>":"&#8212;")+"</td>"+
+      "<td class=\"us-col\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#9992;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al)\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
       "<td class=\"us-col\">"+dUS+"</td>"+
@@ -583,8 +583,8 @@ var _transferItems=[];var _transferType=0;
 function openTransfer(type){
   _transferType=type;var isUS=type===1;
   var targetMos=isUS?2:2.5;var thresh=isUS?45:60;
-  document.getElementById("trTitle").textContent=(isUS?"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1077;&#1085;&#1080;&#1077; &#1050;&#1080;&#1090;&#1072;&#1081; → &#1057;&#1064;&#1040;":"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1077;&#1085;&#1080;&#1077; &#1050;&#1080;&#1090;&#1072;&#1081; → &#1050;&#1072;&#1085;&#1072;&#1076;&#1072;");
-  document.getElementById("trSub").textContent="&#1062;&#1077;&#1083;&#1077;&#1074;&#1086;&#1081; &#1079;&#1072;&#1087;&#1072;&#1089;: "+targetMos+" &#1084;&#1077;&#1089;. &#1059;&#1095;&#1090;&#1077;&#1085;&#1086;: &#1089;&#1082;&#1083;&#1072;&#1076; + &#1074; &#1087;&#1091;&#1090;&#1080;.";
+  document.getElementById("trTitle").textContent=isUS?"Перемещение Китай → США":"Перемещение Китай → Канада";
+  document.getElementById("trSub").textContent="Целевой запас: "+targetMos+" мес. Учтено: склад + в пути.";
   var items=[];
   allData.forEach(function(it){
     var stock=isUS?it.stock_us:it.stock_ca;
@@ -651,7 +651,15 @@ function showOntheway(evt,el,idx){
   var item=fData[idx];if(!item)return;
   var name=item.name;
   var data=_onthewayData[name];
-  if(!data||!data.length)return;
+  if(!data||!data.length){
+    // Show basic info even without dates
+    var p2=document.createElement("div");p2.className="detail-popup";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
+    _popup=p2;document.body.appendChild(p2);
+    var r2=evt.target.getBoundingClientRect();
+    p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
+    evt.stopPropagation();return;
+  }
   var p=document.createElement("div");
   p.className="detail-popup";
   var html2="<h4>"+name.slice(0,30)+" — &#1042; &#1087;&#1091;&#1090;&#1080;</h4>";
