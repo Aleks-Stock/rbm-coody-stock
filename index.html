@@ -479,6 +479,7 @@ function renderTable(){
 
 // ─── ORDER LOGIC ──────────────────────────────────────────────────────────────
 function openOrder(type){
+  _deletedRows.clear();
   orderType=type;
   var isUS=type===1;
   var title=isUS?"Заказ для США — товары менее 45 дней":"Заказ для Канады — товары менее 60 дней";
@@ -534,17 +535,21 @@ function openOrder(type){
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
 function toggleOrderRow(btn){
   var row=btn.closest("tr");
-  if(row.classList.contains("deleted")){
+  var idx=parseInt(row.getAttribute("data-idx"));
+  if(_deletedRows.has(idx)){
+    _deletedRows.delete(idx);
     row.classList.remove("deleted");
     btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";
     btn.textContent="\u{1F5D1}";
   }else{
+    _deletedRows.add(idx);
     row.classList.add("deleted");
     btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
     btn.textContent="\u21BA";
   }
 }
 function restoreOrder(){
+  _deletedRows.clear();
   document.querySelectorAll("#oBody tr.deleted").forEach(function(r){
     r.classList.remove("deleted");
     var btn=r.querySelector(".del-btn");
@@ -886,6 +891,7 @@ function tick(src){var t=new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",m
 function toast(msg,type){var t=document.getElementById("toast");t.innerHTML=msg;t.className="toast show"+(type?" "+type:"");clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove("show");},3500);}
 
 var _popup=null;
+var _deletedRows=new Set();
 function showDetail(evt,el,item,market){
   var name=item.name||"";var vals=item;
   var isCA=market==="CA";
