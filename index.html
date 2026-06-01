@@ -179,11 +179,12 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
       <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
     </select>
     <div class="ug">
-      <button class="obtn" style="background:#1565c0" onclick="openTransfer(1)">&#128666; Переместить → США</button>
-      <button class="obtn ca" onclick="openTransfer(2)">&#128666; Переместить → CA</button>
+      <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
+      <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
+      <button class="obtn" style="background:#1565c0;margin-left:8px" onclick="openTransfer(1)">&#128666; CN&#8594;US</button>
+      <button class="obtn" style="background:#2e7d32" onclick="openTransfer(2)">&#128666; CN&#8594;CA</button>
     </div>
-    <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
-    <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
+
   </div>
   <div class="tw">
     <table>
@@ -824,16 +825,16 @@ function parseOntheway(csvText){
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
   // Find date header row (row with dates like DD.MM.YYYY)
-  var dateRow=null;
-  for(var i=0;i<Math.min(3,rows.length);i++){
-    if(rows[i].some(function(h){return h&&/\d{2}\.\d{2}\.\d{4}/.test(h);})){dateRow=rows[i];break;}
+  var dateRow=null,dateRowIdx=-1;
+  for(var i=0;i<Math.min(4,rows.length);i++){
+    if(rows[i].some(function(h){return h&&/\d{2}\.\d{2}\.\d{4}/.test(h);})){dateRow=rows[i];dateRowIdx=i;break;}
   }
-  if(!dateRow)return result;
+  if(dateRowIdx<0)return result;
   var dates=[];
   for(var c=2;c<dateRow.length;c++){
     if(dateRow[c]&&/\d{2}\.\d{2}\.\d{4}/.test(dateRow[c]))dates.push({col:c,date:dateRow[c].trim()});
   }
-  rows.slice(rows.indexOf(dateRow)+1).forEach(function(row){
+  rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[1]&&row[1].trim();if(!name)return;
     var shipments=[];
     dates.forEach(function(d){
