@@ -73,6 +73,7 @@ th.cn-last{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15);bor
 tbody tr{border-top:1px solid var(--bd);transition:background .1s}
 tbody tr:hover{background:var(--sf2)}
 tbody td{padding:7px 9px;vertical-align:middle}
+td.us-col.transit-col,td.ca-col.transit-col{min-width:70px}
 td.us-first{border-left:2px solid var(--us-bd);background:var(--us-bg)}
 td.us-col{background:var(--us-bg);border-left:1px solid rgba(66,165,245,.07)}
 td.us-last{border-right:2px solid var(--us-bd);background:var(--us-bg)}
@@ -173,7 +174,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
       <option value="critical">&#128308; &#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;</option>
       <option value="low">&#128992; &#1052;&#1072;&#1083;&#1086;</option>
       <option value="ok">&#128994; &#1053;&#1086;&#1088;&#1084;&#1072;</option>
-      <option value="transit">&#9992; &#1042; &#1087;&#1091;&#1090;&#1080;</option>
+      <option value="transit">&#128674; &#1042; &#1087;&#1091;&#1090;&#1080;</option>
       <option value="critical_ca">&#128308; CA &#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;</option>
       <option value="low_ca">&#128992; CA &#1052;&#1072;&#1083;&#1086;</option>
       <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
@@ -488,8 +489,8 @@ function renderTable(){
       lastG=it.gn;
       rows.push("<tr class=\"grp-hdr\"><td colspan=\"20\">"+it.gn+"</td></tr>");
     }
-    var usT=it.in_transit_us>0?"<span class=\"trb\">+"+it.in_transit_us+" &#9992;</span>":"<span class=\"sz\">&#8212;</span>";
-    var caT=it.in_transit_ca>0?"<span class=\"trb\">+"+it.in_transit_ca+" &#9992;</span>":"<span class=\"sz\">&#8212;</span>";
+    var usT=it.in_transit_us>0?"<span class=\"trb\">+"+it.in_transit_us+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
+    var caT=it.in_transit_ca>0?"<span class=\"trb\">+"+it.in_transit_ca+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
     var usS=it.stock_us>0?"<b>"+it.stock_us+"</b>":"<span class=\"sz\">0</span>";
     var caS=it.stock_ca>0?"<b>"+it.stock_ca+"</b>":"<span class=\"sz\">0</span>";
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
@@ -498,13 +499,13 @@ function renderTable(){
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
     var dCA="<span class=\"sz\">&#8212;</span>";
     if(caAv>0){if(caV>0){var dv=Math.floor(caAv/caV);dCA="<span style=\"opacity:"+(it.sales_ca_avg===0?"0.55":"1")+"\">"+dbar(dv,it.lt_ca,130)+"</span>";}else dCA="<span class=\"sz\" style=\"font-size:11px\">"+caAv+"шт</span>";}
-    var bmap={"critical":"<span class=\"badge bc\">&#128308; Критично</span>","low":"<span class=\"badge bl2\">&#128992; Мало</span>","ok":"<span class=\"badge bo\">&#128994; Норма</span>","transit":"<span class=\"badge bt\">&#9992; В пути</span>","bestseller":"<span class=\"badge bbs\">&#128640; Рост</span>"};
+    var bmap={"critical":"<span class=\"badge bc\">&#128308; Критично</span>","low":"<span class=\"badge bl2\">&#128992; Мало</span>","ok":"<span class=\"badge bo\">&#128994; Норма</span>","transit":"<span class=\"badge bt\">&#128674; В пути</span>","bestseller":"<span class=\"badge bbs\">&#128640; Рост</span>"};
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
       "<tr>"+
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
-      "<td class=\"us-col\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#9992;</span>":"&#8212;")+"</td>"+
+      "<td class=\"us-col\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al)\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
       "<td class=\"us-col\">"+dUS+"</td>"+
