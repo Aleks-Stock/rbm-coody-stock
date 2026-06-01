@@ -672,56 +672,110 @@ function parseLastMonths(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
-  // Find header row with month patterns
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
+
+  // Find header row (contains year-month patterns like "2024-янв.")
   var headerRow=null, headerIdx=0;
   for(var ri=0;ri<Math.min(3,rows.length);ri++){
-    if(rows[ri].some(function(h){return h&&/20\d\d-/.test(h);})){headerRow=rows[ri];headerIdx=ri;break;}
+    if(rows[ri].some(function(h){return h&&/\d{4}-[а-яё]/i.test(h);})){
+      headerRow=rows[ri]; headerIdx=ri; break;
+    }
   }
   if(!headerRow)return result;
   var headerLen=headerRow.length;
-  // Find Итого column to exclude it
-  var totalCol=headerRow.findIndex(function(h){return h&&(h.indexOf('Итого')>=0||h==='Total');});
-  // Build month→colIdx map (skip Итого col)
-  var colMap={};
+
+  // Build colMap: {YYYYMM: colIndex} — skip Итого and non-month cols
+  var colMap={};   // YYYYMM → colIndex
+  var totalCol=-1;
   headerRow.forEach(function(h,i){
-    if(i===totalCol)return;
     if(!h)return;
+    if(h.indexOf('Итого')>=0||h==='Total'){totalCol=i;return;}
     var m=h.match(/(\d{4})-([а-яё]+)/i);
-    if(m){
-      var yr=parseInt(m[1]),monStr=m[2].toLowerCase().replace(".","");
-      var mo=ruMon.findIndex(function(x){return monStr.indexOf(x)===0||x.indexOf(monStr)===0;});
-      if(mo>=0) colMap[yr*100+(mo+1)]=i;
-    }
+    if(!m)return;
+    var yr=parseInt(m[1]);
+    var monStr=m[2].toLowerCase().replace(/\.$/,'');
+    var mo=ruMon.findIndex(function(x){return monStr.indexOf(x)===0||x.indexOf(monStr)===0;});
+    if(mo>=0)colMap[yr*100+(mo+1)]=i;
   });
-  var now=new Date(),yr=now.getFullYear(),mo=now.getMonth()+1;
-  function key(y,m){return y*100+m;}
-  var mar26=key(2026,3),apr26=key(2026,4),may26=key(2026,5);
-  var jun25=key(2025,6),jul25=key(2025,7),aug25=key(2025,8);
-  var mar25=key(2025,3),apr25=key(2025,4),may25=key(2025,5);
-  var dec25=key(2025,12),jan26=key(2026,1),feb26=key(2026,2);
-  var curKey=key(yr,mo);
+
+  // Find all available months sorted descending
+  var allMonths=Object.keys(colMap).map(Number).sort(function(a,b){return b-a;});
+  if(allMonths.length<3)return result;
+
+  // Determine current month dynamically
+  var now=new Date(), nowYr=now.getFullYear(), nowMo=now.getMonth()+1;
+  var curKey=nowYr*100+nowMo;
+
+  // Last 3 COMPLETE months (exclude current if < 7 days elapsed)
+  var daysElapsed=now.getDate();
+  var startFrom=(daysElapsed<7)?1:0; // skip current month if too early
+  var last3=[],idx=startFrom;
+  for(var i=0;i<allMonths.length&&last3.length<3;i++){
+    if(allMonths[i]<=curKey)last3.push(allMonths[i]);
+  }
+  if(last3.length<3)return result;
+
+  var m0=last3[0],m1=last3[1],m2=last3[2]; // most recent first
+
+  // Same 3 months 1 year ago (for season: forward-looking)
+  // Season = same 3 month slots shifted by -1 year
+  function shiftYear(ym,dy){
+    var yr=Math.floor(ym/100)+dy, mo=ym%100; return yr*100+mo;
+  }
+  var s0=shiftYear(m0,-1), s1=shiftYear(m1,-1), s2=shiftYear(m2,-1);
+
+  // Y/Y base: same 3 months last year
+  var y0=shiftYear(m0,-1), y1=shiftYear(m1,-1), y2=shiftYear(m2,-1);
+
+  // For trend direction: 6 months ending at m0
+  var trend6=[];
+  for(var i=0;i<allMonths.length&&trend6.length<6;i++){
+    if(allMonths[i]<=m0)trend6.push(allMonths[i]);
+  }
+
+  // Current month key
+  var curIdx=(daysElapsed>=7&&colMap[curKey]!=null)?colMap[curKey]:-1;
+
   rows.slice(headerIdx+1).forEach(function(row){
     var name=row[1]&&row[1].trim();
-    if(!name||name==="USA"||name==="CANADA"||name==="CHINA"||name==="Product type")return;
-    // Pad row to header length so positions stay stable
+    if(!name||name==='USA'||name==='CANADA'||name==='CHINA'||name==='Product type')return;
+
+    // Compute origLen BEFORE padding — critical for Итого detection
     var origLen=row.length;
-    while(row.length<headerLen)row.push("");
+    while(row.length<headerLen)row.push('');
+
+    // Итого may have shifted left if last month col was empty+stripped
+    // If row was shorter than Итого position, last real value is Итого
     var itogoShifted=(totalCol>0&&origLen<=totalCol);
-    function get(k){
-      var ci=colMap[k];
-      if(ci==null)return 0;
-      if(totalCol>0&&ci>=totalCol)return 0;
-      if(itogoShifted&&ci>=origLen-1)return 0;
-      return si(row[ci]);
+
+    function getCol(ym){
+      var ci=colMap[ym];
+      if(ci==null||ci<0)return 0;
+      if(totalCol>0&&ci>=totalCol)return 0; // past Итого column
+      if(itogoShifted&&ci>=origLen-1)return 0; // shifted Итого
+      return si(row[ci])||0;
     }
+
+    // Build vals with semantic indices for calcAvg3 compatibility
+    var v0=getCol(m0), v1=getCol(m1), v2=getCol(m2); // recent months
+    var sy0=getCol(s0), sy1=getCol(s1), sy2=getCol(s2); // season LY
+    var t6=trend6.map(function(k){return getCol(k);});
+    var curNormVal=(curIdx>=0&&row[curIdx])?si(row[curIdx])||0:0;
+
     var vals={};
-    vals[28]=get(mar26); vals[29]=get(apr26); vals[30]=get(may26);
-    vals[19]=get(jun25); vals[20]=get(jul25); vals[21]=get(aug25);
-    vals[16]=get(mar25); vals[17]=get(apr25); vals[18]=get(may25);
-    vals[25]=get(dec25); vals[26]=get(jan26); vals[27]=get(feb26);
-    vals[31]=(colMap[curKey]!=null)?get(curKey):0;
-    if(Object.values(vals).some(function(v){return v>0;}))result[name]=vals;
+    // Map to fixed indices used by calcAvg3/calcTrend3/calcSeason/calcYoY
+    vals[30]=v0; vals[29]=v1; vals[28]=v2; // most-recent=30, 2nd=29, 3rd=28
+    vals[21]=sy0; vals[20]=sy1; vals[19]=sy2; // season LY (maps to aug/jul/jun)
+    // Trend direction last 6 months
+    vals[25]=t6[5]||0; vals[26]=t6[4]||0; vals[27]=t6[3]||0;
+    // vals[28],[29],[30] already set above
+    // Y/Y stored in separate fields
+    vals._yoy_base=sy0+sy1+sy2;
+    vals._trend=[v2,v1,v0]; // oldest→newest
+    vals[31]=curNormVal; // current month raw
+
+    if(Object.values(vals).some(function(v){return typeof v==='number'&&v>0;}))
+      result[name]=vals;
   });
   return result;
 }
