@@ -662,14 +662,19 @@ function doRefresh(){
     });
     build(merged);
     tick("Google Sheets");
-    // DEBUG: list critical products and their velocity
-    var critList=allData.filter(function(it){return it.status==="critical";}).map(function(it){
-      return it.name.split(" ").slice(0,3).join(" ")+":"+it.sales_us_avg.toFixed(1)+"d"+it.days_left_us;
-    });
+    // DEBUG calcAvg3 for Beige
     var beige=usMap["Coody Air Tarp Beige 17.2"];
-    var beigeInAllData=allData.find(function(it){return it.name==="Coody Air Tarp Beige 17.2";});
-    var debugInfo=(beigeInAllData?"Beige vel="+beigeInAllData.sales_us_avg+" days="+beigeInAllData.days_left_us+" st="+beigeInAllData.status:"Beige NOT IN allData");
-    toast("Крит: "+critList.slice(0,4).join("|")+" | "+debugInfo,"success");
+    var dbg="NO_BEIGE";
+    if(beige){
+      var m28=beige[28],m29=beige[29],m30=beige[30];
+      var m19=beige[19],m20=beige[20],m21=beige[21];
+      var rawCalc=calcAvg3(beige);
+      var withCur=calcAvg3WithCurrent(beige,0);
+      dbg="v[28-30]="+m28+"/"+m29+"/"+m30+" sea="+m19+"/"+m20+"/"+m21+" avg3="+rawCalc+" wc="+withCur;
+    }
+    var beigeItem=allData.find(function(it){return it.name==="Coody Air Tarp Beige 17.2";});
+    var itm=beigeItem?"item_avg="+beigeItem.sales_us_avg:"NO_ITEM";
+    toast(dbg+" | "+itm,"success");
     if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> Обновить';}
   }).catch(function(err){
     var msg=err&&err.message?err.message.slice(0,100):String(err).slice(0,100);toast("Ошибка: "+msg,"error");console.error("doRefresh full error:",err);
