@@ -626,7 +626,7 @@ function doRefresh(){
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
       var us=usMap[r.name];
       if(us){
-        o.sales_us_avg=calcAvg3(us);
+        o.sales_us_avg=calcAvg3WithCurrent(us,curNorm);
         o.sales_us_trend=calcTrend3(us);
         o.sales_us_season=calcSeason(us);
         o.yoy_us=calcYoY(us);
@@ -644,7 +644,7 @@ function doRefresh(){
     toast("Обновлено: "+updated+" товаров","success");
     if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;';}
   }).catch(function(err){
-    toast("Ошибка загрузки данных из Google Sheets.","error");
+    toast("Ошибка загрузки данных из Google Sheets.","error");console.error("doRefresh:",err);
     build(SOURCE.map(function(r){var o={};for(var k in r)o[k]=r[k];var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];return o;}));
     if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;';}
   });
