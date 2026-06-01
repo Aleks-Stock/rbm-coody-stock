@@ -618,7 +618,7 @@ var SHEET_URLS={
 
 function doRefresh(){
   var btn=document.querySelector(".sb");
-  if(btn){btn.disabled=true;btn.textContent="&#1047;&#1072;&#1075;&#1088;&#1091;&#1079;&#1082;&#1072;...";}
+  if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
   toast("Загружаю данные из Google Sheets...","");
   Promise.all([
     fetchSheet(SHEET_URLS.us),
@@ -660,18 +660,21 @@ function doRefresh(){
       if(cn){o.sales_cn_avg=calcAvg3(cn);}
       return o;
     });
-    // DEBUG: check what was found
-    var usFound=Object.keys(usMap).length;
-    var beige=usMap["Coody Air Tarp Beige 17.2"];
-    var debugMsg="US:"+usFound+" Beige:"+(beige?("m"+beige[28]+"/"+beige[29]+"/"+beige[30]):"NOT FOUND");
     build(merged);
     tick("Google Sheets");
-    toast("Обновлено: "+updated+" | "+debugMsg,"success");
-    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;';}
+    // DEBUG: list critical products and their velocity
+    var critList=allData.filter(function(it){return it.status==="critical";}).map(function(it){
+      return it.name.split(" ").slice(0,3).join(" ")+":"+it.sales_us_avg.toFixed(1)+"d"+it.days_left_us;
+    });
+    var beige=usMap["Coody Air Tarp Beige 17.2"];
+    var beigeInAllData=allData.find(function(it){return it.name==="Coody Air Tarp Beige 17.2";});
+    var debugInfo=(beigeInAllData?"Beige vel="+beigeInAllData.sales_us_avg+" days="+beigeInAllData.days_left_us+" st="+beigeInAllData.status:"Beige NOT IN allData");
+    toast("Крит: "+critList.slice(0,4).join("|")+" | "+debugInfo,"success");
+    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> Обновить';}
   }).catch(function(err){
     var msg=err&&err.message?err.message.slice(0,100):String(err).slice(0,100);toast("Ошибка: "+msg,"error");console.error("doRefresh full error:",err);
     build(SOURCE.map(function(r){var o={};for(var k in r)o[k]=r[k];var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];return o;}));
-    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;';}
+    if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> Обновить';}
   });
 }
 
