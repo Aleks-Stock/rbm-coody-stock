@@ -24,7 +24,7 @@ header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 20px;hei
 .sb:hover{background:var(--al)}.sb svg{width:14px;height:14px}
 .main{padding:14px 20px}
 .kr{display:grid;gap:8px;margin-bottom:14px}
-.kr-row{display:grid;grid-template-columns:auto repeat(4,1fr);gap:8px;align-items:stretch}
+.kr-row{display:grid;grid-template-columns:60px repeat(4,1fr);gap:8px;align-items:stretch}
 .kr-label{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:6px 10px;border-radius:8px;white-space:nowrap;writing-mode:horizontal-tb}
 .kr-label.us{background:var(--us-hd);color:var(--bl);border:1px solid var(--us-bd)}
 .kr-label.ca{background:var(--ca-hd);color:#81c784;border:1px solid var(--ca-bd)}
@@ -144,8 +144,8 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .detail-popup .lbl{color:var(--tx2)}
 .detail-popup .val{font-weight:600}
 .trend-num{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
-@media(max-width:900px){.kr-row{grid-template-columns:auto repeat(2,1fr)}}
-@media(max-width:600px){.kr-row{grid-template-columns:auto 1fr 1fr}.main{padding:10px}}
+@media(max-width:900px){.kr-row{grid-template-columns:60px repeat(2,1fr)}}
+@media(max-width:600px){.kr-row{grid-template-columns:50px 1fr 1fr}.main{padding:10px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -371,6 +371,24 @@ function renderKPI(){
     else if(vc>0&&dl_ca<130)low_ca++;
     tr_ca+=it.in_transit_ca; tca+=it.stock_ca; ord_ca+=it.ordered_ca||0;
   });
+  // Tent sales metrics (products with group "Палатки")
+  var tentItems=allData.filter(function(it){return it.go===0;});
+  var tentLY=0,tentLastMo=0,tentCurMo=0,tentFc=0;
+  tentItems.forEach(function(it){
+    tentLY+=(it._sea&&it._sea[0]||0)+(it._ca_sea&&it._ca_sea[0]||0)+(it._cn_sea&&it._cn_sea[0]||0);
+    tentLastMo+=(it._v3&&it._v3[0]||0)+(it._ca_v3&&it._ca_v3[0]||0)+(it._cn_v3&&it._cn_v3[0]||0);
+    tentCurMo+=((it._months&&it[31])||0)+((it._ca_months&&it._ca_cur)||0)+(it._cn_cur||0);
+    tentFc+=Math.round(((it.sales_us_avg||0)+(it.sales_ca_avg||0))*10)/10;
+  });
+  var now=new Date();
+  var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
+  var curMonName=ruMon[now.getMonth()];
+  var prevMonName=ruMon[(now.getMonth()+11)%12];
+  var curMonLY=ruMon[now.getMonth()]+" "+(now.getFullYear()-1);
+  function kpiTent(label,val,sub,fc){
+    var fcLine=fc!=null?"<div class=\"ks\" style=\"color:var(--al)\">&#8594; прогноз: "+Math.round(fc)+"</div>":"<div class=\"ks\">"+sub+"</div>";
+    return "<div class=\"kc\"><div class=\"kl\">"+label+"</div><div class=\"kv\">"+val+"</div>"+fcLine+"</div>";
+  }
   document.getElementById("kr").innerHTML=
     "<div class=\"kr-row\">"+
       "<div class=\"kr-label gen\">&#1054;&#1073;&#1097;&#1077;&#1077;</div>"+
@@ -390,6 +408,12 @@ function renderKPI(){
       kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt; 2 &#1084;&#1077;&#1089;.","o","filterLowCA()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1045;&#1076;&#1080;&#1085;&#1080;&#1094;","","")+
       kpi("&#1042; &#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1077;&#1076;. &#1074; &#1090;&#1088;&#1072;&#1085;&#1079;&#1080;&#1090;&#1077;","b","")+
+    "</div>"+
+    "<div class=\"kr-row\">"+
+      "<div class=\"kr-label\" style=\"background:rgba(76,175,80,.15);color:#81c784;border:1px solid rgba(76,175,80,.3);font-size:9px\">&#1055;&#1072;&#1083;&#1072;&#1090;&#1082;&#1080;</div>"+
+      kpiTent("&#1055;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1075;&#1086;&#1076; ("+curMonLY+")",tentLY,"US+CA+CN",null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;. ("+prevMonName+")",tentLastMo,"US+CA+CN",null)+
+      kpiTent("&#1058;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;. ("+curMonName+")",tentCurMo,"US+CA+CN",tentFc)+
     "</div>";
   var ab=document.getElementById("ab");
   if(crit_us>0){ab.classList.remove("hidden");document.getElementById("abt").innerHTML="<b>"+crit_us+" SKU критически мало в США.</b> Нажмите для фильтра.";}
@@ -695,7 +719,12 @@ function doRefresh(){
         o._ca_v3=[ca[30]||0,ca[29]||0,ca[28]||0]; o._ca_sea=[ca[19]||0,ca[20]||0,ca[21]||0];
       }
       var cn=cnMap[r.name];
-      if(cn){o.sales_cn_avg=calcAvg3(cn);}
+      if(cn){
+        o.sales_cn_avg=calcAvg3(cn);
+        o._cn_v3=[cn[30]||0,cn[29]||0,cn[28]||0];
+        o._cn_sea=[cn[19]||0,cn[20]||0,cn[21]||0];
+        o._cn_cur=cn[31]||0;
+      }
       return o;
     });
     build(merged);
