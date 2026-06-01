@@ -680,6 +680,16 @@ function parseLastMonths(csvText){
   return result;
 }
 
+function calcAvg3WithCurrent(vals,curNorm){
+  var may=vals[30]||0;
+  if(curNorm>0&&curNorm>may){
+    var trend=Math.round(((vals[29]||0)+may+curNorm)/3*10)/10;
+    var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
+    if(season>0&&trend>0)return Math.round((season*0.6+trend*0.4)*10)/10;
+    return trend>0?trend:season;
+  }
+  return calcAvg3(vals);
+}
 function calcAvg3(vals){
   // trend = avg(Feb[27],Mar[28],Apr[29]) — 3 completed months
   var trend=Math.round(((vals[27]||0)+(vals[28]||0)+(vals[29]||0))/3*10)/10;
