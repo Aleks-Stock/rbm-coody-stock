@@ -130,6 +130,14 @@ input.qinput:focus{border-color:var(--ac)}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 16px;font-size:13px;z-index:400;transform:translateY(70px);opacity:0;transition:all .25s}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{border-color:var(--gn)}.toast.error{border-color:var(--rd)}
+
+.detail-popup{position:fixed;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px 16px;font-size:12px;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,.4);min-width:220px}
+.detail-popup h4{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.detail-popup .row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid var(--bd)}
+.detail-popup .row:last-child{border-bottom:none}
+.detail-popup .lbl{color:var(--tx2)}
+.detail-popup .val{font-weight:600}
+.trend-num{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
 @media(max-width:900px){.kr-row{grid-template-columns:auto repeat(2,1fr)}}
 @media(max-width:600px){.kr-row{grid-template-columns:auto 1fr 1fr}.main{padding:10px}}
 </style>
@@ -186,14 +194,14 @@ input.qinput:focus{border-color:var(--ac)}
         <tr class="ch">
           <th class="us-col us-first" onclick="sortBy(0)">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
           <th class="us-col" onclick="sortBy(1)">&#1042; &#1087;&#1091;&#1090;&#1080;</th>
-          <th class="us-col" onclick="sortBy(2)">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
+          <th class="us-col" onclick="sortBy(2)" title="&#1057;&#1088;&#1077;&#1076;&#1085;&#1077;&#1077; &#1079;&#1072; &#1087;&#1086;&#1089;&#1083;&#1077;&#1076;&#1085;&#1080;&#1077; 3 &#1084;&#1077;&#1089;&#1103;&#1094;&#1072;">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
           <th class="us-col" onclick="sortBy(14)">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
           <th class="us-col" onclick="sortBy(3)">Y/Y</th>
           <th class="us-col" onclick="sortBy(4)">&#1044;&#1085;&#1077;&#1081;</th>
           <th class="us-col us-last" onclick="sortBy(5)">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
           <th class="ca-col ca-first" onclick="sortBy(6)">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
           <th class="ca-col" onclick="sortBy(7)">&#1042; &#1087;&#1091;&#1090;&#1080;</th>
-          <th class="ca-col" onclick="sortBy(8)">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
+          <th class="ca-col" onclick="sortBy(8)" title="&#1057;&#1088;&#1077;&#1076;&#1085;&#1077;&#1077; &#1079;&#1072; &#1087;&#1086;&#1089;&#1083;&#1077;&#1076;&#1085;&#1080;&#1077; 3 &#1084;&#1077;&#1089;&#1103;&#1094;&#1072;">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
           <th class="ca-col" onclick="sortBy(15)">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
           <th class="ca-col" onclick="sortBy(9)">Y/Y</th>
           <th class="ca-col" onclick="sortBy(10)">&#1044;&#1085;&#1077;&#1081;</th>
@@ -442,7 +450,7 @@ function renderTable(){
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\">"+usT+"</td>"+
-      "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?it.sales_us_trend:"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al)\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
+      "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al)\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
       "<td class=\"us-col\">"+dUS+"</td>"+
       "<td class=\"us-col us-last\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
@@ -674,7 +682,7 @@ function parseLastMonths(csvText){
   if(rows.length<2)return result;
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
 
-  // Find header row (contains year-month patterns like "2024-янв.")
+  // Find header row
   var headerRow=null, headerIdx=0;
   for(var ri=0;ri<Math.min(3,rows.length);ri++){
     if(rows[ri].some(function(h){return h&&/\d{4}-[а-яё]/i.test(h);})){
@@ -684,106 +692,86 @@ function parseLastMonths(csvText){
   if(!headerRow)return result;
   var headerLen=headerRow.length;
 
-  // Build colMap: {YYYYMM: colIndex} — skip Итого and non-month cols
-  var colMap={};   // YYYYMM → colIndex
-  var totalCol=-1;
+  // Build colMap: YYYYMM → colIndex
+  var colMap={};
   headerRow.forEach(function(h,i){
     if(!h)return;
-    if(h.indexOf('Итого')>=0||h==='Total'){totalCol=i;return;}
     var m=h.match(/(\d{4})-([а-яё]+)/i);
     if(!m)return;
     var yr=parseInt(m[1]);
-    var monStr=m[2].toLowerCase().replace(/\.$/,'');
+    var monStr=m[2].toLowerCase().replace(/\.$/,"");
     var mo=ruMon.findIndex(function(x){return monStr.indexOf(x)===0||x.indexOf(monStr)===0;});
     if(mo>=0)colMap[yr*100+(mo+1)]=i;
   });
 
-  // Find all available months sorted descending
+  // Find sorted months list
   var allMonths=Object.keys(colMap).map(Number).sort(function(a,b){return b-a;});
   if(allMonths.length<3)return result;
 
-  // Determine current month dynamically
+  // Current date
   var now=new Date(), nowYr=now.getFullYear(), nowMo=now.getMonth()+1;
   var curKey=nowYr*100+nowMo;
-
-  // Last 3 COMPLETE months (exclude current if < 7 days elapsed)
   var daysElapsed=now.getDate();
-  var startFrom=(daysElapsed<7)?1:0; // skip current month if too early
-  var last3=[],idx=startFrom;
+
+  // Last 3 complete months (skip current if < 7 days)
+  var last3=[];
   for(var i=0;i<allMonths.length&&last3.length<3;i++){
-    if(allMonths[i]<=curKey)last3.push(allMonths[i]);
+    if(daysElapsed<7&&allMonths[i]>=curKey)continue;
+    last3.push(allMonths[i]);
   }
   if(last3.length<3)return result;
 
-  var m0=last3[0],m1=last3[1],m2=last3[2]; // most recent first
+  var m0=last3[0], m1=last3[1], m2=last3[2]; // newest→oldest
 
-  function shiftYear(ym,dy){
-    var yr=Math.floor(ym/100)+dy, mo=ym%100; return yr*100+mo;
-  }
-  function addMonths(ym,n){
-    var yr=Math.floor(ym/100), mo=ym%100+n;
+  // Forward-looking season: next 3 months after m0, from last year
+  function addM(ym,n){
+    var yr=Math.floor(ym/100),mo=ym%100+n;
     while(mo>12){mo-=12;yr++;} while(mo<1){mo+=12;yr--;}
     return yr*100+mo;
   }
-  // Season = FORWARD-looking: next 3 months from last year
-  // e.g. last3 ends May2026 → season = Jun+Jul+Aug 2025
-  var prevM0=shiftYear(m0,-1); // May 2025 if m0=May2026
-  var s0=addMonths(prevM0,1); // Jun 2025
-  var s1=addMonths(prevM0,2); // Jul 2025
-  var s2=addMonths(prevM0,3); // Aug 2025
-
-  // Y/Y base: same 3 months last year (backward comparison)
-  var y0=shiftYear(m0,-1), y1=shiftYear(m1,-1), y2=shiftYear(m2,-1);
-
-  // For trend direction: 6 months ending at m0
-  var trend6=[];
-  for(var i=0;i<allMonths.length&&trend6.length<6;i++){
-    if(allMonths[i]<=m0)trend6.push(allMonths[i]);
+  var prevM0=addM(m0,-12); // same month LY
+  // Season = NEXT 3 months from LY perspective: e.g. May26→Jun+Jul+Aug 2025
+  var sea=[addM(prevM0,1), addM(prevM0,2), addM(prevM0,3)];
+  // Y/Y base: same 3 months LY
+  var yoy=[addM(m0,-12), addM(m1,-12), addM(m2,-12)];
+  // Trend direction: 6 months ending at m0
+  var tr6=[];
+  for(var i=0;i<allMonths.length&&tr6.length<6;i++){
+    if(allMonths[i]<=m0)tr6.push(allMonths[i]);
   }
-
-  // Current month key
-  var curIdx=(daysElapsed>=7&&colMap[curKey]!=null)?colMap[curKey]:-1;
 
   rows.slice(headerIdx+1).forEach(function(row){
     var name=row[1]&&row[1].trim();
-    if(!name||name==='USA'||name==='CANADA'||name==='CHINA'||name==='Product type')return;
+    if(!name||name==="USA"||name==="CANADA"||name==="CHINA"||name==="Product type")return;
 
-    // Compute origLen BEFORE padding — critical for Итого detection
-    var origLen=row.length;
-    while(row.length<headerLen)row.push('');
-
-    // Итого may have shifted left if last month col was empty+stripped
-    // If row was shorter than Итого position, last real value is Итого
-    var itogoShifted=(totalCol>0&&origLen<=totalCol);
-
-    function getCol(ym){
+    function getv(ym){
       var ci=colMap[ym];
-      if(ci==null||ci<0)return 0;
-      if(totalCol>0&&ci>=totalCol)return 0; // past Итого column
-      if(itogoShifted&&ci>=origLen-1)return 0; // shifted Итого
-      return si(row[ci])||0;
+      if(ci==null)return 0;
+      return (ci<row.length&&row[ci])?si(row[ci])||0:0;
     }
 
-    // Build vals with semantic indices for calcAvg3 compatibility
-    var v0=getCol(m0), v1=getCol(m1), v2=getCol(m2); // recent months
-    var sy0=getCol(s0), sy1=getCol(s1), sy2=getCol(s2); // season LY
-    var t6=trend6.map(function(k){return getCol(k);});
-    var curNormVal=(curIdx>=0&&row[curIdx])?si(row[curIdx])||0:0;
+    var v0=getv(m0),v1=getv(m1),v2=getv(m2);
+    var seaVals=sea.map(getv);
+    var seaSum=seaVals[0]+seaVals[1]+seaVals[2];
+    var yoySum=yoy.map(getv).reduce(function(a,b){return a+b;},0);
+    var tr6v=tr6.map(getv);
+    var curRaw=(daysElapsed>=7&&colMap[curKey]!=null)?getv(curKey):0;
 
     var vals={};
-    // Map to fixed indices used by calcAvg3/calcTrend3/calcSeason/calcYoY
-    vals[30]=v0; vals[29]=v1; vals[28]=v2; // most-recent=30, 2nd=29, 3rd=28
-    vals[21]=sy0; vals[20]=sy1; vals[19]=sy2; // season LY (maps to aug/jul/jun)
-    // Trend direction last 6 months
-    vals[25]=t6[5]||0; vals[26]=t6[4]||0; vals[27]=t6[3]||0;
-    // vals[28],[29],[30] already set above
-    // Y/Y stored in separate fields
-    vals._yoy_base=sy0+sy1+sy2;
-    vals._trend=[v2,v1,v0]; // oldest→newest
-    vals[31]=curNormVal; // current month raw
+    // Compatibility indices for calcAvg3/calcTrend3/calcSeason/calcYoY
+    vals[30]=v0; vals[29]=v1; vals[28]=v2;  // recent months (newest=30)
+    // Season: store individual months so calcSeason can sum them
+    vals[19]=seaVals[0]; vals[20]=seaVals[1]; vals[21]=seaVals[2];
+    // Trend 6 months (dec→may order for trend direction)
+    vals[25]=tr6v[5]||0; vals[26]=tr6v[4]||0; vals[27]=tr6v[3]||0;
+    // vals[28,29,30] already set
+    // Metadata
+    vals._seaSum=seaSum; vals._yoySum=yoySum;
+    vals._months=[m0,m1,m2]; // for tooltip
+    vals._seaMonths=sea;
+    vals[31]=curRaw; // current month raw
 
-    if(Object.values(vals).some(function(v){return typeof v==='number'&&v>0;}))
-      result[name]=vals;
+    if(v0>0||v1>0||v2>0||seaSum>0)result[name]=vals;
   });
   return result;
 }
@@ -831,10 +819,9 @@ function calcTrend3(vals){
 }
 
 function calcYoY(vals){
-  // trend = Mar+Apr+May 2026 vs season = Jun+Jul+Aug 2025
   var trend=((vals[28]||0)+(vals[29]||0)+(vals[30]||0))/3;
-  var season=((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3;
-  return season>0?Math.round((trend-season)/season*100):null;
+  var seasonBase=vals._seaSum!=null?vals._seaSum/3:((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3;
+  return seasonBase>0?Math.round((trend-seasonBase)/seasonBase*100):null;
 }
 
 function calcTrend(vals){ /* legacy - use calcTrendFlag */
@@ -853,6 +840,39 @@ function _calcTrend_impl(vals){
 }
 function tick(src){var t=new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});document.getElementById("ls").textContent="Обновлено: "+t+(src?" · "+src:"");}
 function toast(msg,type){var t=document.getElementById("toast");t.innerHTML=msg;t.className="toast show"+(type?" "+type:"");clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove("show");},3500);}
+
+var _popup=null;
+function showDetail(evt,el,item,market){
+  var name=item.name||"";var vals=item;
+  if(_popup){_popup.remove();_popup=null;return;}
+  var p=document.createElement('div');
+  p.className='detail-popup';
+  var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
+  function fmtKey(k){if(!k)return"—";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
+  var ms=vals._months||[];
+  var sea=vals._seaMonths||[];
+  var html2="<h4>"+name.slice(0,25)+" — "+market+"</h4>";
+  html2+="<div style='margin-bottom:6px;font-size:10px;color:var(--tx2)'>Последние 3 мес (тренд)</div>";
+  var mkeys=[30,29,28];
+  mkeys.forEach(function(vi,i){
+    var k=ms[i];var v=vals[vi]||0;
+    html2+="<div class='row'><span class='lbl'>"+fmtKey(k)+"</span><span class='val'>"+v+"</span></div>";
+  });
+  html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Сезон LY ("+fmtKey(sea[0])+"–"+fmtKey(sea[2])+")</div>";
+  [0,1,2].forEach(function(i){
+    var v=vals[19+i]||0;
+    html2+="<div class='row'><span class='lbl'>"+fmtKey(sea[i])+"</span><span class='val'>"+v+"</span></div>";
+  });
+  p.innerHTML=html2;
+  document.body.appendChild(p);
+  _popup=p;
+  var rect=evt.target.getBoundingClientRect();
+  p.style.top=(rect.bottom+6)+"px";
+  p.style.left=Math.min(rect.left,window.innerWidth-240)+"px";
+  evt.stopPropagation();
+}
+document.addEventListener('click',function(){if(_popup){_popup.remove();_popup=null;}});
+
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
   document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
