@@ -1,0 +1,12 @@
+{
+  "name": "rbm-coody-stock",
+  "version": "1.0.0",
+  "description": "RBM COODY Stock inventory dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
