@@ -717,14 +717,22 @@ function parseLastMonths(csvText){
 
   var m0=last3[0],m1=last3[1],m2=last3[2]; // most recent first
 
-  // Same 3 months 1 year ago (for season: forward-looking)
-  // Season = same 3 month slots shifted by -1 year
   function shiftYear(ym,dy){
     var yr=Math.floor(ym/100)+dy, mo=ym%100; return yr*100+mo;
   }
-  var s0=shiftYear(m0,-1), s1=shiftYear(m1,-1), s2=shiftYear(m2,-1);
+  function addMonths(ym,n){
+    var yr=Math.floor(ym/100), mo=ym%100+n;
+    while(mo>12){mo-=12;yr++;} while(mo<1){mo+=12;yr--;}
+    return yr*100+mo;
+  }
+  // Season = FORWARD-looking: next 3 months from last year
+  // e.g. last3 ends May2026 → season = Jun+Jul+Aug 2025
+  var prevM0=shiftYear(m0,-1); // May 2025 if m0=May2026
+  var s0=addMonths(prevM0,1); // Jun 2025
+  var s1=addMonths(prevM0,2); // Jul 2025
+  var s2=addMonths(prevM0,3); // Aug 2025
 
-  // Y/Y base: same 3 months last year
+  // Y/Y base: same 3 months last year (backward comparison)
   var y0=shiftYear(m0,-1), y1=shiftYear(m1,-1), y2=shiftYear(m2,-1);
 
   // For trend direction: 6 months ending at m0
