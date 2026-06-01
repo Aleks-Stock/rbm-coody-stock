@@ -535,15 +535,15 @@ function openOrder(type){
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
 function toggleOrderRow(btn){
   var row=btn.closest("tr");
-  var idx=parseInt(row.getAttribute("data-idx"));
-  if(_deletedRows.has(idx)){
-    _deletedRows.delete(idx);
+  var inp=row.querySelector("input.qinput");
+  if(row.classList.contains("deleted")){
     row.classList.remove("deleted");
+    if(inp)inp.disabled=false;
     btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";
     btn.textContent="\u{1F5D1}";
   }else{
-    _deletedRows.add(idx);
     row.classList.add("deleted");
+    if(inp)inp.disabled=true;
     btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
     btn.textContent="\u21BA";
   }
@@ -552,6 +552,8 @@ function restoreOrder(){
   _deletedRows.clear();
   document.querySelectorAll("#oBody tr.deleted").forEach(function(r){
     r.classList.remove("deleted");
+    var inp=r.querySelector("input.qinput");
+    if(inp)inp.disabled=false;
     var btn=r.querySelector(".del-btn");
     if(btn){btn.textContent="\u{1F5D1}";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
   });
