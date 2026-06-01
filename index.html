@@ -114,7 +114,7 @@ input.qinput:focus{border-color:var(--ac)}
 .cn-avail{color:#ffca28;font-size:11px;font-weight:600}
 .del-btn{background:none;border:none;cursor:pointer;color:var(--tx2);font-size:14px;padding:2px 6px;border-radius:4px;transition:all .15s;line-height:1}
 .del-btn:hover{color:var(--rd);background:rgba(239,83,80,.1)}
-.order-row.deleted{opacity:.35;text-decoration:line-through}
+tr.deleted td{opacity:.35;text-decoration:line-through}
 .order-row.deleted .del-btn{color:var(--gn)}
 .restore-btn{background:var(--surface2);border:1px solid var(--bd);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--tx2)}
 .restore-btn:hover{border-color:var(--ac);color:var(--tx)}
@@ -453,7 +453,7 @@ function renderTable(){
     var bmap={"critical":"<span class=\"badge bc\">&#128308; Критично</span>","low":"<span class=\"badge bl2\">&#128992; Мало</span>","ok":"<span class=\"badge bo\">&#128994; Норма</span>","transit":"<span class=\"badge bt\">&#9992; В пути</span>","bestseller":"<span class=\"badge bbs\">&#128640; Рост</span>"};
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
-      "<tr>"+
+      "<tr class=\"order-row\" data-idx=\""+i+"\">"+
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\">"+usT+"</td>"+
