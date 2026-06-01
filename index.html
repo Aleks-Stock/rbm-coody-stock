@@ -617,6 +617,7 @@ function doRefresh(){
     fetchSheet(SHEET_URLS.ca),
     fetchSheet(SHEET_URLS.cn)
   ]).then(function(results){
+    var days=new Date().getDate();
     var usMap=parseLastMonths(results[0]);
     var caMap=parseLastMonths(results[1]);
     var cnMap=parseLastMonths(results[2]);
@@ -624,7 +625,6 @@ function doRefresh(){
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
-      var days=daysElapsedThisMonth();
       var us=usMap[r.name];
       if(us){
         var curNorm=0;
