@@ -453,7 +453,7 @@ function renderTable(){
     var bmap={"critical":"<span class=\"badge bc\">&#128308; Критично</span>","low":"<span class=\"badge bl2\">&#128992; Мало</span>","ok":"<span class=\"badge bo\">&#128994; Норма</span>","transit":"<span class=\"badge bt\">&#9992; В пути</span>","bestseller":"<span class=\"badge bbs\">&#128640; Рост</span>"};
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
-      "<tr class=\"order-row\" data-idx=\""+i+"\">"+
+      "<tr>"+
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\">"+usT+"</td>"+
@@ -510,7 +510,7 @@ function openOrder(type){
   
   var rows=items.map(function(it,i){
     var cnCell=it.cn>0?"<span class=\"cn-avail\">&starf; "+it.cn+"</span>":"<span class=\"cn-none\">&#8212;</span>";
-    return "<tr>"+
+    return "<tr class=\"order-row\" data-idx=\""+i+"\">"+
       "<td>"+it.name+"</td>"+
       "<td style=\"text-align:center\">"+it.stock+"</td>"+
       "<td style=\"text-align:center\">"+it.transit+"</td>"+
