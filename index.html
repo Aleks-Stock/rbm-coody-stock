@@ -537,15 +537,17 @@ function toggleOrderRow(btn){
   var row=btn.closest("tr");
   var inp=row.querySelector("input.qinput");
   if(row.classList.contains("deleted")){
+    // Restore
     row.classList.remove("deleted");
-    if(inp)inp.disabled=false;
+    if(inp&&inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");
     btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";
-    btn.textContent="\u{1F5D1}";
+    btn.innerHTML="&#128465;";
   }else{
+    // Delete
     row.classList.add("deleted");
-    if(inp)inp.disabled=true;
+    if(inp){inp.setAttribute("data-saved",inp.value);inp.value=0;}
     btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
-    btn.textContent="\u21BA";
+    btn.innerHTML="&#8635;";
   }
 }
 function restoreOrder(){
@@ -553,9 +555,9 @@ function restoreOrder(){
   document.querySelectorAll("#oBody tr.deleted").forEach(function(r){
     r.classList.remove("deleted");
     var inp=r.querySelector("input.qinput");
-    if(inp)inp.disabled=false;
+    if(inp&&inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");
     var btn=r.querySelector(".del-btn");
-    if(btn){btn.textContent="\u{1F5D1}";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
+    if(btn){btn.innerHTML="&#128465;";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
   });
 }
 
