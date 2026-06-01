@@ -112,6 +112,12 @@ tr.grp-hdr td{background:var(--sf2);padding:5px 10px;font-size:10px;font-weight:
 input.qinput{background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:4px 8px;color:var(--tx);font-size:13px;width:70px;text-align:center;outline:none}
 input.qinput:focus{border-color:var(--ac)}
 .cn-avail{color:#ffca28;font-size:11px;font-weight:600}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--tx2);font-size:14px;padding:2px 6px;border-radius:4px;transition:all .15s;line-height:1}
+.del-btn:hover{color:var(--rd);background:rgba(239,83,80,.1)}
+.order-row.deleted{opacity:.35;text-decoration:line-through}
+.order-row.deleted .del-btn{color:var(--gn)}
+.restore-btn{background:var(--surface2);border:1px solid var(--bd);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--tx2)}
+.restore-btn:hover{border-color:var(--ac);color:var(--tx)}
 .cn-none{color:var(--tx2);font-size:11px}
 .ma{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 .btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:500}
@@ -237,6 +243,7 @@ input.qinput:focus{border-color:var(--ac)}
     </div>
     <div class="ma">
       <button class="btn bs" onclick="closeOrder()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
+      <button class="restore-btn" onclick="restoreOrder()">&#8635; &#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077;</button>
       <button class="btn bp" onclick="exportOrder()">&#128229; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; Excel</button>
     </div>
   </div>
@@ -513,6 +520,7 @@ function openOrder(type){
       "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"oq"+i+"\" value=\""+it.qty+"\" min=\"0\">"+
       (it.growing?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">"+(it.growPct>0?"+"+it.growPct+"%":"&#128640;")+"</span>":"")+"</td>"+
       "<td style=\"text-align:center\">"+cnCell+"</td>"+
+      "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;\">&#128465;</button></td>"+
       "</tr>";
   });
   
@@ -524,6 +532,25 @@ function openOrder(type){
 }
 
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
+function toggleOrderRow(btn){
+  var row=btn.closest("tr");
+  if(row.classList.contains("deleted")){
+    row.classList.remove("deleted");
+    btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";
+    btn.textContent="\u{1F5D1}";
+  }else{
+    row.classList.add("deleted");
+    btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
+    btn.textContent="\u21BA";
+  }
+}
+function restoreOrder(){
+  document.querySelectorAll("#oBody tr.deleted").forEach(function(r){
+    r.classList.remove("deleted");
+    var btn=r.querySelector(".del-btn");
+    if(btn){btn.textContent="\u{1F5D1}";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
+  });
+}
 
 function exportOrder(){
   var items=window._orderItems||[];
