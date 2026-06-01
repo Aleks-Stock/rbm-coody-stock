@@ -662,19 +662,7 @@ function doRefresh(){
     });
     build(merged);
     tick("Google Sheets");
-    // DEBUG calcAvg3 for Beige
-    var beige=usMap["Coody Air Tarp Beige 17.2"];
-    var dbg="NO_BEIGE";
-    if(beige){
-      var m28=beige[28],m29=beige[29],m30=beige[30];
-      var m19=beige[19],m20=beige[20],m21=beige[21];
-      var rawCalc=calcAvg3(beige);
-      var withCur=calcAvg3WithCurrent(beige,0);
-      dbg="v[28-30]="+m28+"/"+m29+"/"+m30+" sea="+m19+"/"+m20+"/"+m21+" avg3="+rawCalc+" wc="+withCur;
-    }
-    var beigeItem=allData.find(function(it){return it.name==="Coody Air Tarp Beige 17.2";});
-    var itm=beigeItem?"item_avg="+beigeItem.sales_us_avg:"NO_ITEM";
-    toast(dbg+" | "+itm,"success");
+    toast("Обновлено: "+updated+" товаров","success");
     if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> Обновить';}
   }).catch(function(err){
     var msg=err&&err.message?err.message.slice(0,100):String(err).slice(0,100);toast("Ошибка: "+msg,"error");console.error("doRefresh full error:",err);
@@ -812,15 +800,25 @@ function calcAvg3WithCurrent(vals,curNorm){
   return calcAvg3(vals);
 }
 function calcAvg3(vals){
-  // trend = avg(Feb[27],Mar[28],Apr[29]) — 3 completed months
-  var trend=Math.round(((vals[27]||0)+(vals[28]||0)+(vals[29]||0))/3*10)/10;
-  // season = avg(May25[18],Jun25[19],Jul25[20]) — current+2 months LY
-  var season=Math.round(((vals[18]||0)+(vals[19]||0)+(vals[20]||0))/3*10)/10;
-  // 60/40
+  // parseLastMonths maps: vals[30]=newest, vals[29]=2nd, vals[28]=3rd
+  var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
+  // Season: vals[19]+[20]+[21] (forward-looking LY months)
+  var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
+  // Trend: avg of 3 most recent months
+  var trend;
+  if(v2===0&&v1===0&&v0>0) trend=v0;
+  else if(v2===0&&v0>0) trend=Math.round((v1+v0)/2*10)/10;
+  else trend=Math.round((v2+v1+v0)/3*10)/10;
+  // Linear trend if growing (both steps up)
+  var step1=v1>v2, step2=v0>v1;
+  if(step1&&step2&&v0>0){
+    var base=v2>0?v2:(v1>0?v1:v0);
+    var slope=(v0-base)/2;
+    return Math.max(v0, Math.round((v0+slope)*10)/10);
+  }
   if(season>0&&trend>0)return Math.round((season*0.6+trend*0.4)*10)/10;
   if(season>0)return season;
-  if(trend>0)return trend;
-  return Math.round(((vals[28]||0)+(vals[29]||0)+(vals[30]||0))/3*10)/10;
+  return trend;
 }
 function calcSeason(vals){
   return Math.round(((vals[18]||0)+(vals[19]||0)+(vals[20]||0))/3*10)/10;
@@ -834,7 +832,7 @@ function calcTrend3(vals){
 
 function calcYoY(vals){
   var trend=((vals[28]||0)+(vals[29]||0)+(vals[30]||0))/3;
-  var seasonBase=vals._seaSum!=null?vals._seaSum/3:((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3;
+  var seasonBase=((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3;
   return seasonBase>0?Math.round((trend-seasonBase)/seasonBase*100):null;
 }
 
