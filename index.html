@@ -669,8 +669,8 @@ function doRefresh(){
         o.sales_us_season=calcSeason(us);
         o.yoy_us=calcYoY(us);
         o.trend_us=calcTrendFlag(us,curNorm);
-        o._months=us._months; o._seaMonths=us._seaMonths;
-        o._v3=[us[28],us[29],us[30]]; o._sea=[us[19],us[20],us[21]];
+        o._months=us._months||[]; o._seaMonths=us._seaMonths||[];
+        o._v3=[us[30]||0,us[29]||0,us[28]||0]; o._sea=[us[19]||0,us[20]||0,us[21]||0];
         updated++;
       }
       var ca=caMap[r.name];
@@ -682,6 +682,8 @@ function doRefresh(){
         o.sales_ca_season=calcSeason_ca(ca);
         o.yoy_ca=calcYoY(ca);
         o.trend_ca=calcTrendFlag(ca,curNormCA);
+        o._ca_months=ca._months||[]; o._ca_seaMonths=ca._seaMonths||[];
+        o._ca_v3=[ca[30]||0,ca[29]||0,ca[28]||0]; o._ca_sea=[ca[19]||0,ca[20]||0,ca[21]||0];
       }
       var cn=cnMap[r.name];
       if(cn){o.sales_cn_avg=calcAvg3(cn);}
