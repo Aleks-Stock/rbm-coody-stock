@@ -409,8 +409,8 @@ function renderKPI(){
       kpi("&#1042;&#1089;&#1077;&#1075;&#1086; SKU",tot,"&#1055;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100; &#1074;&#1089;&#1077;","","resetAll()")+
       kpi("&#1047;&#1072;&#1082;&#1072;&#1079;&#1072;&#1085;&#1086; &#1085;&#1072; &#1079;&#1072;&#1074;&#1086;&#1076;&#1077;",ord_us,"&#1077;&#1076;&#1080;&#1085;&#1080;&#1094;","g","")+
       kpiTent("&#1055;&#1072;&#1083. "+curMonLY,tentLY,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1075;&#1086;&#1076;",null)+
-      kpiTent("&#1055;&#1072;&#1083;. "+prevMonName,tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
-      kpiTent("&#1055;&#1072;&#1083;. "+curMonName,tentCurMo,"&#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;.",tentFc)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"&#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;.",tentFc)+
     "</div>";
   var ab=document.getElementById("ab");
   if(crit_us>0){ab.classList.remove("hidden");document.getElementById("abt").innerHTML="<b>"+crit_us+" SKU критически мало в США.</b> Нажмите для фильтра.";}
@@ -870,18 +870,25 @@ function calcAvg3(vals){
   var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
   // Season: vals[19]+[20]+[21] (forward-looking LY months)
   var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
-  // Trend: avg of 3 most recent months
+  // Detect new/young product: any zero in recent months
+  var isNew=(v2===0||v1===0);
+  // Trend: avg of available months only
   var trend;
-  if(v2===0&&v1===0&&v0>0) trend=v0;
-  else if(v2===0&&v0>0) trend=Math.round((v1+v0)/2*10)/10;
-  else trend=Math.round((v2+v1+v0)/3*10)/10;
-  // Linear trend if growing (both steps up)
-  var step1=v1>v2, step2=v0>v1;
-  if(step1&&step2&&v0>0){
-    var base=v2>0?v2:(v1>0?v1:v0);
-    var slope=(v0-base)/2;
-    return Math.max(v0, Math.round((v0+slope)*10)/10);
+  if(v2===0&&v1===0&&v0>0) trend=v0;          // only 1 month
+  else if(v2===0&&v0>0) trend=Math.round((v1+v0)/2*10)/10; // 2 months
+  else trend=Math.round((v2+v1+v0)/3*10)/10;  // 3 months
+  // Linear trend only for established products (all 3 months have data)
+  if(!isNew){
+    var step1=v1>v2, step2=v0>v1;
+    if(step1&&step2&&v0>0){
+      var base=v2>0?v2:(v1>0?v1:v0);
+      var slope=(v0-base)/2;
+      return Math.max(v0, Math.round((v0+slope)*10)/10);
+    }
   }
+  // New products: use trend only, no season blend
+  if(isNew) return trend;
+  // Established: 60/40 season+trend
   if(season>0&&trend>0)return Math.round((season*0.6+trend*0.4)*10)/10;
   if(season>0)return season;
   return trend;
