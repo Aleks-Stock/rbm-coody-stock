@@ -661,20 +661,56 @@ function parseLastMonths(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
-  // Find current month column from header (look for current year-month)
-  var header=rows[0];
-  var now=new Date();
+  // Find header row: the one containing month patterns like "2024-янв"
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
-  var curKey=now.getFullYear()+"-"+ruMon[now.getMonth()];
-  var curIdx=-1;
-  header.forEach(function(h,i){if(h&&h.indexOf(curKey)>=0)curIdx=i;});
-  rows.slice(1).forEach(function(row){
-    var name=row[1]&&row[1].trim();if(!name)return;
+  var headerRow=null, headerIdx=0;
+  for(var ri=0;ri<Math.min(3,rows.length);ri++){
+    if(rows[ri].some(function(h){return h&&/20\d\d-/.test(h);})){headerRow=rows[ri];headerIdx=ri;break;}
+  }
+  if(!headerRow)return result;
+  // Build month→colIdx map
+  var colMap={};
+  headerRow.forEach(function(h,i){
+    if(!h)return;
+    // Match "YYYY-мес" pattern
+    var m=h.match(/(\d{4})-([а-яё]+)/i);
+    if(m){
+      var yr=parseInt(m[1]),monStr=m[2].toLowerCase().replace(".","");
+      var mo=ruMon.findIndex(function(x){return monStr.indexOf(x)===0||x.indexOf(monStr)===0;});
+      if(mo>=0) colMap[yr*100+(mo+1)]=i;
+    }
+  });
+  // Key months needed
+  var now=new Date(), yr=now.getFullYear(), mo=now.getMonth()+1;
+  function key(y,m){return y*100+m;}
+  function prev(y,m,n){var d=new Date(y,m-1-n,1);return key(d.getFullYear(),d.getMonth()+1);}
+  // Last 3 complete months (shifted back 1 from current)
+  var mar26=key(2026,3), apr26=key(2026,4), may26=key(2026,5);
+  // Season LY: Jun+Jul+Aug 2025
+  var jun25=key(2025,6), jul25=key(2025,7), aug25=key(2025,8);
+  // YoY base: Mar+Apr+May 2025
+  var mar25=key(2025,3), apr25=key(2025,4), may25=key(2025,5);
+  // Trend direction: Dec25-May26
+  var dec25=key(2025,12), jan26=key(2026,1), feb26=key(2026,2);
+  var needed=[mar26,apr26,may26,jun25,jul25,aug25,mar25,apr25,may25,dec25,jan26,feb26];
+  // Current month
+  var curKey=key(yr,mo);
+  if(colMap[curKey]) needed.push(curKey);
+  rows.slice(headerIdx+1).forEach(function(row){
+    var name=row[1]&&row[1].trim();
+    if(!name||name==="USA"||name==="CANADA"||name==="CHINA"||name==="Product type")return;
     var vals={};
-    [16,17,18,19,20,21,25,26,27,28,29,30].forEach(function(i){vals[i]=row[i]?si(row[i]):0;});
-    // Current month
-    if(curIdx>0) vals[31]=row[curIdx]?si(row[curIdx]):0;
-    else vals[31]=0;
+    needed.forEach(function(k){
+      var ci=colMap[k];
+      if(ci!=null&&ci<row.length) vals[k]=si(row[ci]);
+      else vals[k]=0;
+    });
+    vals[31]=vals[curKey]||0; // current month for normalization
+    // Map to legacy indices for calcAvg3 compatibility
+    vals[28]=vals[mar26]||0; vals[29]=vals[apr26]||0; vals[30]=vals[may26]||0;
+    vals[19]=vals[jun25]||0; vals[20]=vals[jul25]||0; vals[21]=vals[aug25]||0;
+    vals[16]=vals[mar25]||0; vals[17]=vals[apr25]||0; vals[18]=vals[may25]||0;
+    vals[25]=vals[dec25]||0; vals[26]=vals[jan26]||0; vals[27]=vals[feb26]||0;
     if(Object.values(vals).some(function(v){return v>0;}))result[name]=vals;
   });
   return result;
