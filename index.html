@@ -868,28 +868,31 @@ function calcAvg3WithCurrent(vals,curNorm){
 function calcAvg3(vals){
   // parseLastMonths maps: vals[30]=newest, vals[29]=2nd, vals[28]=3rd
   var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
-  // Season: vals[19]+[20]+[21] (forward-looking LY months)
   var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
-  // Use only NON-ZERO months for trend (zeros = new product OR stockout)
-  var months=[v2,v1,v0].filter(function(x){return x>0;});
-  if(months.length===0)return 0;
-  var trend=Math.round(months.reduce(function(a,b){return a+b;},0)/months.length*10)/10;
-  var hasZero=(v2===0||v1===0||v0===0); // any zero = new or stockout
-  // Linear trend only when ALL 3 months have data AND growing
+  var hasZero=(v2===0||v1===0||v0===0);
+  // All 3 months: linear if growing, else 60/40
   if(!hasZero){
-    var step1=v1>v2, step2=v0>v1;
-    if(step1&&step2&&v0>0){
-      var base=v2>0?v2:(v1>0?v1:v0);
-      var slope=(v0-base)/2;
+    if(v1>v2&&v0>v1){
+      var slope=(v0-v2)/2;
       return Math.max(v0, Math.round((v0+slope)*10)/10);
     }
+    var trend3=Math.round((v2+v1+v0)/3*10)/10;
+    if(season>0&&trend3>0)return Math.round((season*0.6+trend3*0.4)*10)/10;
+    if(season>0)return season;
+    return trend3;
   }
-  // If any zero: use trend of non-zero months only, no season blend
-  if(hasZero) return trend;
-  // All 3 months present: 60/40 season+trend
-  if(season>0&&trend>0)return Math.round((season*0.6+trend*0.4)*10)/10;
-  if(season>0)return season;
-  return trend;
+  // Has zeros: use non-zero months only, apply linear if growing
+  var nonzero=[v2,v1,v0].filter(function(x){return x>0;});
+  if(nonzero.length===0)return 0;
+  if(nonzero.length===1)return nonzero[0];
+  // 2 non-zero months: if growing apply linear projection
+  var first=nonzero[0], last=nonzero[nonzero.length-1];
+  if(last>first){
+    var slope2=last-first; // change per step
+    return Math.max(last, Math.round((last+slope2)*10)/10);
+  }
+  // Not growing: simple average of non-zero months, no season
+  return Math.round(nonzero.reduce(function(a,b){return a+b;},0)/nonzero.length*10)/10;
 }
 function calcSeason(vals){
   return Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
