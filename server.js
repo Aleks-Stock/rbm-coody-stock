@@ -31,22 +31,17 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const pathname = parsed.pathname;
 
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
   // API proxy endpoints
   if (pathname.startsWith('/api/sheets/')) {
     const sheet = pathname.replace('/api/sheets/', '');
-    if (!SHEETS[sheet]) {
-      res.writeHead(404);
-      res.end('Not found');
-      return;
-    }
+    if (!SHEETS[sheet]) { res.writeHead(404); res.end('Not found'); return; }
     try {
       const csv = await fetchUrl(SHEETS[sheet]);
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Cache-Control', 'max-age=300'); // 5 min cache
+      res.setHeader('Cache-Control', 'max-age=300');
       res.writeHead(200);
       res.end(csv);
     } catch (e) {
@@ -56,24 +51,16 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Serve static files
-  let filePath = pathname === '/' ? '/index.html' : pathname;
-  filePath = path.join(__dirname, 'public', filePath);
-
+  // Serve index.html from root directory
+  const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not found');
-      return;
-    }
-    const ext = path.extname(filePath);
-    const mime = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css'};
-    res.setHeader('Content-Type', mime[ext] || 'text/plain');
+    if (err) { res.writeHead(404); res.end('Not found'); return; }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.writeHead(200);
     res.end(data);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`RBM COODY Stock server running on port ${PORT}`);
+  console.log(`RBM COODY Stock running on port ${PORT}`);
 });
