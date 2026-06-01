@@ -179,9 +179,8 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
       <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
     </select>
     <div class="ug">
-      <label class="ub">CN<input type="file" accept=".csv" onchange="loadCSV(event,0)"></label>
-      <label class="ub">US<input type="file" accept=".csv" onchange="loadCSV(event,1)"></label>
-      <label class="ub">CA<input type="file" accept=".csv" onchange="loadCSV(event,2)"></label>
+      <button class="obtn" style="background:#1565c0" onclick="openTransfer(1)">&#128666; &#1057;&#1064;&#1040;</button>
+      <button class="obtn ca" onclick="openTransfer(2)">&#128666; CA</button>
     </div>
     <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
     <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
@@ -250,6 +249,33 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   </div>
 </div>
 
+<!-- TRANSFER MODAL -->
+<div class="mo" id="trModal">
+  <div class="md">
+    <h3 id="trTitle">&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1077;&#1085;&#1080;&#1077; &#1080;&#1079; &#1050;&#1080;&#1090;&#1072;&#1103;</h3>
+    <div class="sub" id="trSub"></div>
+    <div style="overflow-x:auto">
+      <table id="trTable">
+        <thead><tr>
+          <th>&#1058;&#1086;&#1074;&#1072;&#1088;</th>
+          <th>&#1057;&#1082;&#1083;&#1072;&#1076;</th>
+          <th>&#1042; &#1087;&#1091;&#1090;&#1080;</th>
+          <th>&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
+          <th>&#1044;&#1085;&#1077;&#1081;</th>
+          <th>&#1054;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1090;&#1100;</th>
+          <th>&#1057;&#1082;&#1083;&#1072;&#1076; CN</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="trBody"></tbody>
+      </table>
+    </div>
+    <div class="ma">
+      <button class="btn bs" onclick="closeTransfer()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
+      <button class="restore-btn" onclick="restoreTransfer()">&#8635; &#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077;</button>
+      <button class="btn bp" onclick="exportTransfer()">&#128229; &#1057;&#1082;&#1072;&#1095;&#1072;&#1090;&#1100; Excel</button>
+    </div>
+  </div>
+</div>
 <!-- SETTINGS MODAL -->
 <div class="smo" id="sModal">
   <div class="smd">
@@ -477,7 +503,7 @@ function renderTable(){
       "<tr>"+
       "<td class=\"pn\">"+it.name+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
-      "<td class=\"us-col\">"+usT+"</td>"+
+      "<td class=\"us-col\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer\" onclick=\"showOntheway(event,this,"+idx+")\">"+(it.in_transit_us)+" &#9992;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al)\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
       "<td class=\"us-col\">"+dUS+"</td>"+
@@ -553,7 +579,97 @@ function openOrder(type){
   window._orderItems=items;
 }
 
+var _transferItems=[];var _transferType=0;
+function openTransfer(type){
+  _transferType=type;var isUS=type===1;
+  var targetMos=isUS?2:2.5;var thresh=isUS?45:60;
+  document.getElementById("trTitle").textContent=(isUS?"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1077;&#1085;&#1080;&#1077; &#1050;&#1080;&#1090;&#1072;&#1081; → &#1057;&#1064;&#1040;":"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1077;&#1085;&#1080;&#1077; &#1050;&#1080;&#1090;&#1072;&#1081; → &#1050;&#1072;&#1085;&#1072;&#1076;&#1072;");
+  document.getElementById("trSub").textContent="&#1062;&#1077;&#1083;&#1077;&#1074;&#1086;&#1081; &#1079;&#1072;&#1087;&#1072;&#1089;: "+targetMos+" &#1084;&#1077;&#1089;. &#1059;&#1095;&#1090;&#1077;&#1085;&#1086;: &#1089;&#1082;&#1083;&#1072;&#1076; + &#1074; &#1087;&#1091;&#1090;&#1080;.";
+  var items=[];
+  allData.forEach(function(it){
+    var stock=isUS?it.stock_us:it.stock_ca;
+    var transit=isUS?it.in_transit_us:it.in_transit_ca;
+    var vel=isUS?it.sales_us_avg:Math.max(it.sales_ca_avg||0,it.sales_us_avg||0);
+    var cn=it.stock_cn||0;
+    if(vel===0||cn===0)return;
+    var target=Math.ceil(vel*targetMos);
+    var avail=stock+transit;
+    if(avail>=target)return;
+    var shortfall=target-avail;
+    var toSend=Math.min(cn,shortfall);
+    if(toSend<=0)return;
+    var days=avail>0?Math.floor(avail/(vel/30)):0;
+    items.push({name:it.name,stock:stock,transit:transit,vel:Math.round(vel*10)/10,days:days,shortfall:shortfall,cn:cn,toSend:toSend});
+  });
+  items.sort(function(a,b){return a.days-b.days;});
+  _transferItems=items;
+  var rows=items.map(function(it,i){
+    return "<tr class=\"order-row\" data-idx=\""+i+"\">"+
+      "<td>"+it.name+"</td>"+
+      "<td style=\"text-align:center\">"+it.stock+"</td>"+
+      "<td style=\"text-align:center\">"+it.transit+"</td>"+
+      "<td style=\"text-align:center\">"+it.vel+"</td>"+
+      "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\">"+(it.days===0?"0d":it.days+"d")+"</td>"+
+      "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"tq"+i+"\" value=\""+it.toSend+"\" min=\"0\"></td>"+
+      "<td style=\"text-align:center;color:#ffca28\">"+it.cn+"</td>"+
+      "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;\">&#128465;</button></td>"+
+    "</tr>";
+  });
+  document.getElementById("trBody").innerHTML=rows.join("")||"<tr><td colspan=\"8\" style=\"text-align:center;padding:20px;color:var(--tx2)\">&#1053;&#1077;&#1095;&#1077;&#1075;&#1086; &#1087;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1072;&#1090;&#1100;</td></tr>";
+  document.getElementById("trModal").classList.add("open");
+}
+function closeTransfer(){document.getElementById("trModal").classList.remove("open");}
+function restoreTransfer(){
+  document.querySelectorAll("#trBody tr.deleted").forEach(function(r){
+    r.classList.remove("deleted");
+    var inp=r.querySelector("input.qinput");
+    var i=parseInt(r.getAttribute("data-idx"));
+    if(inp&&_transferItems[i])inp.value=_transferItems[i].toSend;
+    var btn=r.querySelector(".del-btn");
+    if(btn){btn.innerHTML="&#128465;";}
+  });
+}
+function exportTransfer(){
+  var rows=[["&#1058;&#1086;&#1074;&#1072;&#1088;","&#1057;&#1082;&#1083;&#1072;&#1076;","&#1042; &#1087;&#1091;&#1090;&#1080;","&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;/&#1084;&#1077;&#1089;","&#1044;&#1085;&#1077;&#1081;","&#1054;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1090;&#1100;","&#1057;&#1082;&#1083;&#1072;&#1076; CN"]];
+  _transferItems.forEach(function(it,i){
+    var inputEl=document.getElementById("tq"+i);
+    if(!inputEl||inputEl.disabled)return;
+    var qty=parseInt(inputEl.value)||0;
+    if(qty>0)rows.push([it.name,it.stock,it.transit,it.vel,it.days,qty,it.cn]);
+  });
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[{wch:35},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10},{wch:10}];
+  var wb=XLSX.utils.book_new();
+  var sn=_transferType===1?"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. &#1057;&#1064;&#1040;":"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. CA";
+  XLSX.utils.book_append_sheet(wb,ws,sn);
+  XLSX.writeFile(wb,"Transfer_"+(_transferType===1?"US":"CA")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
+  toast("Excel &#1089;&#1082;&#1072;&#1095;&#1072;&#1085;","success");
+}
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
+function showOntheway(evt,el,idx){
+  if(_popup){_popup.remove();_popup=null;}
+  var item=fData[idx];if(!item)return;
+  var name=item.name;
+  var data=_onthewayData[name];
+  if(!data||!data.length)return;
+  var p=document.createElement("div");
+  p.className="detail-popup";
+  var html2="<h4>"+name.slice(0,30)+" — &#1042; &#1087;&#1091;&#1090;&#1080;</h4>";
+  html2+="<div style=\"margin-bottom:6px;font-size:10px;color:var(--tx2)\">&#1055;&#1072;&#1088;&#1090;&#1080;&#1080; &#1074; &#1090;&#1088;&#1072;&#1085;&#1079;&#1080;&#1090;&#1077;</div>";
+  data.forEach(function(s){
+    html2+="<div class=\"row\"><span class=\"lbl\">"+s.date+"</span><span class=\"val\">"+s.qty+" &#1096;&#1090;</span></div>";
+  });
+  p.innerHTML=html2;
+  _popup=p;
+  document.body.appendChild(p);
+  var rect=evt.target.getBoundingClientRect();
+  var ph=p.offsetHeight||120;
+  var spaceBelow=window.innerHeight-rect.bottom-10;
+  var top=spaceBelow>=ph?rect.bottom+6:Math.max(10,rect.top-ph-6);
+  p.style.top=top+"px";
+  p.style.left=Math.min(rect.left,window.innerWidth-250)+"px";
+  evt.stopPropagation();
+}
 function toggleOrderRow(btn){
   var row=btn.closest("tr");
   var inp=row.querySelector("input.qinput");
@@ -670,9 +786,59 @@ function loadS(){try{uSet=JSON.parse(localStorage.getItem("rbm5")||"{}");}catch(
 var SHEET_URLS={
   us:"/api/sheets/us",
   ca:"/api/sheets/ca",
-  cn:"/api/sheets/cn"
+  cn:"/api/sheets/cn",
+  stock_us:"/api/sheets/stock_us",
+  stock_ca:"/api/sheets/stock_ca",
+  ontheway:"/api/sheets/ontheway"
 };
+var _onthewayData={};  // {name: [{date:"06.06.2026",qty:2},...]}
 
+function parseStockUS(csvText){
+  var result={};
+  var rows=pcsv(csvText);
+  rows.slice(1).forEach(function(row){
+    var name=row[1]&&row[1].trim();if(!name)return;
+    result[name]={in_transit:si(row[2]),stock:si(row[3]),cn_stock:si(row[4])};
+  });
+  return result;
+}
+function parseStockCA(csvText){
+  var result={};
+  var rows=pcsv(csvText);
+  rows.slice(1).forEach(function(row){
+    var name=row[1]&&row[1].trim();if(!name)return;
+    result[name]={in_transit:si(row[2]),stock:si(row[3])};
+  });
+  return result;
+}
+function parseOntheway(csvText){
+  var result={};
+  var rows=pcsv(csvText);
+  if(rows.length<2)return result;
+  // Find date header row (row with dates like DD.MM.YYYY)
+  var dateRow=null;
+  for(var i=0;i<Math.min(3,rows.length);i++){
+    if(rows[i].some(function(h){return h&&/\d{2}\.\d{2}\.\d{4}/.test(h);})){dateRow=rows[i];break;}
+  }
+  if(!dateRow)return result;
+  var dates=[];
+  for(var c=2;c<dateRow.length;c++){
+    if(dateRow[c]&&/\d{2}\.\d{2}\.\d{4}/.test(dateRow[c]))dates.push({col:c,date:dateRow[c].trim()});
+  }
+  rows.slice(rows.indexOf(dateRow)+1).forEach(function(row){
+    var name=row[1]&&row[1].trim();if(!name)return;
+    var shipments=[];
+    dates.forEach(function(d){
+      var qty=si(row[d.col]);
+      if(qty>0)shipments.push({date:d.date,qty:qty});
+    });
+    if(shipments.length>0){
+      if(!result[name])result[name]=[];
+      result[name]=result[name].concat(shipments);
+    }
+  });
+  return result;
+}
 function doRefresh(){
   var btn=document.querySelector(".sb");
   if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
@@ -690,6 +856,11 @@ function doRefresh(){
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
+      // Apply live stock data
+      var sus=stockUS[r.name];
+      if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.stock_cn=sus.cn_stock;}
+      var sca=stockCA[r.name];
+      if(sca){o.stock_ca=sca.stock;o.in_transit_ca=sca.in_transit;}
       var us=usMap[r.name];
       if(us){
         var curNorm=0;
