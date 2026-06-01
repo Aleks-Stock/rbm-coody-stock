@@ -642,6 +642,8 @@ function doRefresh(){
         o.sales_us_season=calcSeason(us);
         o.yoy_us=calcYoY(us);
         o.trend_us=calcTrendFlag(us,curNorm);
+        o._months=us._months; o._seaMonths=us._seaMonths;
+        o._v3=[us[28],us[29],us[30]]; o._sea=[us[19],us[20],us[21]];
         updated++;
       }
       var ca=caMap[r.name];
@@ -658,9 +660,13 @@ function doRefresh(){
       if(cn){o.sales_cn_avg=calcAvg3(cn);}
       return o;
     });
+    // DEBUG: check what was found
+    var usFound=Object.keys(usMap).length;
+    var beige=usMap["Coody Air Tarp Beige 17.2"];
+    var debugMsg="US:"+usFound+" Beige:"+(beige?("m"+beige[28]+"/"+beige[29]+"/"+beige[30]):"NOT FOUND");
     build(merged);
     tick("Google Sheets");
-    toast("Обновлено: "+updated+" товаров","success");
+    toast("Обновлено: "+updated+" | "+debugMsg,"success");
     if(btn){btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg> &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;';}
   }).catch(function(err){
     var msg=err&&err.message?err.message.slice(0,100):String(err).slice(0,100);toast("Ошибка: "+msg,"error");console.error("doRefresh full error:",err);
@@ -851,16 +857,18 @@ function showDetail(evt,el,item,market){
   function fmtKey(k){if(!k)return"—";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
   var ms=vals._months||[];
   var sea=vals._seaMonths||[];
+  var v3raw=vals._v3||[vals[28]||0,vals[29]||0,vals[30]||0];
+  var searaw=vals._sea||[vals[19]||0,vals[20]||0,vals[21]||0];
   var html2="<h4>"+name.slice(0,25)+" — "+market+"</h4>";
   html2+="<div style='margin-bottom:6px;font-size:10px;color:var(--tx2)'>Последние 3 мес (тренд)</div>";
   var mkeys=[30,29,28];
   mkeys.forEach(function(vi,i){
-    var k=ms[i];var v=vals[vi]||0;
+    var k=ms[i];var v=v3raw[i]!==undefined?v3raw[i]:(vals[vi]||0);
     html2+="<div class='row'><span class='lbl'>"+fmtKey(k)+"</span><span class='val'>"+v+"</span></div>";
   });
   html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Сезон LY ("+fmtKey(sea[0])+"–"+fmtKey(sea[2])+")</div>";
   [0,1,2].forEach(function(i){
-    var v=vals[19+i]||0;
+    var v=searaw[i]!==undefined?searaw[i]:(vals[19+i]||0);
     html2+="<div class='row'><span class='lbl'>"+fmtKey(sea[i])+"</span><span class='val'>"+v+"</span></div>";
   });
   p.innerHTML=html2;
