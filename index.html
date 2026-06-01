@@ -705,12 +705,14 @@ function parseLastMonths(csvText){
     var name=row[1]&&row[1].trim();
     if(!name||name==="USA"||name==="CANADA"||name==="CHINA"||name==="Product type")return;
     // Pad row to header length so positions stay stable
+    var origLen=row.length;
     while(row.length<headerLen)row.push("");
+    var itogoShifted=(totalCol>0&&origLen<=totalCol);
     function get(k){
       var ci=colMap[k];
       if(ci==null)return 0;
-      // Skip if this position might be Итого (row shorter than expected)
       if(totalCol>0&&ci>=totalCol)return 0;
+      if(itogoShifted&&ci>=origLen-1)return 0;
       return si(row[ci]);
     }
     var vals={};
