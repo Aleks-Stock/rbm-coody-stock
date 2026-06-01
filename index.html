@@ -779,7 +779,7 @@ function parseLastMonths(csvText){
 }
 
 function calcTrendFlag(vals,curNorm){
-  var mar=vals[28]||0,apr=vals[29]||0,may=vals[30]||0;
+  var mar=vals[28]||0,apr=vals[29]||0,may=vals[30]||0; // [28]=3rd,[29]=2nd,[30]=newest
   var last=curNorm>0?curNorm:may;
   var avg3=Math.round((mar+apr+last)/3*10)/10;
   var step1=apr>mar,step2=last>apr;
@@ -821,13 +821,16 @@ function calcAvg3(vals){
   return trend;
 }
 function calcSeason(vals){
-  return Math.round(((vals[18]||0)+(vals[19]||0)+(vals[20]||0))/3*10)/10;
+  return Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
 }
 function calcSeason_ca(vals){
-  return Math.round(((vals[18]||0)+(vals[19]||0)+(vals[20]||0))/3*10)/10;
+  return Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
 }
 function calcTrend3(vals){
-  return Math.round(((vals[27]||0)+(vals[28]||0)+(vals[29]||0))/3*10)/10;
+  var v0=vals[30]||0,v1=vals[29]||0,v2=vals[28]||0;
+  if(v2===0&&v1===0&&v0>0)return v0;
+  if(v2===0&&v0>0)return Math.round((v1+v0)/2*10)/10;
+  return Math.round((v2+v1+v0)/3*10)/10;
 }
 
 function calcYoY(vals){
