@@ -463,7 +463,7 @@ function renderTable(){
       "<td class=\"us-col us-last\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
       "<td class=\"ca-col ca-first\">"+caS+"</td>"+
       "<td class=\"ca-col\">"+caT+"</td>"+
-      "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?it.sales_ca_trend:"&#8212;")+"</td>"+"<td class=\"ca-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
+      "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"ca-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"ca-col\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
       "<td class=\"ca-col\">"+dCA+"</td>"+
       "<td class=\"ca-col ca-last\">"+trendBadge(it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
@@ -886,15 +886,17 @@ function toast(msg,type){var t=document.getElementById("toast");t.innerHTML=msg;
 var _popup=null;
 function showDetail(evt,el,item,market){
   var name=item.name||"";var vals=item;
+  var isCA=market==="CA";
+  var months=isCA?(item._ca_months||item._months||[]):(item._months||[]);
+  var seaMonths=isCA?(item._ca_seaMonths||item._seaMonths||[]):(item._seaMonths||[]);
+  var v3raw=isCA?(item._ca_v3||[item[28]||0,item[29]||0,item[30]||0]):(item._v3||[item[28]||0,item[29]||0,item[30]||0]);
+  var searaw=isCA?(item._ca_sea||[item[19]||0,item[20]||0,item[21]||0]):(item._sea||[item[19]||0,item[20]||0,item[21]||0]);
   if(_popup){_popup.remove();_popup=null;return;}
   var p=document.createElement('div');
   p.className='detail-popup';
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
   function fmtKey(k){if(!k)return"—";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
-  var ms=vals._months||[];
-  var sea=vals._seaMonths||[];
-  var v3raw=vals._v3||[vals[28]||0,vals[29]||0,vals[30]||0];
-  var searaw=vals._sea||[vals[19]||0,vals[20]||0,vals[21]||0];
+  var ms=months; var sea=seaMonths;
   var html2="<h4>"+name.slice(0,25)+" — "+market+"</h4>";
   html2+="<div style='margin-bottom:6px;font-size:10px;color:var(--tx2)'>Последние 3 мес (тренд)</div>";
   var mkeys=[30,29,28];
