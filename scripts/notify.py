@@ -109,7 +109,8 @@ def classify_abc(vel, all_vels):
     if vel <= 2:
         return "C"
     med = sorted(all_vels)[len(all_vels)//2] if all_vels else 1
-    return "A" if vel >= med * 1.2 else "B"
+    # A requires vel > 2 AND (above median or strong growth signal)
+    return "A" if vel > 2 and vel >= med * 1.2 else "B"
 
 def compute_order(sales, stock, market, order_list=None):
     """ABC-based thresholds: A=2.5/3mo, B=2/2.5mo, C=1.5/2mo"""
