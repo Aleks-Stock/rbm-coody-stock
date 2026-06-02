@@ -118,9 +118,9 @@ def compute_order(sales, stock, market, order_list=None):
     # Sort by stock sheet order if provided, otherwise by days
     if order_list:
         order_idx = {name: i for i, name in enumerate(order_list)}
-        items.sort(key=lambda x: order_idx.get(x["name"], 9999))
+        items.sort(key=lambda x: (1 if x["wu"] else 0, order_idx.get(x["name"], 9999)))
     else:
-        items.sort(key=lambda x: x["days"])
+        items.sort(key=lambda x: (1 if x["wu"] else 0, x["days"]))
     return items
 
 def send_telegram(message):
@@ -140,7 +140,7 @@ def format_message(market, items, date_str):
     for it in items:
         wu = it.get("wu", False)
         if last_wu is None or wu != last_wu:
-            label = "🏭 Учжоу (120 дн):" if wu else "🏭 Куди (60 дн):"
+            label = "🏭 Учжоу (120 дн):" if wu else "🏭 COODY (60 дн):"
             lines.append(f"<b>{label}</b>")
             last_wu = wu
         num += 1
