@@ -527,15 +527,17 @@ function renderTable(){
 }
 
 // ─── ORDER LOGIC ──────────────────────────────────────────────────────────────
+function isWuzhou(name){
+  var patterns=["Panda","UP-5","UP-2","Hexagon","Cuboid","Caminus","Kamin","Rain Fly","Floor for Hexagon","Floor for UP"];
+  return patterns.some(function(p){return name.indexOf(p)>=0;});
+}
 function openOrder(type){
   _deletedRows.clear();
   orderType=type;
   var isUS=type===1;
-  var title=isUS?"Заказ для США — товары менее 45 дней":"Заказ для Канады — товары менее 60 дней";
-  var thresh=isUS?45:60;
-  var targetMos=isUS?2:2.5;
+  var title=isUS?"Заказ для США":"Заказ для Канады";
   document.getElementById("oTitle").textContent=title;
-  document.getElementById("oSub").textContent="Целевой запас: "+targetMos+" мес. Учтено: остаток + в пути + уже заказано.";
+  document.getElementById("oSub").textContent="Учжоу (UP/Panda/Hexagon/Cuboid/печи/полы): 4 мес / 120д. Куди: 2 мес / 45д.";
   
   var items=[];
   allData.forEach(function(it){
@@ -544,6 +546,9 @@ function openOrder(type){
     var vel=isUS?it.sales_us_avg:Math.max(it.sales_ca_avg,it.sales_us_avg);
     var ordered=it.ordered_us||0;
     if(vel===0)return;
+    var wu=isWuzhou(it.name);
+    var thresh=wu?120:(isUS?45:60);
+    var targetMos=wu?(isUS?4:4.5):(isUS?2:2.5);
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
     if(days>=thresh)return;
@@ -554,7 +559,7 @@ function openOrder(type){
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
     var growPct=isUS?(it.growth_pct_us||0):(it.growth_pct_ca||0);
     if(growing&&qty>0)qty=Math.ceil(qty*1.20);
-    items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct});
+    items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu});
   });
   // Sort by product group order (same as main table)
   items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
@@ -611,19 +616,29 @@ function openTransfer(type){
     var days=avail>0?Math.floor(avail/(vel/30)):0;
     items.push({name:it.name,stock:stock,transit:transit,vel:Math.round(vel*10)/10,days:days,shortfall:shortfall,cn:cn,toSend:toSend});
   });
-  items.sort(function(a,b){return a.days-b.days;});
+  items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
   _transferItems=items;
-  var rows=items.map(function(it,i){
-    return "<tr class=\"order-row\" data-idx=\""+i+"\">"+
-      "<td>"+it.name+"</td>"+
+  var rows=[];var lastWu=null;var num=0;
+  items.forEach(function(it,i){
+    if(lastWu===null||it.wu!==lastWu){
+      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 Куди (60 дн)";
+      rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"9\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
+      lastWu=it.wu;
+    }
+    num++;
+    var cnCell=it.cn>0?"<span class=\"cn-avail\">&starf; "+it.cn+"</span>":"<span class=\"cn-none\">&#8212;</span>";
+    rows.push("<tr class=\"order-row\" data-idx=\""+i+"\">"+
+      "<td>"+num+") "+it.name+"</td>"+
       "<td style=\"text-align:center\">"+it.stock+"</td>"+
       "<td style=\"text-align:center\">"+it.transit+"</td>"+
+      "<td style=\"text-align:center\">"+it.ordered+"</td>"+
       "<td style=\"text-align:center\">"+it.vel+"</td>"+
-      "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\">"+(it.days===0?"0d":it.days+"d")+"</td>"+
-      "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"tq"+i+"\" value=\""+it.toSend+"\" min=\"0\"></td>"+
-      "<td style=\"text-align:center;color:#ffca28\">"+it.cn+"</td>"+
-      "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100;\">&#128465;</button></td>"+
-    "</tr>";
+      "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\"><b>"+it.days+"d</b></td>"+
+      "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"oq"+i+"\" value=\""+it.qty+"\" min=\"0\">"+
+      (it.growing?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">"+(it.growPct>0?"+"+it.growPct+"%":"&#128640;")+"</span>":"")+"</td>"+
+      "<td style=\"text-align:center\">"+cnCell+"</td>"+
+      "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;\">&#128465;</button></td>"+
+      "</tr>");
   });
   document.getElementById("trBody").innerHTML=rows.join("")||"<tr><td colspan=\"8\" style=\"text-align:center;padding:20px;color:var(--tx2)\">&#1053;&#1077;&#1095;&#1077;&#1075;&#1086; &#1087;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;&#1072;&#1090;&#1100;</td></tr>";
   document.getElementById("trModal").classList.add("open");
