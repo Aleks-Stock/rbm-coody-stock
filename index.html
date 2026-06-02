@@ -556,7 +556,8 @@ function openOrder(type){
     if(growing&&qty>0)qty=Math.ceil(qty*1.20);
     items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct});
   });
-  items.sort(function(a,b){return a.days-b.days;});
+  // Sort by product group order (same as main table)
+  items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
   
   var rows=items.map(function(it,i){
     var cnCell=it.cn>0?"<span class=\"cn-avail\">&starf; "+it.cn+"</span>":"<span class=\"cn-none\">&#8212;</span>";
