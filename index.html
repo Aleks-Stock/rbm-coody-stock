@@ -537,7 +537,7 @@ function openOrder(type){
   var isUS=type===1;
   var title=isUS?"Заказ для США":"Заказ для Канады";
   document.getElementById("oTitle").textContent=title;
-  document.getElementById("oSub").textContent="Учжоу (UP/Panda/Hexagon/Cuboid/печи/полы): 4 мес / 120д. Куди: 2 мес / 45д.";
+  document.getElementById("oSub").textContent="Учжоу (UP/Panda/Hexagon/Cuboid/печи/полы): 4 мес / 120д. COODY: 2 мес / 45д.";
   
   var items=[];
   allData.forEach(function(it){
@@ -571,7 +571,7 @@ function openOrder(type){
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
     if(lastWu===null||it.wu!==lastWu){
-      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 Куди (60 дн)";
+      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 COODY (60 дн)";
       rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"9\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
       lastWu=it.wu;
     }
@@ -625,7 +625,7 @@ function openTransfer(type){
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
     if(lastWu===null||it.wu!==lastWu){
-      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 Куди (60 дн)";
+      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 COODY (60 дн)";
       rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"9\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
       lastWu=it.wu;
     }
