@@ -58,15 +58,26 @@ def parse_sales(rows):
     return result
 
 def calc_forecast(v28, v29, v30):
-    """Same logic as dashboard calcAvg3"""
-    nonzero = [x for x in [v28, v29, v30] if x > 0]
-    if not nonzero: return 0
-    if len(nonzero) == 1: return nonzero[0]
-    first, last = nonzero[0], nonzero[-1]
-    if last > first:  # growing → linear
-        slope = last - first
-        return max(last, last + slope)
-    return round(sum(nonzero) / len(nonzero), 1)
+    """Mirror of dashboard calcAvg3"""
+    months = [v28, v29, v30]  # oldest → newest
+    start = 0
+    while start < len(months) and months[start] == 0:
+        start += 1
+    active = months[start:]
+    if not active: return 0
+    # Trailing zero = real demand drop → plain average
+    if active[-1] == 0:
+        return round(sum(active) / len(active), 1)
+    # 1 month: use directly
+    if len(active) == 1: return active[0]
+    # 2 months: use last month only (not enough for projection)
+    if len(active) == 2: return active[-1]
+    # 3 months, all non-zero, consistently growing → linear
+    if active[0] > 0 and active[1] > active[0] and active[2] > active[1]:
+        slope = (active[2] - active[0]) / 2
+        return max(active[2], round(active[2] + slope, 1))
+    # 3 months mixed → average
+    return round(sum(active) / len(active), 1)
 
 def parse_stock_us(rows):
     """{name: {transit, stock, cn}}"""
@@ -75,7 +86,7 @@ def parse_stock_us(rows):
         if len(row) < 5: continue
         name = row[1].strip()
         if not name: continue
-        result[name] = {"transit": si(row[2]), "stock": si(row[3]), "cn": si(row[4])}
+        result[name] = {"transit": si(row[2]), "stock": si(row[3]), "cn": si(row[4]), "ordered": max(0, si(row[5])) if len(row) > 5 else 0}
     return result
 
 def parse_stock_ca(rows):
@@ -106,9 +117,10 @@ def compute_order(sales, stock, market, order_list=None):
         vel = calc_forecast(*sp)
         if vel == 0: continue
         wu = is_wuzhou(name)
-        thresh = 120 if wu else (45 if market == "US" else 60)
-        target_months = (4.0 if market == "US" else 4.5) if wu else (2.0 if market == "US" else 2.5)
-        avail = s["stock"] + s["transit"]
+        thresh = 45 if market == "US" else 60
+        target_months = 2.0 if market == "US" else 2.5
+        ordered_factory = s.get("ordered", 0)
+        avail = s["stock"] + s["transit"] + ordered_factory
         days = int(avail / (vel / 30)) if avail > 0 else 0
         if days >= thresh: continue
         target = math.ceil(vel * target_months)
@@ -140,7 +152,7 @@ def format_message(market, items, date_str):
     for it in items:
         wu = it.get("wu", False)
         if last_wu is None or wu != last_wu:
-            label = "🏭 Учжоу (120 дн):" if wu else "🏭 COODY (60 дн):"
+            label = "🏭 Учжоу (60 дн):" if wu else "🏭 COODY (60 дн):"
             lines.append(f"<b>{label}</b>")
             last_wu = wu
         num += 1
