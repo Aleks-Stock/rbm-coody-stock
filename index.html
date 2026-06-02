@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,11 @@ function openOrder(type){
     items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu});
   });
   // Sort by product group order (same as main table)
-  items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
+  // Coody first, Wuzhou second; within each group keep stock sheet order
+  items.sort(function(a,b){
+    if(a.wu!==b.wu)return a.wu?1:-1;
+    return a.go!==b.go?a.go-b.go:a.oi-b.oi;
+  });
   
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
