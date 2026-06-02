@@ -149,16 +149,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 @media(max-width:900px){.kr-row{grid-template-columns:60px repeat(2,1fr)}.kr-row5{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:600px){.kr-row{grid-template-columns:50px 1fr 1fr}.main{padding:10px}}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
-// Close modals on outside click
-["oModal","trModal"].forEach(function(id){
-  var el=document.getElementById(id);
-  if(!el)return;
-  el.addEventListener("click",function(e){
-    if(e.target===el)el.classList.remove("open");
-  });
-});
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 <header>
@@ -624,7 +615,8 @@ function openTransfer(type){
     var target=Math.ceil(vel*targetMos);
     var avail=stock+transit;
     if(avail>=target)return;
-    var shortfall=target-avail;
+    var ordered=isUS?(it.ordered_us||0):(it.ordered_ca||0);
+    var shortfall=Math.max(0,target-avail-ordered);
     var toSend=Math.min(cn,shortfall);
     if(toSend<=0)return;
     var days=avail>0?Math.floor(avail/(vel/30)):0;
@@ -1200,6 +1192,7 @@ document.addEventListener('click',function(){if(_popup){_popup.remove();_popup=n
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
   document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
+  document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTr();});
 });
 </script>
 </body>
