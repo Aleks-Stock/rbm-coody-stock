@@ -618,9 +618,12 @@ function openTransfer(type){
     var toSend=Math.min(cn,shortfall);
     if(toSend<=0)return;
     var days=avail>0?Math.floor(avail/(vel/30)):0;
-    items.push({name:it.name,stock:stock,transit:transit,vel:Math.round(vel*10)/10,days:days,shortfall:shortfall,cn:cn,toSend:toSend});
+    items.push({name:it.name,stock:stock,transit:transit,vel:Math.round(vel*10)/10,days:days,shortfall:shortfall,cn:cn,toSend:toSend,wu:isWuzhou(it.name),go:it.go||0,oi:it.origIdx||0});
   });
-  items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
+  items.sort(function(a,b){
+    if(a.wu!==b.wu)return a.wu?1:-1;
+    return a.go!==b.go?a.go-b.go:a.oi-b.oi;
+  });
   _transferItems=items;
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
@@ -1075,33 +1078,38 @@ function calcAvg3WithCurrent(vals,curNorm){
   return calcAvg3(vals);
 }
 function calcAvg3(vals){
-  // parseLastMonths maps: vals[30]=newest, vals[29]=2nd, vals[28]=3rd
+  // vals[30]=newest(May), vals[29]=Apr, vals[28]=Mar
   var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
   var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
-  var hasZero=(v2===0||v1===0||v0===0);
-  // All 3 months: linear if growing, else 60/40
-  if(!hasZero){
-    if(v1>v2&&v0>v1){
-      var slope=(v0-v2)/2;
-      return Math.max(v0, Math.round((v0+slope)*10)/10);
+  var months=[v2,v1,v0]; // oldest→newest
+  // Strip leading zeros (new product: no sales at start)
+  var start=0;
+  while(start<months.length&&months[start]===0)start++;
+  var active=months.slice(start);
+  if(active.length===0)return 0;
+  // Trailing zero = real zero demand → plain average of active (includes the zero)
+  if(active[active.length-1]===0){
+    return Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
+  }
+  // All 3 active, no zeros → 60/40 blend or linear if consistently growing
+  if(active.length===3&&active[0]>0&&active[1]>0&&active[2]>0){
+    if(active[1]>active[0]&&active[2]>active[1]){
+      var slope=(active[2]-active[0])/2;
+      return Math.max(active[2],Math.round((active[2]+slope)*10)/10);
     }
-    var trend3=Math.round((v2+v1+v0)/3*10)/10;
+    var trend3=Math.round((active[0]+active[1]+active[2])/3*10)/10;
     if(season>0&&trend3>0)return Math.round((season*0.6+trend3*0.4)*10)/10;
     if(season>0)return season;
     return trend3;
   }
-  // Has zeros: use non-zero months only, apply linear if growing
-  var nonzero=[v2,v1,v0].filter(function(x){return x>0;});
-  if(nonzero.length===0)return 0;
+  // Active has 1 or 2 months (or mid-zeros): get non-zeros for trend check
+  var nonzero=active.filter(function(x){return x>0;});
   if(nonzero.length===1)return nonzero[0];
-  // 2 non-zero months: if growing apply linear projection
-  var first=nonzero[0], last=nonzero[nonzero.length-1];
-  if(last>first){
-    var slope2=last-first; // change per step
-    return Math.max(last, Math.round((last+slope2)*10)/10);
-  }
-  // Not growing: simple average of non-zero months, no season
-  return Math.round(nonzero.reduce(function(a,b){return a+b;},0)/nonzero.length*10)/10;
+  var first=nonzero[0],last=nonzero[nonzero.length-1];
+  // 2 non-zero and growing → linear
+  if(last>first){var sl=last-first;return Math.max(last,Math.round((last+sl)*10)/10);}
+  // Default: average of active (includes any mid-zeros as real demand)
+  return Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
 }
 function calcSeason(vals){
   return Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
