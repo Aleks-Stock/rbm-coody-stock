@@ -602,9 +602,8 @@ function openOrder(type){
 var _transferItems=[];var _transferType=0;
 function openTransfer(type){
   _transferType=type;var isUS=type===1;
-  var targetMos=isUS?2:2.5;var thresh=isUS?45:60;
   document.getElementById("trTitle").textContent=isUS?"Перемещение Китай → США":"Перемещение Китай → Канада";
-  document.getElementById("trSub").textContent="Целевой запас: "+targetMos+" мес. Учтено: склад + в пути.";
+  document.getElementById("trSub").textContent="Учжоу: 4 мес / COODY: 2 мес. Учтено: склад + в пути.";
   var items=[];
   allData.forEach(function(it){
     var stock=isUS?it.stock_us:it.stock_ca;
@@ -612,6 +611,8 @@ function openTransfer(type){
     var vel=isUS?it.sales_us_avg:Math.max(it.sales_ca_avg||0,it.sales_us_avg||0);
     var cn=it.stock_cn||0;
     if(vel===0||cn===0)return;
+    var wu=isWuzhou(it.name);
+    var targetMos=wu?(isUS?4:4.5):(isUS?2:2.5);
     var target=Math.ceil(vel*targetMos);
     var avail=stock+transit;
     if(avail>=target)return;
@@ -1192,7 +1193,7 @@ document.addEventListener('click',function(){if(_popup){_popup.remove();_popup=n
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
   document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
-  document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTr();});
+  document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTransfer();});
 });
 </script>
 </body>
