@@ -88,7 +88,7 @@ def parse_stock_ca(rows):
         result[name] = {"transit": si(row[2]), "stock": si(row[3])}
     return result
 
-WUZHOU_PATTERNS = ["Panda", "UP-5", "UP-2", "Hexagon", "Cuboid", "Caminus", "Kamin", "Rain Fly"]
+WUZHOU_PATTERNS = ["Panda", "UP-5", "UP-2", "Hexagon", "Cuboid", "Caminus", "Kamin", "Rain Fly", "Floor for Hexagon", "Floor for UP"]
 
 def is_wuzhou(name):
     return any(p in name for p in WUZHOU_PATTERNS)
