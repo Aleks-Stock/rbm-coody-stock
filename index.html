@@ -559,10 +559,17 @@ function openOrder(type){
   // Sort by product group order (same as main table)
   items.sort(function(a,b){return a.go!==b.go?a.go-b.go:a.oi-b.oi;});
   
-  var rows=items.map(function(it,i){
+  var rows=[];var lastWu=null;var num=0;
+  items.forEach(function(it,i){
+    if(lastWu===null||it.wu!==lastWu){
+      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 Куди (60 дн)";
+      rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"9\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
+      lastWu=it.wu;
+    }
+    num++;
     var cnCell=it.cn>0?"<span class=\"cn-avail\">&starf; "+it.cn+"</span>":"<span class=\"cn-none\">&#8212;</span>";
-    return "<tr class=\"order-row\" data-idx=\""+i+"\">"+
-      "<td>"+it.name+"</td>"+
+    rows.push("<tr class=\"order-row\" data-idx=\""+i+"\">"+
+      "<td>"+num+") "+it.name+"</td>"+
       "<td style=\"text-align:center\">"+it.stock+"</td>"+
       "<td style=\"text-align:center\">"+it.transit+"</td>"+
       "<td style=\"text-align:center\">"+it.ordered+"</td>"+
@@ -572,7 +579,7 @@ function openOrder(type){
       (it.growing?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">"+(it.growPct>0?"+"+it.growPct+"%":"&#128640;")+"</span>":"")+"</td>"+
       "<td style=\"text-align:center\">"+cnCell+"</td>"+
       "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;\">&#128465;</button></td>"+
-      "</tr>";
+      "</tr>");
   });
   
   document.getElementById("oBody").innerHTML=rows.join("")||"<tr><td colspan=\"8\" style=\"text-align:center;padding:20px;color:var(--tx2)\">Нет товаров требующих заказа</td></tr>";
