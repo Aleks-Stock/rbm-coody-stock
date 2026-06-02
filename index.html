@@ -273,6 +273,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
           <th>&#1042; &#1087;&#1091;&#1090;&#1080;</th>
           <th>&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
           <th>&#1044;&#1085;&#1077;&#1081;</th>
+          <th>&#1053;&#1091;&#1078;&#1085;&#1086;</th>
           <th>&#1054;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1090;&#1100;</th>
           <th>&#1057;&#1082;&#1083;&#1072;&#1076; CN</th>
           <th></th>
@@ -648,6 +649,7 @@ function openTransfer(type){
       "<td style=\"text-align:center\">"+it.transit+"</td>"+
       "<td style=\"text-align:center\">"+it.vel+"</td>"+
       "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\">"+it.days+"d</td>"+
+      "<td style=\"text-align:center;color:var(--or)\">"+it.shortfall+"</td>"+
       "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"tq"+i+"\" value=\""+it.toSend+"\" min=\"0\"></td>"+
       "<td style=\"text-align:center;color:#ffca28\">"+it.cn+"</td>"+
       "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"Удалить\">&#128465;</button></td>"+
