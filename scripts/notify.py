@@ -88,8 +88,8 @@ def parse_stock_ca(rows):
         result[name] = {"transit": si(row[2]), "stock": si(row[3])}
     return result
 
-def compute_order(sales, stock, target_months):
-    """Returns list of {name, qty, vel, days}"""
+def compute_order(sales, stock, target_months, order_list=None):
+    """Returns list of {name, qty, vel, days} sorted by stock sheet order"""
     items = []
     all_names = set(sales.keys()) | set(stock.keys())
     for name in all_names:
@@ -104,7 +104,12 @@ def compute_order(sales, stock, target_months):
         if qty == 0: continue
         days = int(avail / (vel / 30)) if avail > 0 else 0
         items.append({"name": name, "qty": qty, "vel": round(vel, 1), "days": days})
-    items.sort(key=lambda x: x["days"])
+    # Sort by stock sheet order if provided, otherwise by days
+    if order_list:
+        order_idx = {name: i for i, name in enumerate(order_list)}
+        items.sort(key=lambda x: order_idx.get(x["name"], 9999))
+    else:
+        items.sort(key=lambda x: x["days"])
     return items
 
 def send_telegram(message):
@@ -120,8 +125,8 @@ def format_message(market, items, date_str):
     flag = "🇺🇸" if market == "US" else "🇨🇦"
     name_map = {"US": "США", "CA": "Канада"}
     lines = [f"📦 <b>ЗАКАЗ {name_map[market]} — {date_str}</b>", ""]
-    for it in items:
-        lines.append(f"• {it['name']} — <b>{it['qty']} шт</b>")
+    for i, it in enumerate(items, 1):
+        lines.append(f"{i}) {it['name']} — <b>{it['qty']} pcs</b>")
     lines.append("")
     lines.append(f"Всего товаров: {len(items)}")
     lines.append("🔗 rbm-coody-stock.onrender.com")
@@ -145,8 +150,10 @@ def main():
     stock_us = parse_stock_us(rows_stus)
     stock_ca = parse_stock_ca(rows_stca)
 
-    order_us = compute_order(sales_us, stock_us, target_months=2)
-    order_ca = compute_order(sales_ca, stock_ca, target_months=2.5)
+    # Get product order from stock sheet
+    stock_order = [row[1].strip() for row in rows_stus[1:] if len(row)>1 and row[1].strip()]
+    order_us = compute_order(sales_us, stock_us, target_months=2, order_list=stock_order)
+    order_ca = compute_order(sales_ca, stock_ca, target_months=2.5, order_list=stock_order)
 
     print(f"US order: {len(order_us)} items | CA order: {len(order_ca)} items")
 
