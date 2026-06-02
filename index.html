@@ -445,7 +445,7 @@ function renderKPI(){
   else if(crit_us===0) ab.classList.add("hidden");
   document.getElementById("rc").textContent=fData.length+" из "+tot+" товаров";
   var w=fData.filter(function(i){return i.status==="critical"||i.status==="low";}).length;
-  document.getElementById("ac2").textContent=(crit_us+low_us)>0?("&#9888; "+(crit_us+low_us)+" US требуют внимания"):"";
+  document.getElementById("ac2").textContent="";
 }
 function kpi(label,val,sub,cls,oc){
   var cl="kc"+(cls?" "+cls:"")+(oc?" cl":"");
