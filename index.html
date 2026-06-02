@@ -538,7 +538,7 @@ function openOrder(type){
   var isUS=type===1;
   var title=isUS?"Заказ для США":"Заказ для Канады";
   document.getElementById("oTitle").textContent=title;
-  document.getElementById("oSub").textContent="Учжоу (UP/Panda/Hexagon/Cuboid/печи/полы): 4 мес / 120д. COODY: 2 мес / 45д.";
+  document.getElementById("oSub").textContent="Учжоу (UP/Panda/Hexagon/Cuboid/печи/полы): 2 мес / 60д. COODY: 2 мес / 45д.";
   
   var items=[];
   allData.forEach(function(it){
@@ -548,8 +548,8 @@ function openOrder(type){
     var ordered=it.ordered_us||0;
     if(vel===0)return;
     var wu=isWuzhou(it.name);
-    var thresh=wu?120:(isUS?45:60);
-    var targetMos=wu?(isUS?4:4.5):(isUS?2:2.5);
+    var thresh=isUS?45:60;
+    var targetMos=isUS?2:2.5;
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
     if(days>=thresh)return;
@@ -572,7 +572,7 @@ function openOrder(type){
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
     if(lastWu===null||it.wu!==lastWu){
-      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 COODY (60 дн)";
+      var fLabel=it.wu?"🏭 Учжоу (60 дн)":"🏭 COODY (60 дн)";
       rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"9\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
       lastWu=it.wu;
     }
@@ -603,7 +603,7 @@ var _transferItems=[];var _transferType=0;
 function openTransfer(type){
   _transferType=type;var isUS=type===1;
   document.getElementById("trTitle").textContent=isUS?"Перемещение Китай → США":"Перемещение Китай → Канада";
-  document.getElementById("trSub").textContent="Учжоу: 4 мес / COODY: 2 мес. Учтено: склад + в пути.";
+  document.getElementById("trSub").textContent="Учжоу: 2 мес / COODY: 2 мес. Учтено: склад + в пути.";
   var items=[];
   allData.forEach(function(it){
     var stock=isUS?it.stock_us:it.stock_ca;
@@ -612,7 +612,7 @@ function openTransfer(type){
     var cn=it.stock_cn||0;
     if(vel===0||cn===0)return;
     var wu=isWuzhou(it.name);
-    var targetMos=wu?(isUS?4:4.5):(isUS?2:2.5);
+    var targetMos=isUS?2:2.5;
     var target=Math.ceil(vel*targetMos);
     var avail=stock+transit;
     if(avail>=target)return;
@@ -631,7 +631,7 @@ function openTransfer(type){
   var rows=[];var lastWu=null;var num=0;
   items.forEach(function(it,i){
     if(lastWu===null||it.wu!==lastWu){
-      var fLabel=it.wu?"🏭 Учжоу (120 дн)":"🏭 COODY (60 дн)";
+      var fLabel=it.wu?"🏭 Учжоу (60 дн)":"🏭 COODY (60 дн)";
       rows.push("<tr style=\"background:rgba(255,255,255,0.06)\"><td colspan=\"8\" style=\"padding:4px 8px;font-size:11px;font-weight:bold;color:var(--tx2)\">"+fLabel+"</td></tr>");
       lastWu=it.wu;
     }
