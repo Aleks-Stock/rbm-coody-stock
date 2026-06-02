@@ -331,7 +331,6 @@ var SKEYS=["stock_us","in_transit_us","sales_us_trend","yoy_us","days_left_us","
 
 
 function calcABC(allData){
-  // Group products: compute median adjVel per group
   var groups={};
   allData.forEach(function(it){
     var g=it.gn||"";
@@ -352,14 +351,15 @@ function calcABC(allData){
     var med=medians[it.gn||""]||1;
     var growing=(it.trend_us||0)>=2;
     var aboveAvg=vel>=med*1.2;
-    // C: ≤2/мес AND не растёт
+    // C: ≤2/мес AND не растёт (независимо от тренда)
     if(vel<=2&&!growing){it.abc="C";}
-    // A: рост OR выше среднего по группе
-    else if(growing||aboveAvg){it.abc="A";}
+    // A: vel>2 ОБЯЗАТЕЛЬНО + (рост или выше медианы группы)
+    else if(vel>2&&(growing||aboveAvg)){it.abc="A";}
     // B: всё остальное
     else{it.abc="B";}
   });
 }
+
 
 function build(src){
   var oi=0;
