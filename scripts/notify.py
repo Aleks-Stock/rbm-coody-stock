@@ -129,13 +129,13 @@ def compute_order(sales, stock, market, order_list=None):
         abc = classify_abc(vel, vels)
         if abc == "A":
             thresh = 60 if market == "US" else 75
-            target_months = 2.5 if market == "US" else 3.0
+            target_months = 2.0 if market == "US" else 2.5
         elif abc == "C":
             thresh = 30 if market == "US" else 45
-            target_months = 1.5 if market == "US" else 2.0
+            target_months = 1.0 if market == "US" else 1.5
         else:
             thresh = 45 if market == "US" else 60
-            target_months = 2.0 if market == "US" else 2.5
+            target_months = 1.5 if market == "US" else 2.0
         ordered_factory = max(0, s.get("ordered", 0))
         avail = s["stock"] + s["transit"] + ordered_factory
         days = int(avail / (vel / 30)) if avail > 0 else 0
