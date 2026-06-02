@@ -105,31 +105,46 @@ def is_wuzhou(name):
     return any(p in name for p in WUZHOU_PATTERNS)
 
 
+def classify_abc(vel, all_vels):
+    if vel <= 2:
+        return "C"
+    med = sorted(all_vels)[len(all_vels)//2] if all_vels else 1
+    return "A" if vel >= med * 1.2 else "B"
+
 def compute_order(sales, stock, market, order_list=None):
-    """Returns list of {name, qty, vel, days, factory} sorted by stock sheet order.
-    market: 'US' or 'CA'. Per-product lead time: Wuzhou=120d/4mo, Coody=45d(US)/60d(CA)/2mo.
-    """
-    items = []
+    """ABC-based thresholds: A=2.5/3mo, B=2/2.5mo, C=1.5/2mo"""
     all_names = set(sales.keys()) | set(stock.keys())
+    # First pass: velocities for ABC
+    vels = [calc_forecast(*sales.get(n,(0,0,0))) for n in all_names]
+    vels = [v for v in vels if v > 0]
+
+    items = []
     for name in all_names:
-        s = stock.get(name, {"transit": 0, "stock": 0, "cn": 0})
+        s = stock.get(name, {"transit": 0, "stock": 0, "cn": 0, "ordered": 0})
         sp = sales.get(name, (0, 0, 0))
         vel = calc_forecast(*sp)
         if vel == 0: continue
         wu = is_wuzhou(name)
-        thresh = 45 if market == "US" else 60
-        target_months = 2.0 if market == "US" else 2.5
-        ordered_factory = s.get("ordered", 0)
+        abc = classify_abc(vel, vels)
+        if abc == "A":
+            thresh = 60 if market == "US" else 75
+            target_months = 2.5 if market == "US" else 3.0
+        elif abc == "C":
+            thresh = 30 if market == "US" else 45
+            target_months = 1.5 if market == "US" else 2.0
+        else:
+            thresh = 45 if market == "US" else 60
+            target_months = 2.0 if market == "US" else 2.5
+        ordered_factory = max(0, s.get("ordered", 0))
         avail = s["stock"] + s["transit"] + ordered_factory
         days = int(avail / (vel / 30)) if avail > 0 else 0
         if days >= thresh: continue
         target = math.ceil(vel * target_months)
         qty = max(0, target - avail)
         if qty == 0: continue
-        items.append({"name": name, "qty": qty, "vel": round(vel, 1), "days": days, "wu": wu})
-    # Sort by stock sheet order if provided, otherwise by days
+        items.append({"name": name, "qty": qty, "vel": round(vel, 1), "days": days, "wu": wu, "abc": abc})
     if order_list:
-        order_idx = {name: i for i, name in enumerate(order_list)}
+        order_idx = {n: i for i, n in enumerate(order_list)}
         items.sort(key=lambda x: (1 if x["wu"] else 0, order_idx.get(x["name"], 9999)))
     else:
         items.sort(key=lambda x: (1 if x["wu"] else 0, x["days"]))
@@ -156,7 +171,8 @@ def format_message(market, items, date_str):
             lines.append(f"<b>{label}</b>")
             last_wu = wu
         num += 1
-        lines.append(f"{num}) {it['name']} — <b>{it['qty']} pcs</b>")
+        abc_tag = f" [{it['abc']}]" if it.get('abc') else ""
+        lines.append(f"{num}) {it['name']}{abc_tag} — <b>{it['qty']} pcs</b>")
     lines.append("")
     lines.append(f"Всего товаров: {len(items)}")
     lines.append("🔗 rbm-coody-stock.onrender.com")
