@@ -351,14 +351,16 @@ function calcABC(allData){
     var med=medians[it.gn||""]||1;
     var growing=(it.trend_us||0)>=2;
     var aboveAvg=vel>=med*1.2;
-    // C: ≤2/мес AND не растёт (независимо от тренда)
+    var fallingYoY=(it.yoy_us!=null&&it.yoy_us<-20);
+    // C: vel≤2 AND не растёт
     if(vel<=2&&!growing){it.abc="C";}
-    // A: vel>2 ОБЯЗАТЕЛЬНО + (рост или выше медианы группы)
-    else if(vel>2&&(growing||aboveAvg)){it.abc="A";}
+    // A: vel>2 AND (рост или выше медианы) AND не падающий YoY
+    else if(vel>2&&(growing||aboveAvg)&&!fallingYoY){it.abc="A";}
     // B: всё остальное
     else{it.abc="B";}
   });
 }
+
 
 
 function build(src){
@@ -536,7 +538,10 @@ function renderTable(){
     var caS=it.stock_ca>0?"<b>"+it.stock_ca+"</b>":"<span class=\"sz\">0</span>";
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
-    var needUS=0;if(it.sales_us_avg>0){var tUS=Math.ceil(it.sales_us_avg*2);needUS=Math.max(0,tUS-it.stock_us-it.in_transit_us-(it.ordered_us||0));}
+    var needUS=0;if(it.sales_us_avg>0){
+      var tmUS=it.abc==="A"?2.5:it.abc==="C"?1.5:2;
+      var tUS=Math.ceil(it.sales_us_avg*tmUS);
+      needUS=Math.max(0,tUS-it.stock_us-it.in_transit_us-Math.max(0,it.ordered_us||0));}
     var needUSCell=needUS>0?"<b style=\"color:#ef9a9a\">"+needUS+"</b>":"<span class=\"sz\">&#8212;</span>";
     var caAv=it.stock_ca+it.in_transit_ca;
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
@@ -559,7 +564,7 @@ function renderTable(){
       "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"ca-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784;cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
       "<td class=\"ca-col\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
       "<td class=\"ca-col\">"+dCA+"</td>"+
-      "<td class=\"ca-col\">"+(function(){var velCA=Math.max(it.sales_ca_avg||0,it.sales_us_avg||0);if(velCA<=0)return"<span class=\"sz\">&#8212;</span>";var tCA=Math.ceil(velCA*2.5);var nCA=Math.max(0,tCA-(it.stock_ca||0)-(it.in_transit_ca||0)-(it.ordered_ca||0));return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
+      "<td class=\"ca-col\">"+(function(){var velCA=Math.max(it.sales_ca_avg||0,it.sales_us_avg||0);if(velCA<=0)return"<span class=\"sz\">&#8212;</span>";var tmCA=it.abc==="A"?3:it.abc==="C"?2:2.5;var tCA=Math.ceil(velCA*tmCA);var nCA=Math.max(0,tCA-(it.stock_ca||0)-(it.in_transit_ca||0)-Math.max(0,it.ordered_ca||0));return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
       "<td class=\"ca-col ca-last\">"+trendBadge(it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
       "<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
       "<td style=\"white-space:nowrap\">"+ord+"</td>"+
