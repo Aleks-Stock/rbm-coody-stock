@@ -1364,7 +1364,7 @@ function showDetail(evt,el,item,market){
   });
   // Current month
   var curRaw=isCA?0:(item._us_cur||0);
-  if(curRaw>0){
+  if(!isCA){
     var now=new Date();
     var d=now.getDate();
     var curNorm=Math.round(curRaw*(30/d)*10)/10;
