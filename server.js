@@ -150,10 +150,24 @@ function calcForecast(v28, v29, v30, cur = 0, sea = [0,0,0]) {
 }
 
 // ── ABC + Order computation ──────────────────────────────────────────────
+
+// Load SOURCE array from index.html (same hardcoded data as website)
+function loadSource() {
+  try {
+    const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+    const m = html.match(/var SOURCE=(\[[\s\S]*?\]);/);
+    if (!m) return {};
+    const arr = JSON.parse(m[1]);
+    const map = {};
+    arr.forEach(it => { map[it.name] = it; });
+    return map;
+  } catch(e) { console.error('loadSource error:', e.message); return {}; }
+}
+
 const WUZHOU = ['Panda','UP-5','UP-2','Hexagon','Cuboid','Caminus','Kamin','Rain Fly','Floor for Hexagon','Floor for UP'];
 const isWU = n => WUZHOU.some(p => n.includes(p));
 
-function computeOrder(sales, stock, market) {
+function computeOrder(sales, stock, market, SOURCE={}) {
   const names = new Set([...Object.keys(sales), ...Object.keys(stock)]);
   const catVels = {}, nameVel = {};
   names.forEach(n => {
@@ -170,7 +184,9 @@ function computeOrder(sales, stock, market) {
     const gv = catVels[s.category||'']||[];
     const med = gv.length ? [...gv].sort((a,b)=>a-b)[Math.floor(gv.length/2)] : 1;
     const sp2 = sales[n]||[0,0,0,0,[],null];
-    const yoy = sp2[5];
+    const srcItem = SOURCE[n];
+    // Prefer YoY from SOURCE (same as website), fallback to computed
+    const yoy = srcItem?.yoy_us != null ? srcItem.yoy_us : sp2[5];
     const fallingYoY = yoy !== null && yoy < -20;
     const abc = v<=2 ? 'C' : (v>2 && v>=med*1.2 && !fallingYoY) ? 'A' : 'B';
     const isUS = market==='US';
@@ -219,12 +235,13 @@ async function runNotify(token, chat) {
     fetchSheet('us'), fetchSheet('ca'), fetchSheet('stock_us'), fetchSheet('stock_ca')
   ]);
   const stockRows = parseCSV(csvSUS);
+  const SOURCE = loadSource(); // hardcoded data from website
   const now = new Date();
   const date = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
   let sent = 0;
   for (const [mkt, sv, stv] of [['US', parseSales(csvUS), parseStockUS(csvSUS)],
                                   ['CA', parseSales(csvCA), parseStockCA(csvSCA)]]) {
-    const items = sortItems(computeOrder(sv, stv, mkt), stockRows);
+    const items = sortItems(computeOrder(sv, stv, mkt, SOURCE), stockRows);
     console.log(`[notify] ${mkt}: ${items.length} items`);
     if (items.length >= 5) {
       const ok = await tgSend(token, chat, fmtMsg(mkt, items, date));
