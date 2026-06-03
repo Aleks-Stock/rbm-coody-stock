@@ -176,8 +176,10 @@ function computeOrder(sales, stock, market, SOURCE={}) {
   const catVels = {};
   srcItems.forEach(it => {
     const sp = sales[it.name]||[0,0,0,0,[],null];
-    const liveVel = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
-    // Use live vel if available, else SOURCE
+    // Include current month only if >= 2 actual sales (avoid 1-sale noise early in month)
+    const curRaw = sp[6]||0;  // raw current month sales count
+    const curNormFiltered = (curRaw >= 2) ? sp[3] : 0;
+    const liveVel = calcForecast(sp[0],sp[1],sp[2],curNormFiltered,sp[4]||[0,0,0]);
     const vel = liveVel > 0 ? liveVel : (isUS ? (it.sales_us_avg||0) : Math.max(it.sales_ca_avg||0, it.sales_us_avg||0));
     if (vel <= 0) return;
     it._vel = vel;
@@ -252,26 +254,144 @@ function tgSend(token, chat, text) {
 }
 
 async function runNotify(token, chat) {
+  const vm = require('vm');
+
+  // Load website HTML and extract the main script
+  const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+  const mainScript = scripts.map(m => m[1]).join('\n');
+
+  // Fetch all live data
   const [csvUS, csvCA, csvSUS, csvSCA] = await Promise.all([
     fetchSheet('us'), fetchSheet('ca'), fetchSheet('stock_us'), fetchSheet('stock_ca')
   ]);
-  const stockRows = parseCSV(csvSUS);
-  const SOURCE = loadSource(); // hardcoded data from website
-  const now = new Date();
-  const date = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
-  let sent = 0;
-  for (const [mkt, sv, stv] of [['US', parseSales(csvUS), parseStockUS(csvSUS)],
-                                  ['CA', parseSales(csvCA), parseStockCA(csvSCA)]]) {
-    const items = sortItems(computeOrder(sv, stv, mkt, SOURCE), stockRows);
-    console.log(`[notify] ${mkt}: ${items.length} items`);
-    if (items.length >= 5) {
-      const ok = await tgSend(token, chat, fmtMsg(mkt, items, date));
-      console.log(`[notify] TG ${mkt}: ${ok?'OK':'FAILED'}`);
-      if (ok) sent++;
+
+  // Build sandbox with DOM shim
+  const sandbox = {
+    document: {
+      getElementById: () => ({ textContent:'', innerHTML:'', classList:{add:()=>{},remove:()=>{}}, value:'', disabled:false }),
+      querySelector: () => null,
+      querySelectorAll: () => [],
+      addEventListener: () => {},
+      body: { appendChild: () => {}, classList: { add:()=>{}, remove:()=>{} } }
+    },
+    window: {}, console,
+    setTimeout: ()=>{}, clearTimeout: ()=>{}, setInterval: ()=>{},
+    localStorage: { getItem:()=>null, setItem:()=>{} },
+    fetch: ()=>Promise.resolve({}),
+    alert: ()=>{}, Math, Date, JSON, Array, Object, String, Number, parseInt, parseFloat, isNaN,
+    __result: null,
+    __csvUS: csvUS, __csvCA: csvCA, __csvSUS: csvSUS, __csvSCA: csvSCA
+  };
+  sandbox.window = sandbox;
+
+  const injection = `
+    // Override applyFilter and renderTable to prevent DOM errors
+    applyFilter = function(){};
+    renderTable = function(){};
+    renderKPI = function(){};
+    toast = function(){};
+    dbar = function(){ return ''; };
+    showDetail = function(){};
+
+    try {
+      // Parse live data using website's own functions
+      var usMap = parseLastMonths(__csvUS);
+      var caMap = parseLastMonths(__csvCA);
+      var stockUS = parseStockUS(__csvSUS);
+      var stockCA = parseStockCA(__csvSCA);
+
+      // Merge live data into SOURCE (same as doRefresh does)
+      SOURCE.forEach(function(r) {
+        var sus = stockUS[r.name];
+        if (sus) { r.stock_us=sus.stock; r.in_transit_us=sus.in_transit; r.stock_cn=sus.cn_stock; r.ordered_us=sus.ordered||0; }
+        var sca = stockCA[r.name];
+        if (sca) { r.stock_ca=sca.stock; r.in_transit_ca=sca.in_transit; }
+        var us = usMap[r.name];
+        if (us) {
+          var d = new Date().getDate();
+          var curNorm = us[31]>0 ? Math.round(us[31]*(30/d)*10)/10 : 0;
+          r.sales_us_avg = calcAvg3WithCurrent(us, curNorm);
+          r.yoy_us = calcYoY(us);
+          r.trend_us = calcTrendFlag(us, curNorm);
+        }
+        var ca = caMap[r.name];
+        if (ca) {
+          var dca = new Date().getDate();
+          var curNormCA = ca[31]>0 ? Math.round(ca[31]*(30/dca)*10)/10 : 0;
+          r.sales_ca_avg = calcAvg3WithCurrent(ca, curNormCA);
+          r.yoy_ca = calcYoY(ca);
+          r.trend_ca = calcTrendFlag(ca, curNormCA);
+        }
+      });
+
+      // Build allData and classify
+      build();
+      calcABC(allData);
+
+      // Compute orders using openOrder logic
+      function getOrder(type) {
+        var isUS = type === 1;
+        var items = [];
+        allData.forEach(function(it) {
+          var stock = isUS ? it.stock_us : it.stock_ca;
+          var transit = isUS ? it.in_transit_us : it.in_transit_ca;
+          var vel = isUS ? it.sales_us_avg : Math.max(it.sales_ca_avg||0, it.sales_us_avg||0);
+          var ordered = isUS ? (it.ordered_us||0) : (it.ordered_ca||0);
+          if (!vel) return;
+          var abc = it.abc || 'B';
+          var thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
+          var tMos = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
+          var avail = stock + transit;
+          var days = avail > 0 ? Math.floor(avail/vel*30) : 0;
+          if (days >= thresh) return;
+          var qty = Math.max(0, Math.ceil(vel*tMos) - stock - transit - ordered);
+          if (qty <= 0) return;
+          items.push({name:it.name, qty:qty, vel:Math.round(vel*10)/10, days:days, wu:isWuzhou(it.name), abc:abc, go:it.go||0, oi:it.origIdx||0});
+        });
+        items.sort(function(a,b){ return a.wu!==b.wu?a.wu?1:-1:a.go!==b.go?a.go-b.go:a.oi-b.oi; });
+        return items;
+      }
+
+      __result = { us: getOrder(1), ca: getOrder(2) };
+    } catch(e) {
+      __result = { error: e.message };
     }
+  `;
+
+  try {
+    vm.runInNewContext(mainScript + injection, sandbox, { timeout: 30000 });
+  } catch(e) {
+    console.error('[notify] vm:', e.message.slice(0,300));
+    throw e;
+  }
+
+  if (!sandbox.__result || sandbox.__result.error) {
+    throw new Error('Compute error: ' + (sandbox.__result?.error || 'unknown'));
+  }
+
+  const { us: usItems, ca: caItems } = sandbox.__result;
+  const now = new Date();
+  const date = String(now.getDate()).padStart(2,'0')+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+now.getFullYear();
+  let sent = 0;
+
+  for (const [mkt, items] of [['US', usItems], ['CA', caItems]]) {
+    if (!items || items.length < 5) { console.log('[notify] '+mkt+': '+items?.length+' items, skip'); continue; }
+    const lines = ['📦 <b>ЗАКАЗ '+(mkt==='US'?'США':'Канада')+' — '+date+'</b>', ''];
+    let lastWu=null, n=0;
+    items.forEach(it => {
+      if (lastWu !== it.wu) { lines.push('<b>🏭 '+(it.wu?'Учжоу':'COODY')+' (60 дн):</b>'); lastWu=it.wu; }
+      lines.push(++n+') '+it.name+' ['+it.abc+'] — <b>'+it.qty+' pcs</b>');
+    });
+    lines.push('', 'Всего товаров: '+n, '🔗 rbm-coody-stock.onrender.com');
+    console.log('[notify] '+mkt+': '+n+' items');
+    const ok = await tgSend(token, chat, lines.join('\n'));
+    if (ok) sent++;
   }
   return sent;
 }
+
+
 
 // ── HTTP Server ──────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
