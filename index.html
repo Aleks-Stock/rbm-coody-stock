@@ -1294,6 +1294,8 @@ function showDetail(evt,el,item,market){
 document.addEventListener('click',function(){if(_popup){_popup.remove();_popup=null;}});
 
 document.addEventListener("DOMContentLoaded",function(){
+  // Auto-refresh data on load
+  setTimeout(function(){doRefresh();},800);
   document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
   document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
   document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTransfer();});
