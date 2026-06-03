@@ -311,7 +311,6 @@ async function runNotify(token, chat) {
           r.yoy_us=calcYoY(us); r.trend_us=calcTrendFlag(us,c);
           r._v3=[us[30]||0,us[29]||0,us[28]||0]; r._sea=[us[19]||0,us[20]||0,us[21]||0];
           r._months=us._months||[]; r._seaMonths=us._seaMonths||[];
-          r.growth_pct_us=calcGrowthPct(us);
         }
         var ca = caMap[r.name];
         if (ca) {
@@ -319,7 +318,6 @@ async function runNotify(token, chat) {
           var cc=ca[31]>0?Math.round(ca[31]*(30/dc)*10)/10:0;
           r.sales_ca_avg=calcAvg3WithCurrent(ca,cc);
           r.yoy_ca=calcYoY(ca); r.trend_ca=calcTrendFlag(ca,cc);
-          r.growth_pct_ca=calcGrowthPct(ca);
         }
       });
 
