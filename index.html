@@ -192,7 +192,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 
 @media(min-width:769px){
   td{padding:4px 4px;font-size:12px}
-  .pn{min-width:120px;white-space:nowrap}
+  td.pn{min-width:120px;white-space:nowrap}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -505,26 +505,22 @@ function renderKPI(){
   }
   document.getElementById("kr").innerHTML=
     "<div class=\"kr-row\">"+
+      kpi("&#1042;&#1089;&#1077;&#1075;&#1086; SKU",tot,"&#1055;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100; &#1074;&#1089;&#1077;","","resetAll()")+
       "<div class=\"kr-label us\">&#1057;&#1064;&#1040;</div>"+
       kpi("&#1050;&#1088;&#1080;&#1090;.",crit_us,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCritical()")+
       kpi("&#1052;&#1072;&#1083;&#1086;",low_us,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLow()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tus,"&#1077;&#1076;.","","")+
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_us,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
-    "</div>"+
-    "<div class=\"kr-row\">"+
       "<div class=\"kr-label ca\">CA</div>"+
       kpi("&#1050;&#1088;&#1080;&#1090;.",crit_ca,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCriticalCA()")+
       kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLowCA()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1077;&#1076;.","","")+
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
-    "</div>"+
-    "<div class=\"kr-row5\">"+
-      kpi("&#1042;&#1089;&#1077;&#1075;&#1086; SKU",tot,"&#1055;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100; &#1074;&#1089;&#1077;","","resetAll()")+
-      kpi("&#1047;&#1072;&#1082;&#1072;&#1079;&#1072;&#1085;&#1086; &#1085;&#1072; &#1079;&#1072;&#1074;&#1086;&#1076;&#1077;",ord_us,"&#1077;&#1076;&#1080;&#1085;&#1080;&#1094;","g","")+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonLY,tentLY,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1075;&#1086;&#1076;",null)+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"&#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;.",tentFc)+
     "</div>";
+
   document.getElementById("rc").textContent=fData.length+" из "+tot+" товаров";
   var w=fData.filter(function(i){return i.status==="critical"||i.status==="low";}).length;
   document.getElementById("ac2").textContent="";
@@ -592,7 +588,7 @@ function renderTable(){
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
       "<tr>"+
-      "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27;min-width:120px;white-space:nowrap\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
+      "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\" style=\"min-width:75px\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
