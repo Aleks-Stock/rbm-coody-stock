@@ -54,7 +54,7 @@ input[type=file]{display:none}
 .obtn{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s}
 .obtn:hover{background:var(--al)}
 .obtn.ca{background:#388e3c}.obtn.ca:hover{background:#4caf50}
-.tw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:auto;position:relative}
+.tw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow-x:auto;overflow-y:auto;position:relative}
 table{width:100%;border-collapse:collapse;table-layout:auto;min-width:1200px}
 thead tr.gh th{padding:6px 10px;font-size:10px;font-weight:700;text-align:center;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--bd)}
 th.us-gh{background:var(--us-hd);color:var(--bl);border-left:2px solid var(--us-bd);border-right:2px solid var(--us-bd)}
@@ -311,7 +311,8 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   .hdr-search .sw{flex:1}
   .hdr-search #stf{flex:1;max-width:110px;font-size:11px}
   .hdr-search .sb{padding:5px 8px;font-size:11px;white-space:nowrap}
-}
+
+  .tw{margin-top:6px!important}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -710,7 +711,7 @@ function renderTable(){
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
       "<tr>"+
-      "<td class=\"pn\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
+      "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\" style=\"min-width:75px\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
