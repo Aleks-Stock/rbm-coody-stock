@@ -172,8 +172,6 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .kl{color:var(--tx2);font-size:9px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
 .kv{font-size:17px;font-weight:700;line-height:1}.ks{color:var(--tx2);font-size:9px;margin-top:1px}
 
-@media(max-width:768px){
-  .kr-row,.kr-row5{flex-wrap:wrap}
   .kc{min-width:calc(50% - 4px);flex:none}
   .kr-label{min-width:36px;font-size:10px}
   .kv{font-size:15px}
@@ -182,16 +180,11 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   .tw{font-size:11px}
   table{min-width:600px}
 }
-@media(max-width:480px){
-  .kc{min-width:calc(50% - 2px)}
   .kv{font-size:14px}
   header{padding:6px 10px}
   .logo{font-size:14px}
 }
 
-@media(max-width:768px){
-  /* Hide KPI metrics on mobile */
-  #kr{display:none!important}
   /* Compact header */
   header{flex-wrap:wrap;gap:4px;padding:6px 8px}
   .logo{font-size:13px}
@@ -214,15 +207,11 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   /* Товар column narrower */
   .pn{max-width:80px;word-break:break-word}
 }
-@media(max-width:480px){
-  .obtn{padding:4px 6px;font-size:10px}
   header{padding:4px 6px}
   .logo{font-size:12px}
   #stf{max-width:80px}
 }
 
-@media(max-width:768px){
-  .hr{gap:4px;flex-wrap:wrap}
   /* Обновить goes to far right in its row */
   .sb{margin-left:auto;order:99}
   /* Search row gets its own space */
@@ -234,13 +223,6 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   .tw{margin-top:0}
 }
 
-@media(max-width:768px){
-  header{
-    display:flex;
-    flex-direction:column;
-    gap:5px;
-    padding:5px 8px!important;
-  }
   /* Row 1: logo left, Обновить right, small */
   .logo{order:1;font-size:13px}
   .hr{
@@ -261,6 +243,27 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   /* Search row */
   .sw{flex:1}
   #stf{flex:1;max-width:130px}
+}
+
+/* Sticky first column */
+td.pn, th[rowspan="2"]:first-child {
+  position:sticky;left:0;z-index:4;background:var(--sf);
+}
+thead tr.gh th:first-child, thead tr.ch th:first-child {
+  position:sticky;left:0;z-index:12;background:var(--sf2);
+}
+.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
+
+/* Mobile layout */
+@media(max-width:768px){
+  #kr{display:none!important}
+  header{padding:5px 8px;gap:4px}
+  .hr{gap:4px;flex-wrap:wrap;align-items:center}
+  .hr .ls{display:none}
+  /* Обновить: small, stays in flow at end */
+  .sb{padding:4px 8px;font-size:11px}
+  /* Hide svg text on mobile */
+  .sb svg{width:14px;height:14px;vertical-align:middle}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
