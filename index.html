@@ -254,17 +254,29 @@ td.pn{position:sticky;left:0;z-index:4;background:var(--sf)}
 thead th[rowspan="2"]:first-child{position:sticky;left:0;z-index:12;background:var(--sf2)}
 tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
 
+
+  #stf{font-size:11px}
+}
+
 @media(max-width:768px){
   #kr{display:none!important}
-  /* Simple flex wrap for header */
-  header{flex-wrap:wrap;padding:6px 8px;gap:4px}
-  .logo{flex:0 0 auto;font-size:13px;order:1}
-  .hr{order:2;width:100%;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:4px}
+  /* Row 1: Logo + Обновить */
+  .logo{display:flex;align-items:center;justify-content:space-between}
+  .logo::after{content:""}
+  .hr{display:contents}
+  /* Show Обновить after logo - put it inside logo row via flex trick */
+  header>.logo{flex:none}
+  header>.hr{display:flex;flex-direction:column;gap:4px}
   .hr .ls{display:none}
-  .sb{padding:4px 8px;font-size:11px;order:99;margin-left:auto}
+  /* Action buttons row */
+  .hr>div:nth-child(2){order:1;display:flex;flex-wrap:wrap;gap:4px}
+  /* Search+filter row */
+  .hr>div:nth-child(3){order:2;display:flex;gap:4px}
+  .sb{order:0;align-self:flex-start;padding:5px 10px;font-size:12px}
   .obtn{padding:5px 8px;font-size:11px}
-  .sw{flex:1;min-width:100px}
-  #stf{font-size:11px}
+  .sw{flex:1}
+  #stf{flex:1}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -312,7 +324,7 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
     <table>
       <thead>
         <tr class="gh">
-          <th rowspan="2" style="background:var(--sf2);padding:8px 10px;text-align:left;font-size:11px;color:var(--tx2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd)">&#1058;&#1054;&#1042;&#1040;&#1056;</th>
+          <th rowspan="2" style="position:sticky;left:0;z-index:12;background:var(--sf2);padding:8px 10px;text-align:left;font-size:11px;color:var(--tx2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);min-width:90px">&#1058;&#1054;&#1042;&#1040;&#1056;</th>
           <th colspan="9" class="us-gh">&#1057;&#1064;&#1040; (US)</th>
           <th colspan="8" class="ca-gh">&#1050;&#1040;&#1053;&#1040;&#1044;&#1040; (CA)</th>
           <th colspan="2" class="cn-gh">&#1050;&#1048;&#1058;&#1040;&#1049;</th>
