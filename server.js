@@ -4,14 +4,14 @@ const fs = require('fs');
 const path = require('path');
 
 const SHEET_ID = '1RDBz-AZaEX9bqDIqEv1tKlZaOuIN9uTjo5e8abrvnyY';
-const PUB_ID = '2PACX-1vSnpzAYqp0gDavs1Vr9NLT6eUgeJhVCd2A9a6ygB0qr6ztmPL_Vz0XwKnb0RvxBNRtjxlGlKHetFLr_';
+const PUB_ID  = '2PACX-1vSnpzAYqp0gDavs1Vr9NLT6eUgeJhVCd2A9a6ygB0qr6ztmPL_Vz0XwKnb0RvxBNRtjxlGlKHetFLr_';
 const BASE_GVIZ = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 const BASE_PUB  = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?single=true&output=csv`;
 
 const SHEET_URLS = {
   us:       [`${BASE_PUB}&gid=0`,           `${BASE_GVIZ}&sheet=Sales+2024-2026+USA`],
-  ca:       [`${BASE_PUB}&gid=1819427614`,  `${BASE_GVIZ}&sheet=Sales+2024-3026+Canada`, `${BASE_GVIZ}&gid=1819427614`],
-  cn:       [`${BASE_PUB}&gid=1442270003`,  `${BASE_GVIZ}&sheet=Sales+2024-3026+China`,  `${BASE_GVIZ}&gid=1442270003`],
+  ca:       [`${BASE_PUB}&gid=1819427614`,  `${BASE_GVIZ}&gid=1819427614`],
+  cn:       [`${BASE_PUB}&gid=1442270003`,  `${BASE_GVIZ}&gid=1442270003`],
   stock_us: [`${BASE_GVIZ}&sheet=Stock_USA-China_ORDER`],
   stock_ca: [`${BASE_GVIZ}&sheet=Stock-Canada`],
   ontheway: [`${BASE_GVIZ}&sheet=Ontheway_USA`]
@@ -19,42 +19,202 @@ const SHEET_URLS = {
 
 const PORT = process.env.PORT || 3000;
 
-function fetchUrl(targetUrl) {
+// ── HTTP fetch helper ────────────────────────────────────────────────────
+function fetchUrl(url) {
   return new Promise((resolve, reject) => {
-    const options = { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'text/csv,*/*' } };
-    https.get(targetUrl, options, (res) => {
+    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        fetchUrl(res.headers.location).then(resolve).catch(reject);
-        return;
+        return fetchUrl(res.headers.location).then(resolve).catch(reject);
       }
       let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        if (!data || data.trim().length < 10) reject(new Error('Empty'));
-        else resolve(data);
-      });
+      res.on('data', c => data += c);
+      res.on('end', () => data.trim().length > 10 ? resolve(data) : reject(new Error('Empty')));
     }).on('error', reject);
   });
 }
 
 async function fetchSheet(sheet) {
-  const urls = SHEET_URLS[sheet];
-  for (let i = 0; i < urls.length; i++) {
-    try {
-      const data = await fetchUrl(urls[i]);
-      console.log(`[${sheet}] OK via URL ${i+1}`);
-      return data;
-    } catch(e) {
-      console.log(`[${sheet}] URL ${i+1} failed: ${e.message}`);
-    }
+  for (let i = 0; i < SHEET_URLS[sheet].length; i++) {
+    try { const d = await fetchUrl(SHEET_URLS[sheet][i]); console.log(`[${sheet}] OK`); return d; }
+    catch(e) { console.log(`[${sheet}] URL${i+1} failed: ${e.message}`); }
   }
   throw new Error(`All URLs failed for ${sheet}`);
 }
 
+// ── CSV parser ───────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '"') inQ = !inQ;
+    else if (c === ',' && !inQ) { row.push(cell.trim()); cell = ''; }
+    else if ((c === '\n' || c === '\r') && !inQ) {
+      row.push(cell.trim()); if (row.some(x => x)) rows.push(row);
+      row = []; cell = '';
+      if (c === '\r' && text[i+1] === '\n') i++;
+    } else cell += c;
+  }
+  row.push(cell.trim()); if (row.some(x => x)) rows.push(row);
+  return rows;
+}
+
+function si(v) { const n = parseInt(String(v||'').replace(/[^0-9]/g,'')); return isNaN(n) ? 0 : n; }
+
+// ── Sales sheet parser ───────────────────────────────────────────────────
+function parseSales(text) {
+  const rows = parseCSV(text);
+  const RU = ['янв','февр','мар','апр','мая','июн','июл','авг','сент','окт','нояб','дек'];
+  let header, headerIdx;
+  for (let i = 0; i < Math.min(4, rows.length); i++) {
+    if (rows[i].some(h => h && /\d{4}/.test(h))) { header = rows[i]; headerIdx = i; break; }
+  }
+  if (!header) return {};
+  const colMap = {};
+  header.forEach((h, i) => {
+    if (!h) return;
+    const m = h.match(/(\d{4})[^а-яёa-z]*([а-яё]+)/i);
+    if (!m) return;
+    const mo = RU.findIndex(x => m[2].toLowerCase().startsWith(x));
+    if (mo >= 0) colMap[parseInt(m[1]) * 100 + mo + 1] = i;
+  });
+  const now = new Date();
+  const curKey = now.getFullYear() * 100 + now.getMonth() + 1;
+  const complete = Object.keys(colMap).map(Number).filter(k => k < curKey).sort((a,b) => b-a).slice(0, 3);
+  if (complete.length < 3) return {};
+  const [c30, c29, c28] = complete.map(k => colMap[k]);
+  const cCur = colMap[curKey] ?? -1;
+  const days = now.getDate();
+  const result = {};
+  rows.slice(headerIdx + 1).forEach(row => {
+    const name = row[1]?.trim(); if (!name) return;
+    const v28 = si(row[c28]), v29 = si(row[c29]), v30 = si(row[c30]);
+    const cur = cCur >= 0 ? Math.round(si(row[cCur]) * (30 / days) * 10) / 10 : 0;
+    result[name] = [v28, v29, v30, cur];
+  });
+  return result;
+}
+
+// ── Stock sheet parsers ──────────────────────────────────────────────────
+function parseStockUS(text) {
+  const rows = parseCSV(text); const result = {}; let cat = '';
+  rows.slice(1).forEach(row => {
+    if (row[0]?.trim() && !row[1]?.trim()) { cat = row[0].trim(); return; }
+    const name = row[1]?.trim(); if (!name) return;
+    result[name] = { transit: si(row[2]), stock: si(row[3]), cn: si(row[4]),
+                     ordered: Math.max(0, si(row[5]||0)), category: cat };
+  });
+  return result;
+}
+function parseStockCA(text) {
+  const rows = parseCSV(text); const result = {};
+  rows.slice(1).forEach(row => { const n = row[1]?.trim(); if (n) result[n] = { transit: si(row[2]), stock: si(row[3]) }; });
+  return result;
+}
+
+// ── Forecast ─────────────────────────────────────────────────────────────
+function calcForecast(v28, v29, v30, cur = 0) {
+  if (cur > 0 && cur > v30) return Math.round(([v29,v30,cur].reduce((a,b)=>a+b,0)/3)*10)/10 || v30;
+  const m = [v28, v29, v30];
+  let s = 0; while (s < m.length && m[s] === 0) s++;
+  const a = m.slice(s);
+  if (!a.length) return 0;
+  if (a[a.length-1] === 0) return Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
+  if (a.length === 1) return a[0];
+  if (a.length === 2) return a[1];
+  if (a[0]>0 && a[1]>a[0] && a[2]>a[1]) return Math.max(a[2], Math.round((a[2]+(a[2]-a[0])/2)*10)/10);
+  return Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
+}
+
+// ── ABC + Order computation ──────────────────────────────────────────────
+const WUZHOU = ['Panda','UP-5','UP-2','Hexagon','Cuboid','Caminus','Kamin','Rain Fly','Floor for Hexagon','Floor for UP'];
+const isWU = n => WUZHOU.some(p => n.includes(p));
+
+function computeOrder(sales, stock, market) {
+  const names = new Set([...Object.keys(sales), ...Object.keys(stock)]);
+  const catVels = {}, nameVel = {};
+  names.forEach(n => {
+    const v = calcForecast(...(sales[n]||[0,0,0,0]));
+    if (v <= 0) return;
+    nameVel[n] = v;
+    const cat = stock[n]?.category || '';
+    (catVels[cat] = catVels[cat]||[]).push(v);
+  });
+  const items = [];
+  names.forEach(n => {
+    const v = nameVel[n]; if (!v) return;
+    const s = stock[n]||{transit:0,stock:0,cn:0,ordered:0,category:''};
+    const gv = catVels[s.category||'']||[];
+    const med = gv.length ? [...gv].sort((a,b)=>a-b)[Math.floor(gv.length/2)] : 1;
+    const abc = v<=2 ? 'C' : (v>2 && v>=med*1.2) ? 'A' : 'B';
+    const isUS = market==='US';
+    const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
+    const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
+    const avail  = s.stock + s.transit + Math.max(0, s.ordered||0);
+    const days   = avail>0 ? Math.floor(avail/(v/30)) : 0;
+    if (days >= thresh) return;
+    const qty = Math.max(0, Math.ceil(v*tMos) - avail);
+    if (qty <= 0) return;
+    items.push({ name: n, qty, vel: Math.round(v*10)/10, days, wu: isWU(n), abc });
+  });
+  return items;
+}
+
+function sortItems(items, stockRows) {
+  const ord = {}; stockRows.slice(1).forEach((r,i) => { if (r[1]?.trim()) ord[r[1].trim()] = i; });
+  return items.sort((a,b) => (a.wu?1:0)-(b.wu?1:0) || (ord[a.name]??999)-(ord[b.name]??999));
+}
+
+function fmtMsg(market, items, date) {
+  const lines = [`📦 <b>ЗАКАЗ ${market==='US'?'США':'Канада'} — ${date}</b>`, ''];
+  let lastWu = null, n = 0;
+  items.forEach(it => {
+    if (lastWu !== it.wu) { lines.push(`<b>🏭 ${it.wu?'Учжоу':'COODY'} (60 дн):</b>`); lastWu = it.wu; }
+    lines.push(`${++n}) ${it.name} [${it.abc}] — <b>${it.qty} pcs</b>`);
+  });
+  lines.push('', `Всего товаров: ${n}`, '🔗 rbm-coody-stock.onrender.com');
+  return lines.join('\n');
+}
+
+function tgSend(token, chat, text) {
+  return new Promise(resolve => {
+    const body = JSON.stringify({ chat_id: chat, text, parse_mode: 'HTML' });
+    const req = https.request({ hostname:'api.telegram.org', path:`/bot${token}/sendMessage`,
+      method:'POST', headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)}
+    }, res => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>resolve(res.statusCode===200)); });
+    req.on('error', ()=>resolve(false)); req.write(body); req.end();
+  });
+}
+
+async function runNotify(token, chat) {
+  const [csvUS, csvCA, csvSUS, csvSCA] = await Promise.all([
+    fetchSheet('us'), fetchSheet('ca'), fetchSheet('stock_us'), fetchSheet('stock_ca')
+  ]);
+  const stockRows = parseCSV(csvSUS);
+  const now = new Date();
+  const date = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+  let sent = 0;
+  for (const [mkt, sv, stv] of [['US', parseSales(csvUS), parseStockUS(csvSUS)],
+                                  ['CA', parseSales(csvCA), parseStockCA(csvSCA)]]) {
+    const items = sortItems(computeOrder(sv, stv, mkt), stockRows);
+    console.log(`[notify] ${mkt}: ${items.length} items`);
+    if (items.length >= 5) {
+      const ok = await tgSend(token, chat, fmtMsg(mkt, items, date));
+      console.log(`[notify] TG ${mkt}: ${ok?'OK':'FAILED'}`);
+      if (ok) sent++;
+    }
+  }
+  return sent;
+}
+
+// ── HTTP Server ──────────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const pathname = req.url.split('?')[0];
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
+  // ── /api/sheets/:sheet ─────────────────────────────────────────────
   if (pathname.startsWith('/api/sheets/')) {
     const sheet = pathname.replace('/api/sheets/', '');
     if (!SHEET_URLS[sheet]) { res.writeHead(404); res.end('Not found'); return; }
@@ -62,21 +222,52 @@ const server = http.createServer(async (req, res) => {
       const csv = await fetchSheet(sheet);
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Cache-Control', 'max-age=300');
-      res.writeHead(200);
-      res.end(csv);
-    } catch(e) {
-      console.error(`[${sheet}] All failed:`, e.message);
-      res.writeHead(500);
-      res.end('Error: ' + e.message);
-    }
+      res.writeHead(200); res.end(csv);
+    } catch(e) { res.writeHead(500); res.end(e.message); }
     return;
   }
 
+  // ── POST /api/send-telegram ────────────────────────────────────────
+  if (pathname === '/api/send-telegram' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { token, chat_id, text } = JSON.parse(body);
+        const ok = await tgSend(token||process.env.TELEGRAM_TOKEN, chat_id||process.env.TELEGRAM_CHAT_ID, text);
+        res.writeHead(ok?200:500); res.end(ok?'OK':'Failed');
+      } catch(e) { res.writeHead(400); res.end(e.message); }
+    });
+    return;
+  }
+
+  // ── /api/notify (GET or POST) ──────────────────────────────────────
+  if (pathname === '/api/notify') {
+    const getBody = () => new Promise(resolve => {
+      if (req.method === 'GET') return resolve({});
+      let b = ''; req.on('data', c => b += c); req.on('end', () => { try { resolve(JSON.parse(b||'{}')); } catch { resolve({}); } });
+    });
+    const body = await getBody();
+    const token  = body.token   || process.env.TELEGRAM_TOKEN   || '';
+    const chat   = body.chat_id || process.env.TELEGRAM_CHAT_ID || '';
+    if (!token || !chat) {
+      res.writeHead(400);
+      res.end(JSON.stringify({ ok:false, error: "Set TELEGRAM_TOKEN and TELEGRAM_CHAT_ID on Render.com → Environment" }));
+      return;
+    }
+    try {
+      const sent = await runNotify(token, chat);
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200); res.end(JSON.stringify({ ok: true, sent, message: sent>0?"Sent to Telegram":"No items needed (threshold not reached)" }));
+    } catch(e) { console.error('[notify]', e); res.writeHead(500); res.end(JSON.stringify({ ok:false, error:e.message })); }
+    return;
+  }
+
+  // ── index.html ─────────────────────────────────────────────────────
   fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
     if (err) { res.writeHead(404); res.end('Not found'); return; }
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.writeHead(200);
-    res.end(data);
+    res.writeHead(200); res.end(data);
   });
 });
 
