@@ -767,13 +767,13 @@ function restoreTransfer(){
   });
 }
 function exportTransfer(){
-  var rows=[["&#1058;&#1086;&#1074;&#1072;&#1088;","&#1057;&#1082;&#1083;&#1072;&#1076;","&#1042; &#1087;&#1091;&#1090;&#1080;","&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;/&#1084;&#1077;&#1089;","&#1044;&#1085;&#1077;&#1081;","&#1054;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1090;&#1100;","&#1057;&#1082;&#1083;&#1072;&#1076; CN"]];
+  var rows=[["Товар","Склад","В пути","Прогноз/мес","Дней","Отправить","Склад CN"]];
   _transferItems.forEach(function(it,i){
     var inputEl=document.getElementById("tq"+i);
-    if(!inputEl||inputEl.disabled)return;
-    var qty=parseInt(inputEl.value)||0;
-    if(qty>0)rows.push([it.name,it.stock,it.transit,it.vel,it.days,qty,it.cn]);
+    var qty=inputEl?Math.max(0,parseInt(inputEl.value)||0):it.toSend;
+    rows.push([it.name,it.stock,it.transit,it.vel,it.days,qty,it.cn]);
   });
+  if(rows.length<=1){toast("Нет данных для экспорта","");return;}
   var ws=XLSX.utils.aoa_to_sheet(rows);
   ws["!cols"]=[{wch:35},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10},{wch:10}];
   var wb=XLSX.utils.book_new();
