@@ -773,7 +773,10 @@ function exportTransfer(){
     var qty=inputEl?Math.max(0,parseInt(inputEl.value)||0):it.toSend;
     rows.push([it.name,it.stock,it.transit,it.vel,it.days,qty,it.cn]);
   });
-  if(rows.length<=1){toast("Нет данных для экспорта","");return;}
+  if(rows.length<=1){
+    if(typeof _transferItems==="undefined"||!_transferItems.length){
+      toast("Сначала откройте перемещение","");return;}
+    toast("Нет данных для экспорта","");return;}
   var ws=XLSX.utils.aoa_to_sheet(rows);
   ws["!cols"]=[{wch:35},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10},{wch:10}];
   var wb=XLSX.utils.book_new();
