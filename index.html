@@ -220,6 +220,19 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   .logo{font-size:12px}
   #stf{max-width:80px}
 }
+
+@media(max-width:768px){
+  .hr{gap:4px;flex-wrap:wrap}
+  /* Обновить goes to far right in its row */
+  .sb{margin-left:auto;order:99}
+  /* Search row gets its own space */
+  .sw input{width:120px;min-width:80px}
+  /* Sticky header offset for mobile */
+  thead tr.gh th{top:0}
+  thead tr.ch th{top:26px}
+  /* Table doesn't overlap header */
+  .tw{margin-top:0}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -1446,10 +1459,13 @@ document.addEventListener("DOMContentLoaded",function(){
 function resizeTw(){
   var tw=document.querySelector('.tw');
   if(!tw)return;
-  var top=tw.getBoundingClientRect().top;
-  tw.style.maxHeight=(window.innerHeight-top-8)+'px';
+  var top=tw.getBoundingClientRect().top+window.scrollY;
+  var headerH=document.querySelector('header')?.offsetHeight||0;
+  var krH=document.getElementById('kr')?.offsetHeight||0;
+  tw.style.maxHeight=(window.innerHeight-top+window.scrollY-8)+'px';
 }
 window.addEventListener('resize',resizeTw);
+window.addEventListener('scroll',resizeTw);
 document.addEventListener('DOMContentLoaded',function(){
   resizeTw();
   // Re-run after KPI cards load
