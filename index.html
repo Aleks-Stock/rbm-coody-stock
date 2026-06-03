@@ -23,17 +23,17 @@ header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 20px;hei
 .sb{background:var(--ac);color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px}
 .sb:hover{background:var(--al)}.sb svg{width:14px;height:14px}
 .main{padding:14px 20px}
-.kr{display:grid;gap:8px;margin-bottom:14px}
-.kr-row{display:grid;grid-template-columns:60px repeat(4,1fr);gap:8px;align-items:stretch}
+
+
 .kr-row5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:stretch}
 .kr-label{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:6px 10px;border-radius:8px;white-space:nowrap;writing-mode:horizontal-tb}
 .kr-label.us{background:var(--us-hd);color:var(--bl);border:1px solid var(--us-bd)}
 .kr-label.ca{background:var(--ca-hd);color:#81c784;border:1px solid var(--ca-bd)}
 .kr-label.gen{background:var(--sf2);color:var(--tx2);border:1px solid var(--bd)}
-.kc{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 14px}
+
 .kc.cl{cursor:pointer}.kc.cl:hover{border-color:var(--ac)}
-.kl{color:var(--tx2);font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.kv{font-size:22px;font-weight:700;line-height:1}.ks{color:var(--tx2);font-size:10px;margin-top:3px}
+
+
 .kc.r .kv{color:var(--rd)}.kc.o .kv{color:var(--or)}.kc.g .kv{color:var(--gn)}.kc.b .kv{color:var(--bl)}
 .ab{background:rgba(239,83,80,.1);border:1px solid rgba(239,83,80,.3);border-radius:8px;padding:9px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer}
 .ab.hidden{display:none}
@@ -162,6 +162,31 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .tw::-webkit-scrollbar-thumb{background:var(--ac);border-radius:4px}
 .tw::-webkit-scrollbar-thumb:hover{background:var(--al)}
 .tw{scrollbar-width:thin;scrollbar-color:var(--ac) var(--sf2)}
+.kr{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
+.kr-row{display:flex;gap:4px;align-items:stretch}
+.kr-row5{display:flex;gap:4px;align-items:stretch}
+.kr-label{display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:11px;font-weight:700;min-width:40px;padding:0 6px}
+.kc{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;flex:1}
+.kc.cl{cursor:pointer}.kc.cl:hover{border-color:var(--ac)}
+.kl{color:var(--tx2);font-size:9px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+.kv{font-size:17px;font-weight:700;line-height:1}.ks{color:var(--tx2);font-size:9px;margin-top:1px}
+
+@media(max-width:768px){
+  .kr-row,.kr-row5{flex-wrap:wrap}
+  .kc{min-width:calc(50% - 4px);flex:none}
+  .kr-label{min-width:36px;font-size:10px}
+  .kv{font-size:15px}
+  header .hr{flex-wrap:wrap;gap:6px}
+  .ug{flex-wrap:wrap}
+  .tw{font-size:11px}
+  table{min-width:600px}
+}
+@media(max-width:480px){
+  .kc{min-width:calc(50% - 2px)}
+  .kv{font-size:14px}
+  header{padding:6px 10px}
+  .logo{font-size:14px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
