@@ -1,24 +1,14 @@
-name: Weekly Order Alert
+name: Daily Order Alert
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Пн 9:00 Moscow (UTC+3)
+    - cron: '0 6 * * *'  # 9:00 Moscow (UTC+3)
   workflow_dispatch:      # Manual trigger for testing
 
 jobs:
-  check-orders:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install requests
-      - name: Run order check
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          ORDER_THRESHOLD: '5'
-        run: python scripts/notify.py
+      - name: Trigger order notification
+        run: |
+          curl -f "https://rbm-coody-stock.onrender.com/api/notify?token=${{ secrets.TELEGRAM_TOKEN }}&chat_id=${{ secrets.TELEGRAM_CHAT_ID }}"
