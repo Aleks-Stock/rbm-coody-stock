@@ -326,7 +326,9 @@ async function runNotify(token, chat) {
       });
 
       // Build allData and classify
-      build();
+      if(typeof uSet==="undefined") uSet={};
+      if(typeof ovr==="undefined") ovr={};
+      build(SOURCE);
       calcABC(allData);
 
       // Compute orders using openOrder logic
