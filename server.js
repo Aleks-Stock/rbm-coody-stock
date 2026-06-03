@@ -168,44 +168,58 @@ const WUZHOU = ['Panda','UP-5','UP-2','Hexagon','Cuboid','Caminus','Kamin','Rain
 const isWU = n => WUZHOU.some(p => n.includes(p));
 
 function computeOrder(sales, stock, market, SOURCE={}) {
-  const names = new Set([...Object.keys(sales), ...Object.keys(stock)]);
-  const catVels = {}, nameVel = {};
-  names.forEach(n => {
-    const sp = sales[n]||[0,0,0,0,[],null]; const v = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
-    if (v <= 0) return;
-    nameVel[n] = v;
-    const cat = stock[n]?.category || '';
-    (catVels[cat] = catVels[cat]||[]).push(v);
+  const isUS = market === 'US';
+  const srcItems = Object.values(SOURCE);
+
+  // Build per-category velocity groups using SOURCE sales_avg as base vel
+  const catVels = {};
+  srcItems.forEach(it => {
+    const sp = sales[it.name]||[0,0,0,0,[],null];
+    const liveVel = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
+    // Use live forecast if available, else fall back to SOURCE avg
+    const vel = liveVel > 0 ? liveVel : (isUS ? (it.sales_us_avg||0) : Math.max(it.sales_ca_avg||0, it.sales_us_avg||0));
+    if (vel <= 0) return;
+    it._vel = vel;
+    const st = stock[it.name];
+    const cat = st?.category || '';
+    (catVels[cat] = catVels[cat]||[]).push(vel);
   });
+
   const items = [];
-  names.forEach(n => {
-    const v = nameVel[n]; if (!v) return;
-    const s = stock[n]||{transit:0,stock:0,cn:0,ordered:0,category:''};
+  srcItems.forEach(it => {
+    const vel = it._vel; if (!vel) return;
+    const s = stock[it.name]||{transit:0,stock:0,cn:0,ordered:0,category:''};
+
+    // ABC: use SOURCE yoy_us and trend_us (same as website calcABC)
+    const yoy = isUS ? it.yoy_us : it.yoy_ca;
+    const fallingYoY = yoy != null && yoy < -20;
     const gv = catVels[s.category||'']||[];
     const med = gv.length ? [...gv].sort((a,b)=>a-b)[Math.floor(gv.length/2)] : 1;
-    const sp2 = sales[n]||[0,0,0,0,[],null];
-    const srcItem = SOURCE[n];
-    // Prefer YoY from SOURCE (same as website), fallback to computed
-    const yoy = srcItem?.yoy_us != null ? srcItem.yoy_us : sp2[5];
-    const fallingYoY = yoy !== null && yoy < -20;
-    const abc = v<=2 ? 'C' : (v>2 && v>=med*1.2 && !fallingYoY) ? 'A' : 'B';
-    const isUS = market==='US';
-    const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
-    const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
-    // ordered: prefer SOURCE (same as website), fallback to sheet col5
-    const orderedSrc = srcItem ? Math.max(0, (isUS ? srcItem.ordered_us : srcItem.ordered_ca)||0) : 0;
-    const orderedSheet = Math.max(0, s.ordered||0);
-    const ordered = orderedSrc > 0 ? orderedSrc : orderedSheet;
-    const availDays = s.stock + s.transit;            // days: без заводского заказа (как на сайте)
-    const availQty  = s.stock + s.transit + ordered;  // qty: учитываем заводской заказ
-    const days = availDays>0 ? Math.floor(availDays/(v/30)) : 0;
+    const growing = (isUS ? (it.trend_us||0) : (it.trend_ca||0)) >= 2;
+    const aboveAvg = vel >= med * 1.2;
+    let abc;
+    if (vel <= 2 && !growing) abc = 'C';
+    else if (vel > 2 && (growing || aboveAvg) && !fallingYoY) abc = 'A';
+    else abc = 'B';
+
+    const thresh  = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
+    const tMos    = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
+
+    const stockV   = isUS ? (s.stock||it.stock_us||0)   : (s.stock||it.stock_ca||0);
+    const transitV = isUS ? (s.transit||it.in_transit_us||0) : (s.transit||it.in_transit_ca||0);
+    const orderedV = Math.max(0, isUS ? (it.ordered_us||0) : (it.ordered_ca||0));
+
+    const availDays = stockV + transitV;
+    const availQty  = stockV + transitV + orderedV;
+    const days = availDays > 0 ? Math.floor(availDays / (vel/30)) : 0;
     if (days >= thresh) return;
-    const qty = Math.max(0, Math.ceil(v*tMos) - availQty);
+    const qty = Math.max(0, Math.ceil(vel * tMos) - availQty);
     if (qty <= 0) return;
-    items.push({ name: n, qty, vel: Math.round(v*10)/10, days, wu: isWU(n), abc });
+    items.push({ name: it.name, qty, vel: Math.round(vel*10)/10, days, wu: isWU(it.name), abc });
   });
   return items;
 }
+
 
 function sortItems(items, stockRows) {
   const ord = {}; stockRows.slice(1).forEach((r,i) => { if (r[1]?.trim()) ord[r[1].trim()] = i; });
