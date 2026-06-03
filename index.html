@@ -110,9 +110,9 @@ tr.grp-hdr td{background:var(--sf2);padding:5px 10px;font-size:10px;font-weight:
 .md h3{margin-bottom:4px;font-size:16px}.md .sub{color:var(--tx2);font-size:12px;margin-bottom:16px}
 .md table{min-width:auto}
 .md thead th{font-size:11px;padding:7px 10px;background:var(--sf2);border-bottom:1px solid var(--bd)}
-thead tr.gh th,thead tr.ch th{position:sticky;background:var(--sf2)}
+thead tr.gh th,thead tr.ch th{position:sticky;background:var(--sf2);font-size:9px}
 thead tr.gh th{top:0;z-index:11}
-thead tr.ch th{top:29px;z-index:10}
+thead tr.ch th{top:27px;z-index:10}
 .md tbody td{padding:7px 10px;border-top:1px solid var(--bd);font-size:13px}
 .md tbody tr:hover{background:var(--sf2)}
 input.qinput{background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:4px 8px;color:var(--tx);font-size:13px;width:70px;text-align:center;outline:none}
@@ -196,6 +196,15 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   <div class="logo">&#9978; RBM COODY <span>Stock</span></div>
   <div class="hr">
     <span class="ls" id="ls">&#8212;</span>
+    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+      <div style="display:flex;gap:4px">
+        <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
+        <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
+        <span style="width:1px;background:rgba(255,255,255,0.2);margin:0 2px"></span>
+        <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)" title="Переместить из Китая в США">&#128666; CN&#8594;US</button>
+        <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)" title="Переместить из Китая в Канаду">&#128666; CN&#8594;CA</button>
+      </div>
+    </div>
     <button class="sb" onclick="doRefresh()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg>
       &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;
@@ -219,14 +228,6 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
       <option value="low_ca">&#128992; CA &#1052;&#1072;&#1083;&#1086;</option>
       <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
     </select>
-    <div class="ug">
-      <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
-      <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
-      <span style="width:1px;background:var(--bd);margin:0 4px;align-self:stretch;display:inline-block"></span>
-      <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)" title="Переместить из Китая в США">&#128666; CN&#8594;US</button>
-      <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)" title="Переместить из Китая в Канаду">&#128666; CN&#8594;CA</button>
-    </div>
-
   </div>
   <div class="tw">
     <table>
