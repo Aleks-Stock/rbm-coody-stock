@@ -717,9 +717,17 @@ function openOrder(type){
   allData.forEach(function(it){
     var stock=isUS?it.stock_us:it.stock_ca;
     var transit=isUS?it.in_transit_us:it.in_transit_ca;
-    var vel=isUS?it.sales_us_avg:Math.max(it.sales_ca_avg,it.sales_us_avg);
-    var ordered=it.ordered_us||0;
-    if(vel===0)return;
+    var vel=isUS?it.sales_us_avg:(it.sales_ca_avg||0);
+    var ordered=isUS?(it.ordered_us||0):(it.ordered_ca||0);
+    if(vel===0){
+      // CA: нет продаж + нет товара → заказать 1 для поддержания ассортимента
+      if(!isUS&&stock===0&&transit===0&&ordered===0){
+        var growing=it.trend_ca>=2;
+        items.push({name:it.name,stock:0,transit:0,ordered:0,vel:0,days:0,qty:1,
+          cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:"C"});
+      }
+      return;
+    }
     var wu=isWuzhou(it.name);
     var abc=it.abc||"B";
     var thresh=abc==="A"?(isUS?60:75):abc==="C"?(isUS?30:45):(isUS?45:60);
@@ -782,7 +790,7 @@ function openTransfer(type){
   allData.forEach(function(it){
     var stock=isUS?it.stock_us:it.stock_ca;
     var transit=isUS?it.in_transit_us:it.in_transit_ca;
-    var vel=isUS?it.sales_us_avg:Math.max(it.sales_ca_avg||0,it.sales_us_avg||0);
+    var vel=isUS?it.sales_us_avg:(it.sales_ca_avg||0);
     var cn=it.stock_cn||0;
     if(vel===0||cn===0)return;
     var wu=isWuzhou(it.name);
