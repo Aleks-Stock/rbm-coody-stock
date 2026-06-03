@@ -233,7 +233,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
     <table>
       <thead>
         <tr class="gh">
-          <th rowspan="2" style="position:sticky;left:0;z-index:12;background:var(--sf2);padding:8px 10px;text-align:left;font-size:11px;color:var(--tx2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);min-width:90px">&#1058;&#1054;&#1042;&#1040;&#1056;</th>
+          <th rowspan="2" style="position:sticky;left:0;z-index:12;background:var(--sf2);padding:8px 10px;text-align:left;font-size:11px;color:var(--tx2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);min-width:160px;white-space:nowrap">&#1058;&#1054;&#1042;&#1040;&#1056;</th>
           <th colspan="9" class="us-gh">&#1057;&#1064;&#1040; (US)</th>
           <th colspan="8" class="ca-gh">&#1050;&#1040;&#1053;&#1040;&#1044;&#1040; (CA)</th>
           <th colspan="2" class="cn-gh">&#1050;&#1048;&#1058;&#1040;&#1049;</th>
@@ -587,7 +587,7 @@ function renderTable(){
     var ord=(it.ordered_us||0)>0?"<span class=\"oc\">"+(it.ordered_us||0)+"</span>":"<span class=\"oz\">&#8212;</span>";
     rows.push(
       "<tr>"+
-      "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
+      "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27;min-width:160px;white-space:nowrap\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
       "<td class=\"us-col\" style=\"min-width:75px\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
