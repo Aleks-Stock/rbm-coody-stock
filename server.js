@@ -84,16 +84,23 @@ function parseSales(text) {
   const [c30, c29, c28] = complete.map(k => colMap[k]);
   const cCur = colMap[curKey] ?? -1;
   const days = now.getDate();
-  // Season: same 3 months last year
+  // Season: same 3 months last year (for season blend)
   const seaKeys = complete.map(k => (Math.floor(k/100)-1)*100 + (k%100));
   const [s0,s1,s2] = seaKeys.map(k => colMap[k] ?? -1);
+  // YoY: same 3 months last year avg vs current avg
+  const lyKeys = complete.map(k => (Math.floor(k/100)-1)*100 + (k%100));
+  const [ly0,ly1,ly2] = lyKeys.map(k => colMap[k] ?? -1);
   const result = {};
   rows.slice(headerIdx + 1).forEach(row => {
     const name = row[1]?.trim(); if (!name) return;
     const v28 = si(row[c28]), v29 = si(row[c29]), v30 = si(row[c30]);
     const cur = cCur >= 0 ? Math.round(si(row[cCur]) * (30 / days) * 10) / 10 : 0;
     const sea = [s0,s1,s2].map(c => c>=0 ? si(row[c]) : 0);
-    result[name] = [v28, v29, v30, cur, sea];
+    const curAvg = (v28+v29+v30)/3;
+    const lyVals = [ly0,ly1,ly2].map(c => c>=0 ? si(row[c]) : 0);
+    const lyAvg = (lyVals[0]+lyVals[1]+lyVals[2])/3;
+    const yoy = lyAvg>0 ? Math.round((curAvg-lyAvg)/lyAvg*100) : null;
+    result[name] = [v28, v29, v30, cur, sea, yoy];
   });
   return result;
 }
@@ -150,7 +157,7 @@ function computeOrder(sales, stock, market) {
   const names = new Set([...Object.keys(sales), ...Object.keys(stock)]);
   const catVels = {}, nameVel = {};
   names.forEach(n => {
-    const sp = sales[n]||[0,0,0,0,[]]; const v = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
+    const sp = sales[n]||[0,0,0,0,[],null]; const v = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
     if (v <= 0) return;
     nameVel[n] = v;
     const cat = stock[n]?.category || '';
@@ -162,7 +169,10 @@ function computeOrder(sales, stock, market) {
     const s = stock[n]||{transit:0,stock:0,cn:0,ordered:0,category:''};
     const gv = catVels[s.category||'']||[];
     const med = gv.length ? [...gv].sort((a,b)=>a-b)[Math.floor(gv.length/2)] : 1;
-    const abc = v<=2 ? 'C' : (v>2 && v>=med*1.2) ? 'A' : 'B';
+    const sp2 = sales[n]||[0,0,0,0,[],null];
+    const yoy = sp2[5];
+    const fallingYoY = yoy !== null && yoy < -20;
+    const abc = v<=2 ? 'C' : (v>2 && v>=med*1.2 && !fallingYoY) ? 'A' : 'B';
     const isUS = market==='US';
     const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
     const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
