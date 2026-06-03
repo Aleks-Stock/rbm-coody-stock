@@ -278,11 +278,7 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   #stf{flex:1}
 }
 
-.hdr-btns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-.hdr-search{display:flex;gap:6px;align-items:center}
 
-@media(max-width:768px){
-  #kr{display:none!important}
   header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:5px}
   .logo{font-size:13px}
   .hr{display:flex;flex-direction:column;gap:5px;width:100%}
@@ -294,6 +290,20 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   .obtn{padding:6px 8px;font-size:11px;white-space:nowrap}
   .sb{padding:6px 10px;font-size:12px;white-space:nowrap}
 }
+
+@media(max-width:768px){
+  #kr{display:none!important}
+  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:5px}
+  .logo{font-size:13px}
+  .hr{display:flex;flex-direction:column;gap:5px;width:100%}
+  .hr .ls{display:none}
+  .hr>span.ls{display:none}
+  .hr>div:first-of-type{order:1}
+  .hr>div:last-of-type{order:2}
+  .sb{order:3}
+  .obtn{padding:6px 8px;font-size:11px}
+  .sb{padding:6px 10px;font-size:12px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -302,13 +312,14 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   <div class="logo">&#9978; RBM COODY <span>Stock</span></div>
   <div class="hr">
     <span class="ls" id="ls">&#8212;</span>
-    <div class="hdr-btns">
+    <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
       <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
       <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
+      <span style="width:1px;background:rgba(255,255,255,0.2);margin:0 2px"></span>
       <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)">&#128666; CN&#8594;US</button>
       <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)">&#128666; CN&#8594;CA</button>
     </div>
-    <div class="hdr-search">
+    <div style="display:flex;gap:6px;align-items:center">
       <div class="sw" style="margin:0"><span class="si">&#128269;</span>
         <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
       </div>
