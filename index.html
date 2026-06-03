@@ -767,25 +767,21 @@ function restoreTransfer(){
   });
 }
 function exportTransfer(){
-  var rows=[["Товар","Склад","В пути","Прогноз/мес","Дней","Отправить","Склад CN"]];
+  if(!_transferItems||!_transferItems.length){toast("Сначала откройте перемещение","");return;}
+  var rows=[["Товар","Склад","В пути","Прогноз/мес","Дней","Нужно","Отправить","Склад CN"]];
   _transferItems.forEach(function(it,i){
     var inputEl=document.getElementById("tq"+i);
-    var qty=inputEl?Math.max(0,parseInt(inputEl.value)||0):it.toSend;
-    rows.push([it.name,it.stock,it.transit,it.vel,it.days,qty,it.cn]);
+    var qty=inputEl?Math.max(0,parseInt(inputEl.value)||0):(it.toSend||0);
+    rows.push([it.name,it.stock||0,it.transit||0,it.vel||0,it.days||0,it.shortfall||0,qty,it.cn||0]);
   });
-  if(rows.length<=1){
-    if(typeof _transferItems==="undefined"||!_transferItems.length){
-      toast("Сначала откройте перемещение","");return;}
-    toast("Нет данных для экспорта","");return;}
+  if(rows.length<=1){toast("Нет данных для экспорта","");return;}
   var ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[{wch:35},{wch:8},{wch:8},{wch:10},{wch:8},{wch:10},{wch:10}];
+  ws["!cols"]=[{wch:35},{wch:8},{wch:8},{wch:10},{wch:8},{wch:8},{wch:10},{wch:10}];
   var wb=XLSX.utils.book_new();
-  var sn=_transferType===1?"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. &#1057;&#1064;&#1040;":"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. CA";
-  XLSX.utils.book_append_sheet(wb,ws,sn);
-  try{
-    XLSX.writeFile(wb,"Transfer_"+(_transferType===1?"US":"CA")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
-    toast("Excel &#1089;&#1082;&#1072;&#1095;&#1072;&#1085;","success");
-  }catch(e){toast("Ошибка: "+e.message,"");}
+  XLSX.utils.book_append_sheet(wb,ws,_transferType===1?"Transfer US":"Transfer CA");
+  var fname="Transfer_"+(_transferType===1?"US":"CA")+"_"+new Date().toISOString().slice(0,10)+".xlsx";
+  XLSX.writeFile(wb,fname);
+  toast("Excel скачан: "+fname,"success");
 }
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
 function showOntheway(evt,el,idx){
