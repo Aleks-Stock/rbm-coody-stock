@@ -619,50 +619,87 @@ function showForecast(evt,el,item,market){
   var isCA=market==="CA";
   var v3=isCA?(item._ca_v3||[0,0,0]):(item._v3||[0,0,0]);
   var ms=isCA?(item._ca_months||item._months||[]):(item._months||[]);
+  var sea=isCA?(item._ca_sea||[0,0,0]):(item._sea||[0,0,0]);
+  var seaMs=isCA?(item._ca_seaMonths||item._seaMonths||[]):(item._seaMonths||[]);
+  var curRaw=isCA?0:(item._us_cur||0);
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
-  function fmtM(k){if(!k)return"?";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
-  // v3[0]=newest, v3[1]=2nd, v3[2]=oldest (same order as _months)
-  var v0=v3[0]||0,v1=v3[1]||0,v2=v3[2]||0;
-  var months=[v2,v1,v0]; // oldest→newest
-  var mLabels=[fmtM(ms[2]),fmtM(ms[1]),fmtM(ms[0])];
-  // Determine rule used
-  var start=0;while(start<months.length&&months[start]===0)start++;
-  var active=months.slice(start);
-  var aLabels=mLabels.slice(start);
-  var rule="",result=0;
-  if(active.length===0){rule="Нет данных";result=0;}
-  else if(active[active.length-1]===0){
-    result=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
-    rule="Ноль в конце → среднее: ("+active.join("+")+")÷"+active.length+"="+result;
-  } else if(active.length===3&&active[0]>0&&active[1]>active[0]&&active[2]>active[1]){
-    var slope=Math.round((active[2]-active[0])/2*10)/10;
-    result=Math.max(active[2],Math.round((active[2]+slope)*10)/10);
-    rule="Устойчивый рост → линейно: "+active[2]+"+("+active[2]+"-"+active[0]+")/2="+result;
-  } else if(active.length===2){
-    result=active[1];
-    rule="2 мес. данных → используем последний месяц: "+active[1];
-  } else {
-    var nz=active.filter(function(x){return x>0;});
-    result=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
-    rule="Среднее: ("+active.join("+")+")÷"+active.length+"="+result;
+  function fmtM(k){if(!k)return"—";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
+  var days=new Date().getDate();
+  var weight=Math.min(days/30,1);
+  var curNorm=curRaw>0?Math.round(curRaw*(30/days)*10)/10:0;
+  // v3: [newest, 2nd, 3rd] → map to oldest→newest for display
+  var v0=v3[2]||0,v1=v3[1]||0,v2=v3[0]||0; // oldest→newest complete months
+  // Reconstruct base (calcAvg3 logic)
+  var vals={28:v0,29:v1,30:v2,19:sea[2]||0,20:sea[1]||0,21:sea[0]||0};
+  var base=calcAvg3(vals);
+  var seaAvg=Math.round(((sea[0]||0)+(sea[1]||0)+(sea[2]||0))/3*10)/10;
+  // Full 4-point
+  var full=null,fullRule="";
+  if(curNorm>0){
+    var pts=[v0,v1,v2,curNorm]; var s=0;
+    while(s<pts.length-1&&pts[s]===0)s++;
+    var active=pts.slice(s);
+    if(active.length>=3&&active[0]<active[1]&&active[1]<active[2]&&active[2]<active[3]){
+      var slope=(active[active.length-1]-active[0])/(active.length-1);
+      full=Math.max(active[active.length-1],Math.round((active[active.length-1]+slope)*10)/10);
+      fullRule="рост → линейно";
+    } else {
+      var nz=active.filter(function(x){return x>0;});
+      full=nz.length?Math.round(nz.reduce(function(a,b){return a+b;},0)/nz.length*10)/10:base;
+      fullRule="среднее "+nz.length+" точек";
+    }
   }
-  var dropped=months.slice(0,start);
-  var html2="<div style=\'font-weight:bold;margin-bottom:6px;font-size:11px\'>"+item.name.slice(0,22)+" — ПРОГНОЗ ("+market+")</div>";
-  if(dropped.length){html2+="<div style=\'font-size:10px;color:var(--tx2);margin-bottom:4px\'>Отброшены (нов. товар): "+mLabels.slice(0,start).join(", ")+"</div>";}
-  html2+="<div style=\'font-size:10px;color:var(--tx2);margin-bottom:6px\'>Использованы месяцы:</div>";
-  active.forEach(function(v,i){
-    html2+="<div class=\'row\'><span class=\'lbl\'>"+aLabels[i]+"</span><span class=\'val\'>"+v+"</span></div>";
+  // Build HTML
+  var h="<div style='font-weight:bold;font-size:11px;margin-bottom:6px'>"+item.name.slice(0,22)+" — ПРОГНОЗ ("+market+")</div>";
+  h+="<div style='font-size:10px;color:var(--tx2);margin-bottom:4px'>📅 Последние 3 завершённых месяца:</div>";
+  [[fmtM(ms[2]),v0],[fmtM(ms[1]),v1],[fmtM(ms[0]),v2]].forEach(function(r){
+    h+="<div class='row'><span class='lbl'>"+r[0]+"</span><span class='val'>"+r[1]+"</span></div>";
   });
-  html2+="<div style=\'margin-top:8px;font-size:11px;color:var(--or);border-top:1px solid var(--bd);padding-top:6px\'>"+rule+"</div>";
-  html2+="<div style=\'margin-top:4px;font-size:12px;font-weight:bold\'>→ Прогноз: "+result+" шт/мес</div>";
-  var p=document.createElement("div");p.className="detail-popup";p.innerHTML=html2;
+  if(seaAvg>0){
+    h+="<div style='font-size:10px;color:var(--tx2);margin:5px 0 3px'>🗓 Сезон LY ("+fmtM(seaMs[2])+"–"+fmtM(seaMs[0])+"):</div>";
+    [[fmtM(seaMs[2]),sea[2]||0],[fmtM(seaMs[1]),sea[1]||0],[fmtM(seaMs[0]),sea[0]||0]].forEach(function(r){
+      h+="<div class='row'><span class='lbl'>"+r[0]+"</span><span class='val'>"+r[1]+"</span></div>";
+    });
+    h+="<div class='row'><span class='lbl' style='color:var(--tx2)'>Среднее LY</span><span class='val'>"+seaAvg+"</span></div>";
+  }
+  h+="<div style='border-top:1px solid var(--bd);margin:6px 0 4px'></div>";
+  h+="<div style='font-size:10px;color:var(--tx2);margin-bottom:3px'>📊 Расчёт BASE (3 мес):</div>";
+  h+="<div style='font-size:11px;margin-bottom:4px'>"+_descBase(v0,v1,v2,seaAvg,base)+"</div>";
+  if(curNorm>0&&full!==null){
+    h+="<div style='font-size:10px;color:var(--tx2);margin-bottom:3px'>📈 Текущий месяц (день "+days+"):</div>";
+    h+="<div class='row'><span class='lbl'>Продаж сейчас</span><span class='val'>"+curRaw+"</span></div>";
+    h+="<div class='row'><span class='lbl'>curNorm = "+curRaw+"×30/"+days+"</span><span class='val'>"+curNorm+"</span></div>";
+    h+="<div class='row'><span class='lbl'>Вес ("+days+"/30)</span><span class='val'>"+(Math.round(weight*100))+"%</span></div>";
+    h+="<div style='font-size:11px;margin:4px 0'>4 точки: "+fullRule+" → <b>"+full+"</b></div>";
+    var result=Math.round((base*(1-weight)+full*weight)*10)/10;
+    h+="<div style='border-top:1px solid var(--bd);margin-top:6px;padding-top:6px;color:var(--or);font-size:11px'>";
+    h+="base×"+(Math.round((1-weight)*100))+"% + full×"+(Math.round(weight*100))+"%</div>";
+    h+="<div style='font-size:13px;font-weight:bold;color:var(--tx)'>→ "+base+"×"+(Math.round((1-weight)*10)/10)+" + "+full+"×"+(Math.round(weight*10)/10)+" = "+result+" шт/мес</div>";
+  } else {
+    h+="<div style='font-size:13px;font-weight:bold;color:var(--tx);margin-top:6px'>→ Прогноз: "+base+" шт/мес</div>";
+    h+="<div style='font-size:10px;color:var(--tx2);margin-top:2px'>(текущий месяц: нет продаж)</div>";
+  }
+  var p=document.createElement("div");p.className="detail-popup";p.innerHTML=h;
   _popup=p;document.body.appendChild(p);
   var rect=el.getBoundingClientRect();
-  var ph=p.offsetHeight||180;
+  var ph=p.offsetHeight||280;
   var spaceBelow=window.innerHeight-rect.bottom-10;
   var top=spaceBelow>=ph?rect.bottom+6:Math.max(10,rect.top-ph-6);
-  p.style.top=top+"px";p.style.left=Math.min(rect.left,window.innerWidth-260)+"px";
+  p.style.top=top+"px";p.style.left=Math.min(rect.left,window.innerWidth-280)+"px";
   evt.stopPropagation();
+}
+function _descBase(v0,v1,v2,seaAvg,base){
+  var months=[v0,v1,v2]; var s=0;
+  while(s<months.length&&months[s]===0)s++;
+  var active=months.slice(s);
+  if(active.length===0)return "нет данных";
+  if(active[active.length-1]===0)return "ноль в конце → среднее: ("+active.join("+")+")÷"+active.length+"="+base;
+  if(active.length===1)return "1 месяц → "+base;
+  if(active.length===2)return "2 месяца → последний: "+base;
+  if(active[0]<active[1]&&active[1]<active[2]){var sl=Math.round((active[2]-active[0])/2*10)/10;return "устойчивый рост → линейно: "+active[2]+"+("+active[2]+"-"+active[0]+")/2="+base;}
+  var t3=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
+  if(seaAvg>0&&t3>0)return "60/40 blend: "+seaAvg+"×0.6 + "+t3+"×0.4 = "+base;
+  return "среднее: ("+active.join("+")+")÷"+active.length+"="+base;
 }
 
 function isWuzhou(name){
@@ -1209,15 +1246,32 @@ function calcTrendFlag(vals,curNorm){
   return 0;
 }
 function calcAvg3WithCurrent(vals,curNorm){
-  var may=vals[30]||0;
-  if(curNorm>0&&curNorm>may){
-    var trend=Math.round(((vals[29]||0)+may+curNorm)/3*10)/10;
-    var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
-    if(season>0&&trend>0)return Math.round((season*0.6+trend*0.4)*10)/10;
-    return trend>0?trend:season;
+  // Weight = how far into current month we are (0..1)
+  var weight=Math.min(new Date().getDate()/30,1);
+  // Base: 3 complete months (calcAvg3 handles trailing zeros, season blend, linear)
+  var base=calcAvg3(vals);
+  if(curNorm>0&&weight>0){
+    // Full: 4-point trend [M-2, M-1, M, curNorm]
+    var v2=vals[28]||0,v1=vals[29]||0,v0=vals[30]||0;
+    var full;
+    // Strip leading zeros for 4-point calc
+    var pts=[v2,v1,v0,curNorm];
+    var s=0; while(s<pts.length-1&&pts[s]===0)s++;
+    var active=pts.slice(s);
+    if(active.length>=3&&active[0]<active[1]&&active[1]<active[2]&&active[2]<active[3]){
+      // All 4 growing → linear projection
+      var slope=(active[active.length-1]-active[0])/(active.length-1);
+      full=Math.max(active[active.length-1],Math.round((active[active.length-1]+slope)*10)/10);
+    } else {
+      // Average of non-zero active points
+      var nz=active.filter(function(x){return x>0;});
+      full=nz.length?Math.round(nz.reduce(function(a,b){return a+b;},0)/nz.length*10)/10:base;
+    }
+    return Math.round((base*(1-weight)+full*weight)*10)/10;
   }
-  return calcAvg3(vals);
+  return base;
 }
+
 function calcAvg3(vals){
   // vals[30]=newest(May), vals[29]=Apr, vals[28]=Mar
   var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
