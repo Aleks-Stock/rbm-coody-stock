@@ -84,12 +84,16 @@ function parseSales(text) {
   const [c30, c29, c28] = complete.map(k => colMap[k]);
   const cCur = colMap[curKey] ?? -1;
   const days = now.getDate();
+  // Season: same 3 months last year
+  const seaKeys = complete.map(k => (Math.floor(k/100)-1)*100 + (k%100));
+  const [s0,s1,s2] = seaKeys.map(k => colMap[k] ?? -1);
   const result = {};
   rows.slice(headerIdx + 1).forEach(row => {
     const name = row[1]?.trim(); if (!name) return;
     const v28 = si(row[c28]), v29 = si(row[c29]), v30 = si(row[c30]);
     const cur = cCur >= 0 ? Math.round(si(row[cCur]) * (30 / days) * 10) / 10 : 0;
-    result[name] = [v28, v29, v30, cur];
+    const sea = [s0,s1,s2].map(c => c>=0 ? si(row[c]) : 0);
+    result[name] = [v28, v29, v30, cur, sea];
   });
   return result;
 }
@@ -112,8 +116,15 @@ function parseStockCA(text) {
 }
 
 // ── Forecast ─────────────────────────────────────────────────────────────
-function calcForecast(v28, v29, v30, cur = 0) {
-  if (cur > 0 && cur > v30) return Math.round(([v29,v30,cur].reduce((a,b)=>a+b,0)/3)*10)/10 || v30;
+function calcForecast(v28, v29, v30, cur = 0, sea = [0,0,0]) {
+  const season = Math.round((sea[0]+sea[1]+sea[2])/3*10)/10;
+  // Current month projection (mirror calcAvg3WithCurrent)
+  if (cur > 0 && cur > v30) {
+    const trend = Math.round(([v29,v30,cur].reduce((a,b)=>a+b,0)/3)*10)/10;
+    if (season>0 && trend>0) return Math.round((season*0.6+trend*0.4)*10)/10;
+    return trend>0 ? trend : season;
+  }
+  // calcAvg3 logic
   const m = [v28, v29, v30];
   let s = 0; while (s < m.length && m[s] === 0) s++;
   const a = m.slice(s);
@@ -121,8 +132,14 @@ function calcForecast(v28, v29, v30, cur = 0) {
   if (a[a.length-1] === 0) return Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
   if (a.length === 1) return a[0];
   if (a.length === 2) return a[1];
-  if (a[0]>0 && a[1]>a[0] && a[2]>a[1]) return Math.max(a[2], Math.round((a[2]+(a[2]-a[0])/2)*10)/10);
-  return Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
+  if (a[0]>0 && a[1]>a[0] && a[2]>a[1]) {
+    const slope = (a[2]-a[0])/2;
+    return Math.max(a[2], Math.round((a[2]+slope)*10)/10);
+  }
+  const trend3 = Math.round(a.reduce((x,y)=>x+y,0)/a.length*10)/10;
+  if (season>0 && trend3>0) return Math.round((season*0.6+trend3*0.4)*10)/10;
+  if (season>0) return season;
+  return trend3;
 }
 
 // ── ABC + Order computation ──────────────────────────────────────────────
@@ -133,7 +150,7 @@ function computeOrder(sales, stock, market) {
   const names = new Set([...Object.keys(sales), ...Object.keys(stock)]);
   const catVels = {}, nameVel = {};
   names.forEach(n => {
-    const v = calcForecast(...(sales[n]||[0,0,0,0]));
+    const sp = sales[n]||[0,0,0,0,[]]; const v = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
     if (v <= 0) return;
     nameVel[n] = v;
     const cat = stock[n]?.category || '';
