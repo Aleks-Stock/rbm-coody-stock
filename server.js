@@ -176,10 +176,12 @@ function computeOrder(sales, stock, market) {
     const isUS = market==='US';
     const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
     const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
-    const avail  = s.stock + s.transit + Math.max(0, s.ordered||0);
-    const days   = avail>0 ? Math.floor(avail/(v/30)) : 0;
+    const ordered = Math.max(0, s.ordered||0);
+    const availDays = s.stock + s.transit;          // days: без заводского заказа (как на сайте)
+    const availQty  = s.stock + s.transit + ordered; // qty: учитываем заводской заказ
+    const days = availDays>0 ? Math.floor(availDays/(v/30)) : 0;
     if (days >= thresh) return;
-    const qty = Math.max(0, Math.ceil(v*tMos) - avail);
+    const qty = Math.max(0, Math.ceil(v*tMos) - availQty);
     if (qty <= 0) return;
     items.push({ name: n, qty, vel: Math.round(v*10)/10, days, wu: isWU(n), abc });
   });
