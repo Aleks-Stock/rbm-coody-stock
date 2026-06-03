@@ -205,6 +205,21 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
         <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)" title="Переместить из Китая в Канаду">&#128666; CN&#8594;CA</button>
       </div>
     </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="sw" style="margin:0"><span class="si">&#128269;</span>
+        <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
+      </div>
+      <select id="stf" onchange="applyFilter()" style="height:32px;padding:0 8px;font-size:12px;background:var(--sf2);color:var(--tx);border:1px solid var(--bd);border-radius:6px">
+        <option value="">&#1042;&#1089;&#1077; &#1089;&#1090;&#1072;&#1090;&#1091;&#1089;&#1099;</option>
+        <option value="critical">&#128308; &#1050;&#1088;&#1080;&#1090;.</option>
+        <option value="low">&#128992; &#1052;&#1072;&#1083;&#1086;</option>
+        <option value="ok">&#128994; &#1053;&#1086;&#1088;&#1084;&#1072;</option>
+        <option value="transit">&#128674; &#1042;&#1087;&#1091;&#1090;&#1080;</option>
+        <option value="critical_ca">&#128308; CA</option>
+        <option value="low_ca">&#128992; CA &#1084;&#1072;&#1083;&#1086;</option>
+        <option value="bestseller">&#128640; &#1056;&#1086;&#1089;&#1090;</option>
+      </select>
+    </div>
     <button class="sb" onclick="doRefresh()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg>
       &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;
@@ -214,21 +229,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 <div class="main">
   <div class="kr" id="kr"></div>
   <div id="abt"></div></div>
-  <div class="tb">
-    <div class="sw"><span class="si">&#128269;</span>
-      <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
-    </div>
-    <select id="stf" onchange="applyFilter()">
-      <option value="">&#1042;&#1089;&#1077; &#1089;&#1090;&#1072;&#1090;&#1091;&#1089;&#1099;</option>
-      <option value="critical">&#128308; &#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;</option>
-      <option value="low">&#128992; &#1052;&#1072;&#1083;&#1086;</option>
-      <option value="ok">&#128994; &#1053;&#1086;&#1088;&#1084;&#1072;</option>
-      <option value="transit">&#128674; &#1042; &#1087;&#1091;&#1090;&#1080;</option>
-      <option value="critical_ca">&#128308; CA &#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;</option>
-      <option value="low_ca">&#128992; CA &#1052;&#1072;&#1083;&#1086;</option>
-      <option value="bestseller">&#128640; &#1056;&#1072;&#1089;&#1090;&#1091;&#1097;&#1080;&#1077;</option>
-    </select>
-  </div>
+  
   <div class="tw">
     <table>
       <thead>
