@@ -245,25 +245,26 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   #stf{flex:1;max-width:130px}
 }
 
-/* Sticky first column */
-td.pn, th[rowspan="2"]:first-child {
-  position:sticky;left:0;z-index:4;background:var(--sf);
-}
-thead tr.gh th:first-child, thead tr.ch th:first-child {
-  position:sticky;left:0;z-index:12;background:var(--sf2);
-}
-.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
 
-/* Mobile layout */
+
+
+
+/* Sticky first column */
+td.pn{position:sticky;left:0;z-index:4;background:var(--sf)}
+thead th[rowspan="2"]:first-child{position:sticky;left:0;z-index:12;background:var(--sf2)}
+tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
+
 @media(max-width:768px){
   #kr{display:none!important}
-  header{padding:5px 8px;gap:4px}
-  .hr{gap:4px;flex-wrap:wrap;align-items:center}
+  /* Simple flex wrap for header */
+  header{flex-wrap:wrap;padding:6px 8px;gap:4px}
+  .logo{flex:0 0 auto;font-size:13px;order:1}
+  .hr{order:2;width:100%;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
   .hr .ls{display:none}
-  /* Обновить: small, stays in flow at end */
-  .sb{padding:4px 8px;font-size:11px}
-  /* Hide svg text on mobile */
-  .sb svg{width:14px;height:14px;vertical-align:middle}
+  .sb{padding:4px 8px;font-size:11px;order:99;margin-left:auto}
+  .obtn{padding:5px 8px;font-size:11px}
+  .sw{flex:1;min-width:100px}
+  #stf{font-size:11px}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
