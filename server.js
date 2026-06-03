@@ -192,9 +192,12 @@ function computeOrder(sales, stock, market, SOURCE={}) {
     const isUS = market==='US';
     const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
     const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
-    const ordered = Math.max(0, s.ordered||0);
-    const availDays = s.stock + s.transit;          // days: без заводского заказа (как на сайте)
-    const availQty  = s.stock + s.transit + ordered; // qty: учитываем заводской заказ
+    // ordered: prefer SOURCE (same as website), fallback to sheet col5
+    const orderedSrc = srcItem ? Math.max(0, (isUS ? srcItem.ordered_us : srcItem.ordered_ca)||0) : 0;
+    const orderedSheet = Math.max(0, s.ordered||0);
+    const ordered = orderedSrc > 0 ? orderedSrc : orderedSheet;
+    const availDays = s.stock + s.transit;            // days: без заводского заказа (как на сайте)
+    const availQty  = s.stock + s.transit + ordered;  // qty: учитываем заводской заказ
     const days = availDays>0 ? Math.floor(availDays/(v/30)) : 0;
     if (days >= thresh) return;
     const qty = Math.max(0, Math.ceil(v*tMos) - availQty);
