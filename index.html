@@ -1362,6 +1362,17 @@ function showDetail(evt,el,item,market){
     var k=ms[i];var v=v3raw[i]!==undefined?v3raw[i]:(vals[vi]||0);
     html2+="<div class='row'><span class='lbl'>"+fmtKey(k)+"</span><span class='val'>"+v+"</span></div>";
   });
+  // Current month
+  var curRaw=isCA?0:(item._us_cur||0);
+  if(curRaw>0){
+    var now=new Date();
+    var d=now.getDate();
+    var curNorm=Math.round(curRaw*(30/d)*10)/10;
+    var curKey=(now.getFullYear()*100+now.getMonth()+1);
+    html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Текущий месяц (день "+d+")</div>";
+    html2+="<div class='row'><span class='lbl'>"+fmtKey(curKey)+" (факт)</span><span class='val'>"+curRaw+"</span></div>";
+    html2+="<div class='row'><span class='lbl'>→ прогноз мес</span><span class='val' style='color:var(--or)'>"+curNorm+"</span></div>";
+  }
   html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Сезон LY ("+fmtKey(sea[0])+"–"+fmtKey(sea[2])+")</div>";
   [0,1,2].forEach(function(i){
     var v=searaw[i]!==undefined?searaw[i]:(vals[19+i]||0);
