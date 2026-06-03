@@ -782,8 +782,10 @@ function exportTransfer(){
   var wb=XLSX.utils.book_new();
   var sn=_transferType===1?"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. &#1057;&#1064;&#1040;":"&#1055;&#1077;&#1088;&#1077;&#1084;&#1077;&#1097;. CA";
   XLSX.utils.book_append_sheet(wb,ws,sn);
-  XLSX.writeFile(wb,"Transfer_"+(_transferType===1?"US":"CA")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
-  toast("Excel &#1089;&#1082;&#1072;&#1095;&#1072;&#1085;","success");
+  try{
+    XLSX.writeFile(wb,"Transfer_"+(_transferType===1?"US":"CA")+"_"+new Date().toISOString().slice(0,10)+".xlsx");
+    toast("Excel &#1089;&#1082;&#1072;&#1095;&#1072;&#1085;","success");
+  }catch(e){toast("Ошибка: "+e.message,"");}
 }
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
 function showOntheway(evt,el,idx){
