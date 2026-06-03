@@ -233,6 +233,35 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   /* Table doesn't overlap header */
   .tw{margin-top:0}
 }
+
+@media(max-width:768px){
+  header{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    padding:5px 8px!important;
+  }
+  /* Row 1: logo left, Обновить right, small */
+  .logo{order:1;font-size:13px}
+  .hr{
+    order:1;
+    display:contents;
+  }
+  .hr .ls{display:none!important}
+  .hr>div:first-of-type{order:2;display:flex;flex-wrap:wrap;gap:4px;width:100%}
+  .sb{
+    order:0!important;
+    position:absolute!important;
+    top:5px!important;right:6px!important;
+    padding:3px 8px!important;
+    font-size:10px!important;
+    margin:0!important;
+  }
+  header{position:relative;padding-right:95px!important}
+  /* Search row */
+  .sw{flex:1}
+  #stf{flex:1;max-width:130px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
