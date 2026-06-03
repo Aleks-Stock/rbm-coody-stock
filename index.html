@@ -629,6 +629,7 @@ function showForecast(evt,el,item,market){
   p.style.top=top+"px";p.style.left=Math.min(rect.left,window.innerWidth-260)+"px";
   evt.stopPropagation();
 }
+
 function isWuzhou(name){
   var patterns=["Panda","UP-5","UP-2","Hexagon","Cuboid","Caminus","Kamin","Rain Fly","Floor for Hexagon","Floor for UP"];
   return patterns.some(function(p){return name.indexOf(p)>=0;});
