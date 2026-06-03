@@ -150,8 +150,8 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .detail-popup .lbl{color:var(--tx2)}
 .detail-popup .val{font-weight:600}
 .trend-num{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
-@media(max-width:900px){.kr-row{grid-template-columns:60px repeat(2,1fr)}.kr-row5{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.kr-row{grid-template-columns:50px 1fr 1fr}.main{padding:10px}}
+
+
 
 .abc-badge{display:inline-block;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:.3px}
 .abc-a{background:rgba(255,193,7,.2);color:#ffc107;border:1px solid rgba(255,193,7,.4)}
@@ -289,14 +289,24 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 
 
 
+
+
+@media(max-width:900px){
+  .kr-row,.kr-row5{flex-wrap:wrap}
+  .kc{min-width:calc(50% - 4px);flex:none}
+}
 @media(max-width:768px){
   #kr{display:none!important}
-  header{flex-wrap:wrap;padding:5px 8px;gap:4px}
-  .hr{flex-wrap:wrap;gap:4px}
-  .hr .ls{display:none}
-  .logo{font-size:13px;order:1;flex:1}
-  .sb{order:99;padding:5px 10px;font-size:12px}
-  .obtn{padding:5px 8px;font-size:11px}
+  header{display:flex!important;flex-direction:column!important;align-items:stretch!important;padding:6px 8px!important;gap:6px!important}
+  .logo{font-size:13px!important;align-self:flex-start}
+  .hr{display:flex!important;flex-direction:column!important;gap:5px!important;width:100%!important}
+  .hr .ls{display:none!important}
+  .hr>div:first-of-type{display:flex!important;gap:4px!important;width:100%!important}
+  .hr>div:first-of-type .obtn{flex:1!important;padding:7px 3px!important;font-size:10px!important;text-align:center!important;min-width:0!important}
+  .hr>div:last-of-type{display:flex!important;gap:4px!important;width:100%!important}
+  .hr>div:last-of-type .sw{flex:1!important}
+  .hr>div:last-of-type #stf{flex:1!important;max-width:110px!important}
+  .hr>div:last-of-type .sb{padding:5px 8px!important;font-size:11px!important;white-space:nowrap!important}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
