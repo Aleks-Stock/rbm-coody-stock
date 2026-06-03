@@ -294,7 +294,24 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 
 
 
-@media(max-width:768px){#kr{display:none!important}header{display:flex!important;flex-direction:column!important;padding:6px 8px!important;gap:6px!important}.logo{font-size:13px!important}.hr{display:flex!important;flex-direction:column!important;gap:5px!important;width:100%!important}.hr .ls{display:none!important}.hr>div:first-of-type{display:flex!important;gap:4px!important;width:100%!important}.hr>div:first-of-type .obtn{flex:1!important;padding:7px 2px!important;font-size:10px!important;text-align:center!important;min-width:0!important}.hr>div:last-of-type{display:flex!important;gap:4px!important;width:100%!important}.hr>div:last-of-type .sw{flex:1!important}.hr>div:last-of-type #stf{flex:1!important;max-width:110px!important}.hr>div:last-of-type .sb{padding:5px 8px!important;font-size:11px!important;white-space:nowrap!important}}
+
+
+.hdr-btns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.hdr-search{display:flex;gap:6px;align-items:center}
+
+@media(max-width:768px){
+  #kr{display:none!important}
+  header{flex-direction:column!important;align-items:stretch!important;padding:5px 8px!important;gap:5px!important}
+  .logo{font-size:13px!important}
+  .hr{flex-direction:column!important;width:100%!important;gap:5px!important}
+  .hr .ls{display:none!important}
+  .hdr-btns{width:100%;flex-wrap:nowrap;gap:3px}
+  .hdr-btns .obtn{flex:1;padding:7px 2px;font-size:10px;text-align:center;min-width:0;white-space:nowrap;overflow:hidden}
+  .hdr-search{width:100%;flex-wrap:nowrap;gap:4px}
+  .hdr-search .sw{flex:1}
+  .hdr-search #stf{flex:1;max-width:110px;font-size:11px}
+  .hdr-search .sb{padding:5px 8px;font-size:11px;white-space:nowrap}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -303,14 +320,14 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   <div class="logo">&#9978; RBM COODY <span>Stock</span></div>
   <div class="hr">
     <span class="ls" id="ls">&#8212;</span>
-    <div style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+    <div class="hdr-btns">
       <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
       <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
       <span style="width:1px;background:rgba(255,255,255,0.2);margin:0 2px"></span>
       <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)">&#128666; CN&#8594;US</button>
       <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)">&#128666; CN&#8594;CA</button>
     </div>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div class="hdr-search">
       <div class="sw" style="margin:0"><span class="si">&#128269;</span>
         <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
       </div>
