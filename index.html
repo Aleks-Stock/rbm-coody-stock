@@ -26,8 +26,8 @@ header{background:var(--sf);border-bottom:1px solid var(--bd);padding:0 20px;hei
 .main{padding:14px 20px}
 
 
-.kr-row5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:stretch}
-.kr-label{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:6px 10px;border-radius:8px;white-space:nowrap;writing-mode:horizontal-tb}
+
+
 .kr-label.us{background:var(--us-hd);color:var(--bl);border:1px solid var(--us-bd)}
 .kr-label.ca{background:var(--ca-hd);color:#81c784;border:1px solid var(--ca-bd)}
 .kr-label.gen{background:var(--sf2);color:var(--tx2);border:1px solid var(--bd)}
@@ -171,130 +171,6 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .kc.cl{cursor:pointer}.kc.cl:hover{border-color:var(--ac)}
 .kl{color:var(--tx2);font-size:9px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
 .kv{font-size:17px;font-weight:700;line-height:1}.ks{color:var(--tx2);font-size:9px;margin-top:1px}
-
-  .kc{min-width:calc(50% - 4px);flex:none}
-  .kr-label{min-width:36px;font-size:10px}
-  .kv{font-size:15px}
-  header .hr{flex-wrap:wrap;gap:6px}
-  .ug{flex-wrap:wrap}
-  .tw{font-size:11px}
-  table{min-width:600px}
-}
-  .kv{font-size:14px}
-  header{padding:6px 10px}
-  .logo{font-size:14px}
-}
-
-  /* Compact header */
-  header{flex-wrap:wrap;gap:4px;padding:6px 8px}
-  .logo{font-size:13px}
-  .hr{flex-wrap:wrap;gap:4px;width:100%;justify-content:flex-start}
-  .hr .ls{display:none}
-  /* Hide update button text, keep icon */
-  .sb{padding:6px 10px;font-size:12px}
-  /* Hide "Обновить" text on mobile, keep icon */
-  .sb svg{display:inline-block}
-  /* Hide general metrics row (kr-row5) */
-  .kr-row5{display:none!important}
-  /* Keep action buttons but smaller */
-  .obtn{padding:5px 8px;font-size:11px}
-  /* Search full width */
-  .sw{flex:1;min-width:120px}
-  /* Hide select filter label */
-  #stf{font-size:11px;padding:0 4px;max-width:100px}
-  /* Table font smaller */
-  .tw td,.tw th{font-size:10px;padding:4px 3px}
-  /* Товар column narrower */
-  .pn{max-width:80px;word-break:break-word}
-}
-  header{padding:4px 6px}
-  .logo{font-size:12px}
-  #stf{max-width:80px}
-}
-
-  /* Обновить goes to far right in its row */
-  .sb{margin-left:auto;order:99}
-  /* Search row gets its own space */
-  .sw input{width:120px;min-width:80px}
-  /* Sticky header offset for mobile */
-  thead tr.gh th{top:0}
-  thead tr.ch th{top:26px}
-  /* Table doesn't overlap header */
-  .tw{margin-top:0}
-}
-
-  /* Row 1: logo left, Обновить right, small */
-  .logo{order:1;font-size:13px}
-  .hr{
-    order:1;
-    display:contents;
-  }
-  .hr .ls{display:none!important}
-  .hr>div:first-of-type{order:2;display:flex;flex-wrap:wrap;gap:4px;width:100%}
-  .sb{
-    order:0!important;
-    position:absolute!important;
-    top:5px!important;right:6px!important;
-    padding:3px 8px!important;
-    font-size:10px!important;
-    margin:0!important;
-  }
-  header{position:relative;padding-right:95px!important}
-  /* Search row */
-  .sw{flex:1}
-  #stf{flex:1;max-width:130px}
-}
-
-
-
-
-
-
-
-  #stf{font-size:11px}
-}
-
-
-  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:4px}
-  /* Row 1: Logo + Обновить */
-  .logo{display:flex;align-items:center;justify-content:space-between}
-  .logo::after{content:""}
-  .hr{display:contents}
-  /* Show Обновить after logo - put it inside logo row via flex trick */
-  header>.logo{flex:none}
-  header>.hr{display:flex;flex-direction:column;gap:4px}
-  .hr .ls{display:none}
-  /* Action buttons row */
-  .hr>div:nth-child(2){order:1;display:flex;flex-wrap:wrap;gap:4px}
-  /* Search+filter row */
-  .hr>div:nth-child(3){order:2;display:flex;gap:4px}
-  .sb{order:0;align-self:flex-start;padding:5px 10px;font-size:12px}
-  .obtn{padding:5px 8px;font-size:11px}
-  .sw{flex:1}
-  #stf{flex:1}
-}
-
-
-  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:5px}
-  .logo{font-size:13px}
-  .hr{display:flex;flex-direction:column;gap:5px;width:100%}
-  .hr .ls{display:none}
-  .hdr-btns{order:1;flex-wrap:nowrap;gap:4px}
-  .hdr-search{order:2;flex-wrap:nowrap;gap:4px}
-  .hdr-search .sw{flex:1}
-  .hdr-search #stf{flex:1;max-width:110px}
-  .obtn{padding:6px 8px;font-size:11px;white-space:nowrap}
-  .sb{padding:6px 10px;font-size:12px;white-space:nowrap}
-}
-
-
-
-
-
-
-
-
-
 
 .hdr-btns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .hdr-search{display:flex;gap:6px;align-items:center}
