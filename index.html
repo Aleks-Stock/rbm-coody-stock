@@ -188,6 +188,38 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
   header{padding:6px 10px}
   .logo{font-size:14px}
 }
+
+@media(max-width:768px){
+  /* Hide KPI metrics on mobile */
+  #kr{display:none!important}
+  /* Compact header */
+  header{flex-wrap:wrap;gap:4px;padding:6px 8px}
+  .logo{font-size:13px}
+  .hr{flex-wrap:wrap;gap:4px;width:100%;justify-content:flex-start}
+  .hr .ls{display:none}
+  /* Hide update button text, keep icon */
+  .sb{padding:6px 10px;font-size:12px}
+  /* Hide "Обновить" text on mobile, keep icon */
+  .sb svg{display:inline-block}
+  /* Hide general metrics row (kr-row5) */
+  .kr-row5{display:none!important}
+  /* Keep action buttons but smaller */
+  .obtn{padding:5px 8px;font-size:11px}
+  /* Search full width */
+  .sw{flex:1;min-width:120px}
+  /* Hide select filter label */
+  #stf{font-size:11px;padding:0 4px;max-width:100px}
+  /* Table font smaller */
+  .tw td,.tw th{font-size:10px;padding:4px 3px}
+  /* Товар column narrower */
+  .pn{max-width:80px;word-break:break-word}
+}
+@media(max-width:480px){
+  .obtn{padding:4px 6px;font-size:10px}
+  header{padding:4px 6px}
+  .logo{font-size:12px}
+  #stf{max-width:80px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
