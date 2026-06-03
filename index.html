@@ -53,7 +53,7 @@ input[type=file]{display:none}
 .obtn{background:var(--ac);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;font-weight:600;white-space:nowrap;transition:all .15s}
 .obtn:hover{background:var(--al)}
 .obtn.ca{background:#388e3c}.obtn.ca:hover{background:#4caf50}
-.tw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:auto;max-height:calc(100vh - 175px);position:relative}
+.tw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:auto;position:relative}
 table{width:100%;border-collapse:collapse;min-width:1200px}
 thead tr.gh th{padding:6px 10px;font-size:10px;font-weight:700;text-align:center;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--bd)}
 th.us-gh{background:var(--us-hd);color:var(--bl);border-left:2px solid var(--us-bd);border-right:2px solid var(--us-bd)}
@@ -1309,6 +1309,21 @@ document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
   document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
   document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTransfer();});
+});
+</script>
+<script>
+function resizeTw(){
+  var tw=document.querySelector('.tw');
+  if(!tw)return;
+  var top=tw.getBoundingClientRect().top;
+  tw.style.maxHeight=(window.innerHeight-top-8)+'px';
+}
+window.addEventListener('resize',resizeTw);
+document.addEventListener('DOMContentLoaded',function(){
+  resizeTw();
+  // Re-run after KPI cards load
+  setTimeout(resizeTw,500);
+  setTimeout(resizeTw,1500);
 });
 </script>
 </body>
