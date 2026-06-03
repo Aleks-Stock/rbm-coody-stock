@@ -605,13 +605,14 @@ function renderKPI(){
     return "<div class=\"kc\"><div class=\"kl\">"+label+"</div><div class=\"kv\">"+val+"</div>"+fcLine+"</div>";
   }
   document.getElementById("kr").innerHTML=
-    "<div class=\"kr-row\" style=\"gap:4px\">"+
+    "<div class=\"kr-row\">"+
       "<div class=\"kr-label us\">&#1057;&#1064;&#1040;</div>"+
       kpi("&#1050;&#1088;&#1080;&#1090;.",crit_us,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCritical()")+
       kpi("&#1052;&#1072;&#1083;&#1086;",low_us,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLow()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tus,"&#1077;&#1076;.","","")+
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_us,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
-      "<div style=\"width:1px;background:var(--bd);margin:0 2px\"></div>"+
+    "</div>"+
+    "<div class=\"kr-row\">"+
       "<div class=\"kr-label ca\">CA</div>"+
       kpi("&#1050;&#1088;&#1080;&#1090;.",crit_ca,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCriticalCA()")+
       kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLowCA()")+
