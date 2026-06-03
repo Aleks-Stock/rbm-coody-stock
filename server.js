@@ -170,14 +170,13 @@ const isWU = n => WUZHOU.some(p => n.includes(p));
 function computeOrder(sales, stock, market, SOURCE={}) {
   const isUS = market === 'US';
   const srcItems = Object.values(SOURCE);
+  if (!srcItems.length) return [];
 
-  // Build per-category velocity groups using SOURCE sales_avg as base vel
+  // Use SOURCE sales_avg directly (matches website unrefreshed + refreshed avg)
+  // Build per-category velocity groups
   const catVels = {};
   srcItems.forEach(it => {
-    const sp = sales[it.name]||[0,0,0,0,[],null];
-    const liveVel = calcForecast(sp[0],sp[1],sp[2],sp[3],sp[4]||[0,0,0]);
-    // Use live forecast if available, else fall back to SOURCE avg
-    const vel = liveVel > 0 ? liveVel : (isUS ? (it.sales_us_avg||0) : Math.max(it.sales_ca_avg||0, it.sales_us_avg||0));
+    const vel = isUS ? (it.sales_us_avg||0) : Math.max(it.sales_ca_avg||0, it.sales_us_avg||0);
     if (vel <= 0) return;
     it._vel = vel;
     const st = stock[it.name];
@@ -190,7 +189,7 @@ function computeOrder(sales, stock, market, SOURCE={}) {
     const vel = it._vel; if (!vel) return;
     const s = stock[it.name]||{transit:0,stock:0,cn:0,ordered:0,category:''};
 
-    // ABC: use SOURCE yoy_us and trend_us (same as website calcABC)
+    // ABC: use SOURCE yoy and trend (exact same as website calcABC)
     const yoy = isUS ? it.yoy_us : it.yoy_ca;
     const fallingYoY = yoy != null && yoy < -20;
     const gv = catVels[s.category||'']||[];
@@ -202,11 +201,12 @@ function computeOrder(sales, stock, market, SOURCE={}) {
     else if (vel > 2 && (growing || aboveAvg) && !fallingYoY) abc = 'A';
     else abc = 'B';
 
-    const thresh  = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
-    const tMos    = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
+    const thresh = abc==='A'?(isUS?60:75):abc==='C'?(isUS?30:45):(isUS?45:60);
+    const tMos   = abc==='A'?(isUS?2:2.5):abc==='C'?(isUS?1:1.5):(isUS?1.5:2);
 
-    const stockV   = isUS ? (s.stock||it.stock_us||0)   : (s.stock||it.stock_ca||0);
-    const transitV = isUS ? (s.transit||it.in_transit_us||0) : (s.transit||it.in_transit_ca||0);
+    // Live stock from sheet, fall back to SOURCE
+    const stockV   = s.stock   != null ? s.stock   : (isUS ? it.stock_us   : it.stock_ca);
+    const transitV = s.transit != null ? s.transit : (isUS ? it.in_transit_us : it.in_transit_ca);
     const orderedV = Math.max(0, isUS ? (it.ordered_us||0) : (it.ordered_ca||0));
 
     const availDays = stockV + transitV;
@@ -219,6 +219,7 @@ function computeOrder(sales, stock, market, SOURCE={}) {
   });
   return items;
 }
+
 
 
 function sortItems(items, stockRows) {
