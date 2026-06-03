@@ -258,8 +258,7 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   #stf{font-size:11px}
 }
 
-@media(max-width:768px){
-  #kr{display:none!important}
+
   header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:4px}
   /* Row 1: Logo + Обновить */
   .logo{display:flex;align-items:center;justify-content:space-between}
@@ -278,6 +277,23 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   .sw{flex:1}
   #stf{flex:1}
 }
+
+.hdr-btns{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.hdr-search{display:flex;gap:6px;align-items:center}
+
+@media(max-width:768px){
+  #kr{display:none!important}
+  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:5px}
+  .logo{font-size:13px}
+  .hr{display:flex;flex-direction:column;gap:5px;width:100%}
+  .hr .ls{display:none}
+  .hdr-btns{order:1;flex-wrap:nowrap;gap:4px}
+  .hdr-search{order:2;flex-wrap:nowrap;gap:4px}
+  .hdr-search .sw{flex:1}
+  .hdr-search #stf{flex:1;max-width:110px}
+  .obtn{padding:6px 8px;font-size:11px;white-space:nowrap}
+  .sb{padding:6px 10px;font-size:12px;white-space:nowrap}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -286,16 +302,13 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   <div class="logo">&#9978; RBM COODY <span>Stock</span></div>
   <div class="hr">
     <span class="ls" id="ls">&#8212;</span>
-    <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-      <div style="display:flex;gap:4px">
-        <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
-        <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
-        <span style="width:1px;background:rgba(255,255,255,0.2);margin:0 2px"></span>
-        <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)" title="Переместить из Китая в США">&#128666; CN&#8594;US</button>
-        <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)" title="Переместить из Китая в Канаду">&#128666; CN&#8594;CA</button>
-      </div>
+    <div class="hdr-btns">
+      <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
+      <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
+      <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)">&#128666; CN&#8594;US</button>
+      <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)">&#128666; CN&#8594;CA</button>
     </div>
-    <div style="display:flex;gap:6px;align-items:center">
+    <div class="hdr-search">
       <div class="sw" style="margin:0"><span class="si">&#128269;</span>
         <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
       </div>
@@ -309,11 +322,11 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
         <option value="low_ca">&#128992; CA &#1084;&#1072;&#1083;&#1086;</option>
         <option value="bestseller">&#128640; &#1056;&#1086;&#1089;&#1090;</option>
       </select>
+      <button class="sb" onclick="doRefresh()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg>
+        &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;
+      </button>
     </div>
-    <button class="sb" onclick="doRefresh()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0115.6-4M20 15a9 9 0 01-15.6 4"/></svg>
-      &#1054;&#1073;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;
-    </button>
   </div>
 </header>
 <div class="main">
