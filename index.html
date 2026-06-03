@@ -249,10 +249,6 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 
 
 
-/* Sticky first column */
-td.pn{position:sticky;left:0;z-index:4;background:var(--sf)}
-thead th[rowspan="2"]:first-child{position:sticky;left:0;z-index:12;background:var(--sf2)}
-tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
 
 
   #stf{font-size:11px}
@@ -291,18 +287,16 @@ tr.grp-hdr td{position:sticky;left:0;z-index:3;background:var(--sf2)}
   .sb{padding:6px 10px;font-size:12px;white-space:nowrap}
 }
 
+
+
 @media(max-width:768px){
   #kr{display:none!important}
-  header{flex-direction:column;align-items:stretch;padding:5px 8px;gap:5px}
-  .logo{font-size:13px}
-  .hr{display:flex;flex-direction:column;gap:5px;width:100%}
+  header{flex-wrap:wrap;padding:5px 8px;gap:4px}
+  .hr{flex-wrap:wrap;gap:4px}
   .hr .ls{display:none}
-  .hr>span.ls{display:none}
-  .hr>div:first-of-type{order:1}
-  .hr>div:last-of-type{order:2}
-  .sb{order:3}
-  .obtn{padding:6px 8px;font-size:11px}
-  .sb{padding:6px 10px;font-size:12px}
+  .logo{font-size:13px;order:1;flex:1}
+  .sb{order:99;padding:5px 10px;font-size:12px}
+  .obtn{padding:5px 8px;font-size:11px}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
