@@ -163,7 +163,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 .tw::-webkit-scrollbar-thumb:hover{background:var(--al)}
 .tw{scrollbar-width:thin;scrollbar-color:var(--ac) var(--sf2)}
 .kr{display:flex;flex-direction:column;gap:4px;margin-bottom:6px}
-.kr-row{display:flex;gap:4px;align-items:stretch}
+.kr-row{display:flex;gap:4px;align-items:stretch;flex-wrap:nowrap}
 .kr-row5{display:flex;gap:4px;align-items:stretch}
 .kr-label{display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:11px;font-weight:700;min-width:40px;padding:0 6px}
 .kc{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:5px 10px;flex:1}
@@ -203,7 +203,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 </header>
 <div class="main">
   <div class="kr" id="kr"></div>
-  <div class="ab hidden" id="ab" onclick="filterCritical()"><div class="ad"></div><div id="abt"></div></div>
+  <div id="abt"></div></div>
   <div class="tb">
     <div class="sw"><span class="si">&#128269;</span>
       <input type="text" id="qi" placeholder="&#1055;&#1086;&#1080;&#1089;&#1082;&#8230;" oninput="applyFilter()">
@@ -221,8 +221,9 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
     <div class="ug">
       <button class="obtn" onclick="openOrder(1)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; US</button>
       <button class="obtn ca" onclick="openOrder(2)">&#128203; &#1047;&#1072;&#1082;&#1072;&#1079; CA</button>
-      <button class="obtn" style="background:#1565c0;margin-left:8px" onclick="openTransfer(1)">&#128666; CN&#8594;US</button>
-      <button class="obtn" style="background:#2e7d32" onclick="openTransfer(2)">&#128666; CN&#8594;CA</button>
+      <span style="width:1px;background:var(--bd);margin:0 4px;align-self:stretch;display:inline-block"></span>
+      <button class="obtn" style="background:#5d4037;border:1px solid #8d6e63" onclick="openTransfer(1)" title="Переместить из Китая в США">&#128666; CN&#8594;US</button>
+      <button class="obtn" style="background:#4a148c;border:1px solid #7b1fa2" onclick="openTransfer(2)" title="Переместить из Китая в Канаду">&#128666; CN&#8594;CA</button>
     </div>
 
   </div>
@@ -496,19 +497,18 @@ function renderKPI(){
     return "<div class=\"kc\"><div class=\"kl\">"+label+"</div><div class=\"kv\">"+val+"</div>"+fcLine+"</div>";
   }
   document.getElementById("kr").innerHTML=
-    "<div class=\"kr-row\">"+
+    "<div class=\"kr-row\" style=\"gap:4px\">"+
       "<div class=\"kr-label us\">&#1057;&#1064;&#1040;</div>"+
-      kpi("&#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;",crit_us,"&#1053;&#1077;&#1090; / &#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r","filterCritical()")+
-      kpi("&#1052;&#1072;&#1083;&#1086;",low_us,"&lt; 2 &#1084;&#1077;&#1089;.","o","filterLow()")+
-      kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tus,"&#1045;&#1076;&#1080;&#1085;&#1080;&#1094;","","")+
-      kpi("&#1042; &#1087;&#1091;&#1090;&#1080;",tr_us,"&#1077;&#1076;. &#1074; &#1090;&#1088;&#1072;&#1085;&#1079;&#1080;&#1090;&#1077;","b","")+
-    "</div>"+
-    "<div class=\"kr-row\">"+
+      kpi("&#1050;&#1088;&#1080;&#1090;.",crit_us,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCritical()")+
+      kpi("&#1052;&#1072;&#1083;&#1086;",low_us,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLow()")+
+      kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tus,"&#1077;&#1076;.","","")+
+      kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_us,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
+      "<div style=\"width:1px;background:var(--bd);margin:0 2px\"></div>"+
       "<div class=\"kr-label ca\">CA</div>"+
-      kpi("&#1050;&#1088;&#1080;&#1090;&#1080;&#1095;&#1085;&#1086;",crit_ca,"&#1053;&#1077;&#1090; / &#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r","filterCriticalCA()")+
-      kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt; 2 &#1084;&#1077;&#1089;.","o","filterLowCA()")+
-      kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1045;&#1076;&#1080;&#1085;&#1080;&#1094;","","")+
-      kpi("&#1042; &#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1077;&#1076;. &#1074; &#1090;&#1088;&#1072;&#1085;&#1079;&#1080;&#1090;&#1077;","b","")+
+      kpi("&#1050;&#1088;&#1080;&#1090;.",crit_ca,"&#1089;&#1088;&#1086;&#1095;&#1085;&#1086;","r cl","filterCriticalCA()")+
+      kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLowCA()")+
+      kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1077;&#1076;.","","")+
+      kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
     "</div>"+
     "<div class=\"kr-row5\">"+
       kpi("&#1042;&#1089;&#1077;&#1075;&#1086; SKU",tot,"&#1055;&#1086;&#1082;&#1072;&#1079;&#1072;&#1090;&#1100; &#1074;&#1089;&#1077;","","resetAll()")+
@@ -517,9 +517,6 @@ function renderKPI(){
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"&#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;.",tentFc)+
     "</div>";
-  var ab=document.getElementById("ab");
-  if(crit_us>0){ab.classList.remove("hidden");document.getElementById("abt").innerHTML="<b>"+crit_us+" SKU критически мало в США.</b> Нажмите для фильтра.";}
-  else if(crit_us===0) ab.classList.add("hidden");
   document.getElementById("rc").textContent=fData.length+" из "+tot+" товаров";
   var w=fData.filter(function(i){return i.status==="critical"||i.status==="low";}).length;
   document.getElementById("ac2").textContent="";
