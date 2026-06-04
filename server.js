@@ -33,31 +33,10 @@ function fetchUrl(url) {
   });
 }
 
-// Sheet cache with row-count validation
-const _sheetCache = {};
-
 async function fetchSheet(sheet) {
   for (let i = 0; i < SHEET_URLS[sheet].length; i++) {
-    try {
-      const d = await fetchUrl(SHEET_URLS[sheet][i]);
-      const rows = d.split("\n").filter(r => r.trim()).length;
-      const prev = _sheetCache[sheet];
-      // Reject if significantly fewer rows than cached (stale/truncated response)
-      if (prev && rows < prev.rows * 0.8) {
-        console.log(`[${sheet}] Stale response (${rows} vs ${prev.rows} rows), using cache`);
-        return prev.data;
-      }
-      _sheetCache[sheet] = { data: d, rows };
-      console.log(`[${sheet}] OK (${rows} rows)`);
-      return d;
-    } catch(e) {
-      console.log(`[${sheet}] URL${i+1} failed: ${e.message}`);
-    }
-  }
-  // All failed: return cached if available
-  if (_sheetCache[sheet]) {
-    console.log(`[${sheet}] All failed, using cache`);
-    return _sheetCache[sheet].data;
+    try { const d = await fetchUrl(SHEET_URLS[sheet][i]); console.log(`[${sheet}] OK`); return d; }
+    catch(e) { console.log(`[${sheet}] URL${i+1} failed: ${e.message}`); }
   }
   throw new Error(`All URLs failed for ${sheet}`);
 }
