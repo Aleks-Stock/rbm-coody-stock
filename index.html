@@ -507,9 +507,11 @@ function renderKPI(){
   var prevMonName=ruMon[(now.getMonth()+11)%12];
   var curMonLY=ruMon[now.getMonth()]+" "+(now.getFullYear()-1);
   function kpiTent(label,val,sub,fc){
-    var fcLine=fc!=null?"<div class=\"ks\" style=\"color:var(--al);font-size:9px\">&#8594; "+Math.round(fc)+"</div>":"";
-    var subLine="<div class=\"ks\" style=\"font-size:9px;color:var(--tx2)\">"+sub+"</div>";
-    return "<div class=\"kc\"><div class=\"kl\" style=\"font-size:8px\">"+label+"</div><div class=\"kv\">"+val+"</div>"+subLine+fcLine+"</div>";
+    var isCur=fc!=null; // current month has forecast
+    var valColor=isCur?"color:var(--gn)":"";
+    var fcLine=isCur?"<div class=\"ks\" style=\"color:var(--al);font-size:9px\">&#8594; "+Math.round(fc)+"</div>":"";
+    var subLine="<div class=\"ks\" style=\"font-size:9px;color:var(--tx2);white-space:nowrap\">"+sub+"</div>";
+    return "<div class=\"kc\"><div class=\"kl\" style=\"font-size:8px;white-space:nowrap\">"+label+"</div><div class=\"kv\" style=\"font-size:15px;"+valColor+"\">"+val+"</div>"+subLine+fcLine+"</div>";
   }
   document.getElementById("kr").innerHTML=
     "<div class=\"kr-row\">"+
@@ -524,9 +526,9 @@ function renderKPI(){
       kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLowCA()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1077;&#1076;.","","")+
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonLY,tentLY,"US:"+tentLY_us+" CA:"+tentLY_ca+" CN:"+tentLY_cn,null)+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"US:"+tentLM_us+" CA:"+tentLM_ca+" CN:"+tentLM_cn,null)+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"US:"+tentCurUS+" CA:"+tentCurCA+" CN:"+tentCurCN,tentFc)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;.&#1055;&#1072;&#1083;&#1072;&#1090; "+curMonLY,tentLY,"US:"+tentLY_us+" CA:"+tentLY_ca+" CN:"+tentLY_cn,null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;.&#1055;&#1072;&#1083;&#1072;&#1090; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"US:"+tentLM_us+" CA:"+tentLM_ca+" CN:"+tentLM_cn,null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;.&#1055;&#1072;&#1083;&#1072;&#1090; "+curMonName+" "+(now.getFullYear()),tentCurMo,"US:"+tentCurUS+" CA:"+tentCurCA+" CN:"+tentCurCN,tentFc)+
     "</div>";
 
   document.getElementById("rc").textContent=fData.length+" из "+tot+" товаров";
