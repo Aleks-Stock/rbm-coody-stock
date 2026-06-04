@@ -441,3 +441,12 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => console.log(`RBM COODY Stock on port ${PORT}`));
+
+// Keep-alive: ping self every 10 minutes to prevent Render.com sleep
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://rbm-coody-stock.onrender.com';
+setInterval(() => {
+  https.get(SELF_URL + '/api/sheets/stock_us', res => {
+    console.log('[keep-alive] ping', res.statusCode);
+    res.resume();
+  }).on('error', () => {});
+}, 10 * 60 * 1000);
