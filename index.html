@@ -578,7 +578,8 @@ function renderTable(){
       var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
-        needUS=Math.max(0,tUS-it.stock_us-it.in_transit_us-Math.max(0,it.ordered_us||0));}}
+        var freeUS=Math.max(0,it.stock_us+it.in_transit_us-(it._us_cur||0));
+        needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));}}
     var needUSCell=needUS>0?"<b style=\"color:#ef9a9a\">"+needUS+"</b>":"<span class=\"sz\">&#8212;</span>";
     var caAv=it.stock_ca+it.in_transit_ca;
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
@@ -752,7 +753,10 @@ function openOrder(type){
     var days=Math.floor(avail/vel*30);
     if(days>=thresh)return;
     var target=Math.ceil(vel*targetMos);
-    var qty=Math.max(0,target-stock-transit-ordered);
+    // Subtract current month raw sales (already committed/shipped)
+    var curSold=isUS?(it._us_cur||0):((it._ca_cur||0));
+    var freeAvail=Math.max(0,stock+transit-curSold);
+    var qty=Math.max(0,target-freeAvail-ordered);
     if(qty<=0)return;
     // +10% for growing products
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
@@ -1280,7 +1284,7 @@ function parseLastMonths(csvText){
     vals._seaMonths=sea;
     vals[31]=curRaw; // current month raw
 
-    if(v0>0||v1>0||v2>0||seaSum>0)result[name]=vals;
+    if(v0>0||v1>0||v2>0||seaSum>0||curRaw>0)result[name]=vals;
   });
   return result;
 }
