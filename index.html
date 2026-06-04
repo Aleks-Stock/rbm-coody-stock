@@ -1141,7 +1141,7 @@ function doRefresh(){
     // Auto-detect new products from sales sheet
     var BLOCKED_PRODUCTS=new Set(["Rain Fly Panda Large","Rain Fly Panda Medium",
       "Pipe for Caminus M (2 pcs.)","Pipe for Caminus S (3 pcs.)",
-      "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L"]);
+      "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L","Repair kit (various spare parts)"]);
     var sourceNames=new Set(SOURCE.map(function(r){return r.name;}));
     Object.keys(usMap).forEach(function(name){
       if(sourceNames.has(name)||BLOCKED_PRODUCTS.has(name))return;
