@@ -494,6 +494,7 @@ function renderKPI(){
     tentCurMo+=(it._us_cur||0)+(it._ca_cur||0)+(it._cn_cur||0);
     tentFc+=Math.round(((it.sales_us_avg||0)+(it.sales_ca_avg||0))*10)/10;
   });
+  var tentCurUS=0,tentCurCA=0,tentCurCN=0;tentItems.forEach(function(it){tentCurUS+=(it._us_cur||0);tentCurCA+=(it._ca_cur||0);tentCurCN+=(it._cn_cur||0);});
   var now=new Date();
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
   var curMonName=ruMon[now.getMonth()];
@@ -518,7 +519,7 @@ function renderKPI(){
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonLY,tentLY,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1075;&#1086;&#1076;",null)+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"&#1090;&#1077;&#1082;&#1091;&#1097;&#1080;&#1081; &#1084;&#1077;&#1089;.",tentFc)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"US:"+tentCurUS+" CA:"+tentCurCA+" CN:"+tentCurCN,tentFc)+
     "</div>";
 
   document.getElementById("rc").textContent=fData.length+" из "+tot+" товаров";
