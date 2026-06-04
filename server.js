@@ -411,7 +411,7 @@ const server = http.createServer(async (req, res) => {
     try {
       const csv = await fetchSheet(sheet);
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Cache-Control', 'max-age=300');
+      res.setHeader('Cache-Control', 'no-cache, no-store');
       res.writeHead(200); res.end(csv);
     } catch(e) { res.writeHead(500); res.end(e.message); }
     return;
