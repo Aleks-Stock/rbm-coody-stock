@@ -686,6 +686,7 @@ function showForecast(evt,el,item,market){
     h+="<div class='row'><span class='lbl'>Вес ("+days+"/30)</span><span class='val'>"+(Math.round(weight*100))+"%</span></div>";
     h+="<div style='font-size:11px;margin:4px 0'>4 точки: "+fullRule+" → <b>"+full+"</b></div>";
     var result=Math.round((base*(1-weight)+full*weight)*10)/10;
+  if(curNorm>0&&curNorm<base&&full<base)result=Math.round(Math.max(full,curNorm)*10)/10;
     h+="<div style='border-top:1px solid var(--bd);margin-top:6px;padding-top:6px;color:var(--or);font-size:11px'>";
     h+="base×"+(Math.round((1-weight)*100))+"% + full×"+(Math.round(weight*100))+"%</div>";
     h+="<div style='font-size:13px;font-weight:bold;color:var(--tx)'>→ "+base+"×"+(Math.round((1-weight)*10)/10)+" + "+full+"×"+(Math.round(weight*10)/10)+" = "+result+" шт/мес</div>";
@@ -1332,7 +1333,10 @@ function calcAvg3WithCurrent(vals,curNorm){
       var nz=active.filter(function(x){return x>0;});
       full=nz.length?Math.round(nz.reduce(function(a,b){return a+b;},0)/nz.length*10)/10:base;
     }
-    return Math.round((base*(1-weight)+full*weight)*10)/10;
+    // If current month signals slowdown (curNorm < base), cap at full
+    var result=Math.round((base*(1-weight)+full*weight)*10)/10;
+    if(curNorm<base&&full<base)result=Math.round(Math.max(full,curNorm)*10)/10;
+    return result;
   }
   return base;
 }
