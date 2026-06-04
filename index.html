@@ -722,11 +722,22 @@ function openOrder(type){
     var vel=isUS?it.sales_us_avg:(it.sales_ca_avg||0);
     var ordered=isUS?(it.ordered_us||0):0; // CA: ordered_ca not tracked yet
     if(vel===0){
-      // CA: нет продаж + нет товара → заказать 1 для поддержания ассортимента
-      if(!isUS&&stock===0&&transit===0&&ordered===0){
-        var growing=it.trend_ca>=2;
-        items.push({name:it.name,stock:0,transit:0,ordered:0,vel:0,days:0,qty:1,
-          cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:"C"});
+      // CA: нет продаж — применяем правило пробного заказа если CA пустой
+      if(!isUS&&stock===0&&transit===0){
+        var abc_us=it.abc||"B";
+        var isTent=(it.go===0); // group 0 = Палатки
+        var probeQty=0;
+        if(isTent){
+          if(abc_us==="A"||abc_us==="B")probeQty=Math.min(3,Math.max(2,Math.ceil((it.sales_us_avg||0)*0.15)));
+          else probeQty=1; // C
+        } else {
+          if(abc_us==="A")probeQty=5;
+          else probeQty=2; // B or C
+        }
+        if(probeQty>0){
+          items.push({name:it.name,stock:0,transit:0,ordered:0,vel:0,days:0,qty:probeQty,
+            cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:abc_us,probe:true});
+        }
       }
       return;
     }
