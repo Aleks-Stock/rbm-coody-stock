@@ -248,20 +248,20 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
         <tr class="ch">
           <th class="us-col us-first" onclick="sortBy(0)" title="Текущий остаток на складе">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
           <th class="us-col" onclick="sortBy(1)" style="min-width:70px" title="Товар в пути (транзит)">&#1042; &#1087;&#1091;&#1090;&#1080;</th>
-          <th class="us-col" onclick="sortBy(2)" title="Среднее за последние 3 месяца (нажмите для деталей)">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
-          <th class="us-col" onclick="sortBy(14)" title="Прогноз продаж в месяц (нажмите для расчёта)">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
-          <th class="us-col" onclick="sortBy(3)" title="Продажи год к году (сравнение с прошлым годом)">Y/Y</th>
-          <th class="us-col" onclick="sortBy(4)" title="Дней до обнуления склада при текущих продажах">&#1044;&#1085;&#1077;&#1081;</th>
           <th class="us-col" style="color:#ef9a9a" title="Нужно заказать (US)">&#1053;&#1091;&#1078;&#1085;&#1086;</th>
-          <th class="us-col" onclick="sortBy(5)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
-          <th class="us-col us-last" style="font-size:8px;white-space:nowrap" title="Заказано для США на заводе">&#1047;&#1072;&#1082;&#1072;&#1079;.US</th>
+          <th class="us-col" style="font-size:9px;white-space:nowrap" title="Заказано для США на заводе">&#1047;&#1072;&#1082;&#1072;&#1079;.US</th>
+          <th class="us-col" onclick="sortBy(4)" title="Дней до обнуления склада при текущих продажах">&#1044;&#1085;&#1077;&#1081;</th>
+          <th class="us-col" onclick="sortBy(2)" title="Среднее за последние 3 месяца">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
+          <th class="us-col" onclick="sortBy(14)" title="Прогноз продаж в месяц">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
+          <th class="us-col" onclick="sortBy(3)" title="Продажи год к году">Y/Y</th>
+          <th class="us-col us-last" onclick="sortBy(5)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
           <th class="ca-col ca-first" onclick="sortBy(6)" title="Текущий остаток на складе">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
           <th class="ca-col" onclick="sortBy(7)" style="min-width:70px" title="Товар в пути (транзит)">&#1042; &#1087;&#1091;&#1090;&#1080;</th>
-          <th class="ca-col" onclick="sortBy(8)" title="Среднее за последние 3 месяца (нажмите для деталей)">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
-          <th class="ca-col" onclick="sortBy(15)" title="Прогноз продаж в месяц (нажмите для расчёта)">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
-          <th class="ca-col" onclick="sortBy(9)" title="Продажи год к году (сравнение с прошлым годом)">Y/Y</th>
-          <th class="ca-col" onclick="sortBy(10)" title="Дней до обнуления склада при текущих продажах">&#1044;&#1085;&#1077;&#1081;</th>
           <th class="ca-col" style="color:#a5d6a7" title="Нужно заказать (CA)">&#1053;&#1091;&#1078;&#1085;&#1086;</th>
+          <th class="ca-col" onclick="sortBy(10)" title="Дней до обнуления склада">&#1044;&#1085;&#1077;&#1081;</th>
+          <th class="ca-col" onclick="sortBy(8)" title="Среднее за последние 3 месяца">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
+          <th class="ca-col" onclick="sortBy(15)" title="Прогноз продаж в месяц">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
+          <th class="ca-col" onclick="sortBy(9)" title="Продажи год к году">Y/Y</th>
           <th class="ca-col ca-last" onclick="sortBy(11)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
           <th class="cn-first" onclick="sortBy(12)" title="Остаток на складе в Китае">&#1057;&#1082;&#1083;&#1072;&#1076; &#1050;&#1080;&#1090;&#1072;&#1081;</th><th class="cn-last" onclick="sortBy(13)" title="Средние продажи из Китая в месяц">&#1055;&#1088;&#1086;&#1076;/&#1084;&#1077;&#1089;</th>
         </tr>
@@ -560,12 +560,12 @@ function yoyCell(season, pct){
 
 function renderTable(){
   var tb=document.getElementById("tb2");
-  if(!fData.length){tb.innerHTML="<tr><td colspan=\"20\"><div class=\"es\">Ничего не найдено.</div></td></tr>";return;}
+  if(!fData.length){tb.innerHTML="<tr><td colspan=\"22\"><div class=\"es\">Ничего не найдено.</div></td></tr>";return;}
   var rows=[],lastG=null;
   fData.forEach(function(it,idx){
     if(!sortF&&it.gn!==lastG){
       lastG=it.gn;
-      rows.push("<tr class=\"grp-hdr\"><td colspan=\"20\">"+it.gn+"</td></tr>");
+      rows.push("<tr class=\"grp-hdr\"><td colspan=\"22\">"+it.gn+"</td></tr>");
     }
     var usT=it.in_transit_us>0?"<span class=\"trb\">+"+it.in_transit_us+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
     var caT=it.in_transit_ca>0?"<span class=\"trb\">+"+it.in_transit_ca+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
@@ -590,21 +590,23 @@ function renderTable(){
       "<tr>"+
       "<td class=\"pn\" style=\"position:sticky;left:0;z-index:4;background:#1a1d27\">"+it.name+(it.abc?"<span class=\"abc-badge abc-"+it.abc.toLowerCase()+"\">"+(it.abc==="A"?"★":it.abc==="C"?"↓":"")+it.abc+"</span>":"")+"</td>"+
       "<td class=\"us-col us-first\">"+usS+"</td>"+
-      "<td class=\"us-col\" style=\"min-width:75px\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
-      "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
-      "<td class=\"us-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
-      "<td class=\"us-col\">"+dUS+"</td>"+
+      "<td class=\"us-col\" style=\"min-width:60px\">"+(it.in_transit_us>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOntheway(event,this,"+idx+")\" title=\"&#1050;&#1083;&#1080;&#1082; — &#1076;&#1072;&#1090;&#1099; &#1087;&#1086;&#1089;&#1090;&#1072;&#1074;&#1082;&#1080;\">+"+it.in_transit_us+" &#128674;</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\">"+needUSCell+"</td>"+
-      "<td class=\"us-col\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
-      "<td class=\"us-col us-last\" style=\"text-align:center\">"+ord+"</td>"+
+      "<td class=\"us-col\" style=\"text-align:center;font-size:11px\">"+ord+"</td>"+
+      "<td class=\"us-col\">"+dUS+"</td>"+
+      "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+
+      "<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
+      "<td class=\"us-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
+      "<td class=\"us-col us-last\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
       "<td class=\"ca-col ca-first\">"+caS+"</td>"+
       "<td class=\"ca-col\">"+caT+"</td>"+
-      "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+"<td class=\"ca-col\" title=\"60% сезон + 40% тренд\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784;cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
-      "<td class=\"ca-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
+      "<td class=\"ca-col\">"+(function(){var velCA=it.sales_ca_avg||0;if(velCA<=0){var caStk=it.stock_ca||0,caTr=it.in_transit_ca||0;if(caStk===0&&caTr===0){var abc_us=it.abc||"B";var isTnt=(it.go===0);var pq=0;if(isTnt){if(abc_us==="A"||abc_us==="B")pq=Math.min(3,Math.max(2,Math.ceil((it.sales_us_avg||0)*0.15)));else pq=1;}else{if(abc_us==="A")pq=5;else pq=2;}if(pq>0)return"<b style=\"color:#81c784;opacity:0.7\">"+pq+"</b>";}return"<span class=\"sz\">&#8212;</span>";}var velCA2=it.sales_ca_avg||0;if(velCA2<=0)return"<span class=\"sz\">&#8212;</span>";var tmCA=it.abc==="A"?2.5:it.abc==="C"?1.5:2;var thCA=it.abc==="A"?75:it.abc==="C"?45:60;var dCA_days=velCA2>0?Math.floor((it.stock_ca+it.in_transit_ca)/(velCA2/30)):999;var nCA=dCA_days<thCA?Math.max(0,Math.ceil(velCA2*tmCA)-(it.stock_ca||0)-(it.in_transit_ca||0)):0;return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
       "<td class=\"ca-col\">"+dCA+"</td>"+
-      "<td class=\"ca-col\">"+(function(){var velCA=it.sales_ca_avg||0;if(velCA<=0)return"<span class=\"sz\">&#8212;</span>";var tmCA=it.abc==="A"?2.5:it.abc==="C"?1.5:2;var thCA=it.abc==="A"?75:it.abc==="C"?45:60;var dCA_days=caV>0?Math.floor(caAv/(caV)):999;var nCA=dCA_days<thCA?Math.max(0,Math.ceil(velCA*tmCA)-(it.stock_ca||0)-(it.in_transit_ca||0)):0;return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
-      "<td class=\"ca-col ca-last\">"+trendBadge(it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
-      "<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
+      "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+
+      "<td class=\"ca-col\" title=\"Нажмите для расчёта\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784;cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
+      "<td class=\"ca-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
+      "<td class=\"ca-col ca-last\">"+trendBadge(it.ca_last_trend||it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
+"<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
       
       "<td>"+(bmap[it.status]||"")+"</td>"+
       "<td><button class=\"ib\" onclick=\"openEdit("+idx+")\" title=\"Edit\">&#9998;</button></td>"+
