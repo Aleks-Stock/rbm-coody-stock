@@ -574,7 +574,7 @@ function renderTable(){
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
     var needUS=0;if(it.sales_us_avg>0){
-      var tmUS=it.abc==="A"?(it.days_left_us<30?3:2):it.abc==="C"?1:1.5;
+      var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
       var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
@@ -747,7 +747,7 @@ function openOrder(type){
     var abc=it.abc||"B";
     var thresh=abc==="A"?(isUS?60:75):abc==="C"?(isUS?30:45):(isUS?45:60);
     // US class A: extend to 3 months if days < 30 (running low)
-    var targetMos=abc==="A"?(isUS?(it.days_left_us<30?3:2):2.5):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
+    var targetMos=abc==="A"?(isUS?2:2.5):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
     if(days>=thresh)return;
@@ -1121,6 +1121,7 @@ function doRefresh(){
       if(ca){
         var curNormCA=0;
         if(ca[31]>0)curNormCA=Math.round(ca[31]*(30/days)*10)/10;
+        o._ca_cur=ca[31]||0;
         o.sales_ca_avg=calcAvg3WithCurrent(ca,curNormCA);
         o.sales_ca_trend=calcTrend3(ca);
         o.sales_ca_season=calcSeason_ca(ca);
@@ -1132,6 +1133,7 @@ function doRefresh(){
       }
       var cn=cnMap[r.name];
       if(cn){
+        o._cn_cur=cn[31]||0;
         o.sales_cn_avg=calcAvg3(cn);
         o._cn_v3=[cn[30]||0,cn[29]||0,cn[28]||0];
         o._cn_sea=[cn[19]||0,cn[20]||0,cn[21]||0];
