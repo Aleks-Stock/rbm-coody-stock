@@ -488,9 +488,15 @@ function renderKPI(){
   // Tent sales metrics (products with group "Палатки")
   var tentItems=allData.filter(function(it){return it.go===0;});
   var tentLY=0,tentLastMo=0,tentCurMo=0,tentFc=0;
+  var tentLY_us=0,tentLY_ca=0,tentLY_cn=0;
+  var tentLM_us=0,tentLM_ca=0,tentLM_cn=0;
+  tentCurUS=0;tentCurCA=0;tentCurCN=0;
   tentItems.forEach(function(it){
+    tentLY_us+=(it._sea&&it._sea[0]||0);tentLY_ca+=(it._ca_sea&&it._ca_sea[0]||0);tentLY_cn+=(it._cn_sea&&it._cn_sea[0]||0);
     tentLY+=(it._sea&&it._sea[0]||0)+(it._ca_sea&&it._ca_sea[0]||0)+(it._cn_sea&&it._cn_sea[0]||0);
+    tentLM_us+=(it._v3&&it._v3[0]||0);tentLM_ca+=(it._ca_v3&&it._ca_v3[0]||0);tentLM_cn+=(it._cn_v3&&it._cn_v3[0]||0);
     tentLastMo+=(it._v3&&it._v3[0]||0)+(it._ca_v3&&it._ca_v3[0]||0)+(it._cn_v3&&it._cn_v3[0]||0);
+    tentCurUS+=(it._us_cur||0);tentCurCA+=(it._ca_cur||0);tentCurCN+=(it._cn_cur||0);
     tentCurMo+=(it._us_cur||0)+(it._ca_cur||0)+(it._cn_cur||0);
     tentFc+=Math.round(((it.sales_us_avg||0)+(it.sales_ca_avg||0))*10)/10;
   });
@@ -501,8 +507,9 @@ function renderKPI(){
   var prevMonName=ruMon[(now.getMonth()+11)%12];
   var curMonLY=ruMon[now.getMonth()]+" "+(now.getFullYear()-1);
   function kpiTent(label,val,sub,fc){
-    var fcLine=fc!=null?"<div class=\"ks\" style=\"color:var(--al)\">&#8594; прогноз: "+Math.round(fc)+"</div>":"<div class=\"ks\">"+sub+"</div>";
-    return "<div class=\"kc\"><div class=\"kl\">"+label+"</div><div class=\"kv\">"+val+"</div>"+fcLine+"</div>";
+    var fcLine=fc!=null?"<div class=\"ks\" style=\"color:var(--al);font-size:9px\">&#8594; "+Math.round(fc)+"</div>":"";
+    var subLine="<div class=\"ks\" style=\"font-size:9px;color:var(--tx2)\">"+sub+"</div>";
+    return "<div class=\"kc\"><div class=\"kl\" style=\"font-size:8px\">"+label+"</div><div class=\"kv\">"+val+"</div>"+subLine+fcLine+"</div>";
   }
   document.getElementById("kr").innerHTML=
     "<div class=\"kr-row\">"+
@@ -517,8 +524,8 @@ function renderKPI(){
       kpi("&#1052;&#1072;&#1083;&#1086;",low_ca,"&lt;2&#1084;&#1077;&#1089;","o cl","filterLowCA()")+
       kpi("&#1057;&#1082;&#1083;&#1072;&#1076;",tca,"&#1077;&#1076;.","","")+
       kpi("&#1042;&#1087;&#1091;&#1090;&#1080;",tr_ca,"&#1090;&#1088;&#1072;&#1085;&#1079;","b","")+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonLY,tentLY,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1075;&#1086;&#1076;",null)+
-      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"&#1087;&#1088;&#1086;&#1096;&#1083;&#1099;&#1081; &#1084;&#1077;&#1089;.",null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonLY,tentLY,"US:"+tentLY_us+" CA:"+tentLY_ca+" CN:"+tentLY_cn,null)+
+      kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+prevMonName+" "+(now.getFullYear()),tentLastMo,"US:"+tentLM_us+" CA:"+tentLM_ca+" CN:"+tentLM_cn,null)+
       kpiTent("&#1055;&#1088;&#1086;&#1076;. &#1087;&#1072;&#1083;&#1072;&#1090;&#1086;&#1082; "+curMonName+" "+(now.getFullYear()),tentCurMo,"US:"+tentCurUS+" CA:"+tentCurCA+" CN:"+tentCurCN,tentFc)+
     "</div>";
 
