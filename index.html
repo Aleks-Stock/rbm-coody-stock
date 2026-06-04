@@ -1129,14 +1129,14 @@ function doRefresh(){
         o.trend_us=calcTrendFlag(us,curNorm);
         o._months=us._months||[]; o._seaMonths=us._seaMonths||[];
         o._v3=[us[30]||0,us[29]||0,us[28]||0]; o._sea=[us[19]||0,us[20]||0,us[21]||0];
-        o._us_cur=us[31]||0;
+        o._us_cur=Math.max(r._us_cur||0, us[31]||0);
         updated++;
       }
       var ca=caMap[r.name];
       if(ca){
         var curNormCA=0;
         if(ca[31]>0)curNormCA=Math.round(ca[31]*(30/days)*10)/10;
-        o._ca_cur=ca[31]||0;
+        o._ca_cur=Math.max(r._ca_cur||0, ca[31]||0);
         o.sales_ca_avg=calcAvg3WithCurrent(ca,curNormCA);
         o.sales_ca_trend=calcTrend3(ca);
         o.sales_ca_season=calcSeason_ca(ca);
@@ -1148,7 +1148,7 @@ function doRefresh(){
       }
       var cn=cnMap[r.name];
       if(cn){
-        o._cn_cur=cn[31]||0;
+        o._cn_cur=Math.max(r._cn_cur||0, cn[31]||0);
         o.sales_cn_avg=calcAvg3(cn);
         o._cn_v3=[cn[30]||0,cn[29]||0,cn[28]||0];
         o._cn_sea=[cn[19]||0,cn[20]||0,cn[21]||0];
