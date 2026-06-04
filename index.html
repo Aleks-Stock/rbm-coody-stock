@@ -574,7 +574,7 @@ function renderTable(){
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
     var needUS=0;if(it.sales_us_avg>0){
-      var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
+      var tmUS=it.abc==="A"?(it.days_left_us<30?3:2):it.abc==="C"?1:1.5;
       var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
@@ -746,7 +746,8 @@ function openOrder(type){
     var wu=isWuzhou(it.name);
     var abc=it.abc||"B";
     var thresh=abc==="A"?(isUS?60:75):abc==="C"?(isUS?30:45):(isUS?45:60);
-    var targetMos=abc==="A"?(isUS?2:2.5):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
+    // US class A: extend to 3 months if days < 30 (running low)
+    var targetMos=abc==="A"?(isUS?(it.days_left_us<30?3:2):2.5):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
     if(days>=thresh)return;
@@ -1321,36 +1322,26 @@ function calcAvg3WithCurrent(vals,curNorm){
 }
 
 function calcAvg3(vals){
-  // vals[30]=newest(May), vals[29]=Apr, vals[28]=Mar
   var v0=vals[30]||0, v1=vals[29]||0, v2=vals[28]||0;
   var season=Math.round(((vals[19]||0)+(vals[20]||0)+(vals[21]||0))/3*10)/10;
-  var months=[v2,v1,v0]; // oldest→newest
-  // Strip leading zeros (new product: no sales at start)
-  var start=0;
-  while(start<months.length&&months[start]===0)start++;
+  var months=[v2,v1,v0];
+  var start=0; while(start<months.length&&months[start]===0)start++;
   var active=months.slice(start);
   if(active.length===0)return 0;
-  // Trailing zero = real zero demand → plain average of active (includes the zero)
-  if(active[active.length-1]===0){
+  if(active[active.length-1]===0)
     return Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
-  }
-  // Only 1 month of data → use it directly
   if(active.length===1)return active[0];
-  // Only 2 months → use last month (not enough data for projection)
   if(active.length===2)return active[1];
-  // All 3 active, no zeros → 60/40 blend or linear if consistently growing
-  if(active[0]>0&&active[1]>0&&active[2]>0){
-    if(active[1]>active[0]&&active[2]>active[1]){
-      var slope=(active[2]-active[0])/2;
-      return Math.max(active[2],Math.round((active[2]+slope)*10)/10);
-    }
-    var trend3=Math.round((active[0]+active[1]+active[2])/3*10)/10;
-    if(season>0&&trend3>0)return Math.round((season*0.6+trend3*0.4)*10)/10;
-    if(season>0)return season;
-    return trend3;
+  if(active[0]>0&&active[1]>active[0]&&active[2]>active[1]){
+    var slope=(active[2]-active[0])/2;
+    return Math.max(active[2],Math.round((active[2]+slope)*10)/10);
   }
-  // 3 active with mid-zero: average of active
-  return Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
+  var trend3=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
+  // Skip season blend if trend >> season (season is outdated)
+  if(season>0&&trend3>0&&trend3<=season*1.5)
+    return Math.round((season*0.6+trend3*0.4)*10)/10;
+  if(season>0&&trend3===0)return season;
+  return trend3;
 }
 
 function calcSeason(vals){
