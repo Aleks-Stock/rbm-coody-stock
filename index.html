@@ -1129,7 +1129,7 @@ function doRefresh(){
         o.trend_us=calcTrendFlag(us,curNorm);
         o._months=us._months||[]; o._seaMonths=us._seaMonths||[];
         o._v3=[us[30]||0,us[29]||0,us[28]||0]; o._sea=[us[19]||0,us[20]||0,us[21]||0];
-        o._us_cur=Math.max(r._us_cur||0, us[31]||0);
+        o._us_cur=us[31]||0;
         updated++;
       }
       var ca=caMap[r.name];
@@ -1240,7 +1240,6 @@ function parseLastMonths(csvText){
   // Last 3 complete months (skip current if < 7 days)
   var last3=[];
   for(var i=0;i<allMonths.length&&last3.length<3;i++){
-    if(daysElapsed<7&&allMonths[i]>=curKey)continue;
     last3.push(allMonths[i]);
   }
   if(last3.length<3)return result;
