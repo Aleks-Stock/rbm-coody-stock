@@ -1240,6 +1240,7 @@ function parseLastMonths(csvText){
   // Last 3 complete months (skip current if < 7 days)
   var last3=[];
   for(var i=0;i<allMonths.length&&last3.length<3;i++){
+    if(allMonths[i]>=curKey)continue; // current month only in curRaw (vals[31])
     last3.push(allMonths[i]);
   }
   if(last3.length<3)return result;
