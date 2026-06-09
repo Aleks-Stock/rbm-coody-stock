@@ -624,8 +624,8 @@ function renderTable(){
       "<td class=\"ca-col ca-last\">"+trendBadge(it.ca_last_trend||it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
 "<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
       
-      "<td>"+(bmap[it.status]||"")+"</td>"+
-      "<td><button class=\"ib\" onclick=\"openEdit("+idx+")\" title=\"Edit\">&#9998;</button></td>"+
+      "<td style=\"display:none\">"+(bmap[it.status]||"")+"</td>"+
+      "<td style=\"display:none\"><button class=\"ib\" onclick=\"openEdit("+idx+")\" title=\"Edit\">&#9998;</button></td>"+
       "</tr>"
     );
   });
