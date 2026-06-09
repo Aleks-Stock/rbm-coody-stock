@@ -65,10 +65,12 @@ thead tr.ch th{padding:7px 9px;text-align:left;font-size:10px;text-transform:upp
 thead tr.ch th:hover{color:var(--tx)}
 th.us-col{background:var(--us-bg);border-left:1px solid rgba(66,165,245,.1)}
 th.us-first{border-left:2px solid var(--us-bd)}
-th.us-last{border-right:2px solid var(--us-bd)}
+th.us-last{display:none}
+th.us-yoy{border-right:2px solid var(--us-bd)}
 th.ca-col{background:var(--ca-bg);border-left:1px solid rgba(76,175,80,.1)}
 th.ca-first{border-left:2px solid var(--ca-bd)}
-th.ca-last{border-right:2px solid var(--ca-bd)}
+th.ca-last{display:none}
+th.ca-yoy{border-right:2px solid var(--ca-bd)}
 th.cn-first{background:var(--cn-bg);border-left:2px solid var(--cn-bd)}
 th.cn-last{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15);border-right:2px solid var(--cn-bd)}
 tbody tr{border-top:1px solid var(--bd);transition:background .1s}
@@ -77,10 +79,12 @@ tbody td{padding:7px 9px;vertical-align:middle}
 td.us-col.transit-col,td.ca-col.transit-col{min-width:70px}
 td.us-first{border-left:2px solid var(--us-bd);background:var(--us-bg)}
 td.us-col{background:var(--us-bg);border-left:1px solid rgba(66,165,245,.07)}
-td.us-last{border-right:2px solid var(--us-bd);background:var(--us-bg)}
+td.us-last{display:none}
+td.us-yoy{border-right:2px solid var(--us-bd);background:var(--us-bg)}
 td.ca-first{border-left:2px solid var(--ca-bd);background:var(--ca-bg)}
 td.ca-col{background:var(--ca-bg);border-left:1px solid rgba(76,175,80,.07)}
-td.ca-last{border-right:2px solid var(--ca-bd);background:var(--ca-bg)}
+td.ca-last{display:none}
+td.ca-yoy{border-right:2px solid var(--ca-bd);background:var(--ca-bg)}
 td.cn-first{background:var(--cn-bg);border-left:2px solid var(--cn-bd)}
 td.cn-last{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15);border-right:2px solid var(--cn-bd)}
 tr.grp-hdr td{background:var(--sf2);padding:5px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--al);border-top:2px solid var(--bd)}
@@ -253,7 +257,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
           <th class="us-col" onclick="sortBy(4)" title="Дней до обнуления склада при текущих продажах">&#1044;&#1085;&#1077;&#1081;</th>
           <th class="us-col" onclick="sortBy(2)" title="Среднее за последние 3 месяца">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
           <th class="us-col" onclick="sortBy(14)" title="Прогноз продаж в месяц">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
-          <th class="us-col" onclick="sortBy(3)" title="Продажи год к году">Y/Y</th>
+          <th class="us-col us-yoy" onclick="sortBy(3)" title="Продажи год к году">Y/Y</th>
           <th class="us-col us-last" onclick="sortBy(5)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
           <th class="ca-col ca-first" onclick="sortBy(6)" title="Текущий остаток на складе">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
           <th class="ca-col" onclick="sortBy(7)" style="min-width:70px" title="Товар в пути (транзит)">&#1042; &#1087;&#1091;&#1090;&#1080;</th>
@@ -261,7 +265,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
           <th class="ca-col" onclick="sortBy(10)" title="Дней до обнуления склада">&#1044;&#1085;&#1077;&#1081;</th>
           <th class="ca-col" onclick="sortBy(8)" title="Среднее за последние 3 месяца">&#1057;&#1088;.3&#1084;&#1077;&#1089;</th>
           <th class="ca-col" onclick="sortBy(15)" title="Прогноз продаж в месяц">&#1055;&#1088;&#1086;&#1075;&#1085;&#1086;&#1079;</th>
-          <th class="ca-col" onclick="sortBy(9)" title="Продажи год к году">Y/Y</th>
+          <th class="ca-col ca-yoy" onclick="sortBy(9)" title="Продажи год к году">Y/Y</th>
           <th class="ca-col ca-last" onclick="sortBy(11)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
           <th class="cn-first" onclick="sortBy(12)" title="Остаток на складе в Китае">&#1057;&#1082;&#1083;&#1072;&#1076; &#1050;&#1080;&#1090;&#1072;&#1081;</th><th class="cn-last" onclick="sortBy(13)" title="Средние продажи из Китая в месяц">&#1055;&#1088;&#1086;&#1076;/&#1084;&#1077;&#1089;</th>
         </tr>
@@ -608,7 +612,7 @@ function renderTable(){
       "<td class=\"us-col\">"+dUS+"</td>"+
       "<td class=\"us-col\">"+((it.sales_us_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'US')\">"+it.sales_us_trend+"</span>":"&#8212;")+"</td>"+
       "<td class=\"us-col\" title=\"Нажмите для расчёта\">"+((it.sales_us_avg||0)>0?"<b style=\"color:var(--al);cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'US')\">"+it.sales_us_avg+"</b>":"&#8212;")+"</td>"+
-      "<td class=\"us-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
+      "<td class=\"us-col us-yoy\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_us_season,it.yoy_us)+"</td>"+
       "<td class=\"us-col us-last\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
       "<td class=\"ca-col ca-first\">"+caS+"</td>"+
       "<td class=\"ca-col\">"+caT+"</td>"+
@@ -616,7 +620,7 @@ function renderTable(){
       "<td class=\"ca-col\">"+dCA+"</td>"+
       "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+
       "<td class=\"ca-col\" title=\"Нажмите для расчёта\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784;cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
-      "<td class=\"ca-col\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
+      "<td class=\"ca-col ca-yoy\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
       "<td class=\"ca-col ca-last\">"+trendBadge(it.ca_last_trend||it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
 "<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
       
