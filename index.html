@@ -590,15 +590,14 @@ function renderTable(){
       var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
       var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
       var availUS=it.stock_us+it.in_transit_us;
-      if(availUS<2&&(it.ordered_us||0)===0){
-        // Safety: only 1 unit left — order 2
-        needUS=2;
-      } else if(it.days_left_us<thUS){
+      if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
         var freeUS=Math.max(0,availUS-(it._us_cur||0));
         needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));
         if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);
-        if(needUS>0)needUS=Math.max(2,needUS);}}
+        if(needUS>0)needUS=Math.max(2,needUS);}
+      // Safety: if only 1 unit left, nothing ordered, and normal calc didn't fire — order 2
+      if(needUS===0&&availUS<2&&(it.ordered_us||0)===0)needUS=2;}}
     var needUSCell=needUS>0?"<b style=\"color:#ef9a9a\">"+needUS+"</b>":"<span class=\"sz\">&#8212;</span>";
     var caAv=it.stock_ca+it.in_transit_ca;
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
