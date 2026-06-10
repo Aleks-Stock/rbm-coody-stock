@@ -589,9 +589,13 @@ function renderTable(){
     var needUS=0;if(it.sales_us_avg>0){
       var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
       var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
-      if(it.days_left_us<thUS){
+      var availUS=it.stock_us+it.in_transit_us;
+      if(availUS<2&&(it.ordered_us||0)===0){
+        // Safety: only 1 unit left — order 2
+        needUS=2;
+      } else if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
-        var freeUS=Math.max(0,it.stock_us+it.in_transit_us-(it._us_cur||0));
+        var freeUS=Math.max(0,availUS-(it._us_cur||0));
         needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));
         if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);
         if(needUS>0)needUS=Math.max(2,needUS);}}
