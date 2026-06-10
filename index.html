@@ -587,13 +587,14 @@ function renderTable(){
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
     var needUS=0;if(it.sales_us_avg>0){
-      var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
-      var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
+      var tmUS=it.abc==="A"?(80/30):it.abc==="C"?1:1.5;
+      var thUS=it.abc==="A"?80:it.abc==="C"?30:45;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
         var freeUS=Math.max(0,it.stock_us+it.in_transit_us-(it._us_cur||0));
         needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));
-        if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);}}
+        if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);
+        if(needUS>0)needUS=Math.max(2,needUS);}}
     var needUSCell=needUS>0?"<b style=\"color:#ef9a9a\">"+needUS+"</b>":"<span class=\"sz\">&#8212;</span>";
     var caAv=it.stock_ca+it.in_transit_ca;
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
@@ -615,7 +616,7 @@ function renderTable(){
       "<td class=\"us-col us-last\">"+trendBadge(it.trend_us,it.yoy_us,it.growth_pct_us)+"</td>"+
       "<td class=\"ca-col ca-first\">"+caS+"</td>"+
       "<td class=\"ca-col\">"+caT+"</td>"+
-      "<td class=\"ca-col\">"+(function(){var velCA=it.sales_ca_avg||0;if(velCA<=0){var caStk=it.stock_ca||0,caTr=it.in_transit_ca||0;if(caStk===0&&caTr===0){var abc_us=it.abc||"B";var isTnt=(it.go===0);var pq=0;if(isTnt){if(abc_us==="A"||abc_us==="B")pq=Math.min(3,Math.max(2,Math.ceil((it.sales_us_avg||0)*0.15)));else pq=1;}else{if(abc_us==="A")pq=5;else pq=2;}if(pq>0)return"<b style=\"color:#81c784;opacity:0.7\">"+pq+"</b>";}return"<span class=\"sz\">&#8212;</span>";}var velCA2=it.sales_ca_avg||0;if(velCA2<=0)return"<span class=\"sz\">&#8212;</span>";var tmCA=it.abc==="A"?2.5:it.abc==="C"?1.5:2;var thCA=it.abc==="A"?75:it.abc==="C"?45:60;var dCA_days=velCA2>0?Math.floor((it.stock_ca+it.in_transit_ca)/(velCA2/30)):999;var nCA=dCA_days<thCA?Math.max(0,Math.ceil(velCA2*tmCA)-(it.stock_ca||0)-(it.in_transit_ca||0)-(it.ordered_ca||0)):0;return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
+      "<td class=\"ca-col\">"+(function(){var velCA=it.sales_ca_avg||0;if(velCA<=0){var caStk=it.stock_ca||0,caTr=it.in_transit_ca||0;if(caStk===0&&caTr===0){var abc_us=it.abc||"B";var isTnt=(it.go===0);var pq=0;if(isTnt){if(abc_us==="A"||abc_us==="B")pq=Math.min(3,Math.max(2,Math.ceil((it.sales_us_avg||0)*0.15)));else pq=1;}else{if(abc_us==="A")pq=5;else pq=2;}if(pq>0)return"<b style=\"color:#81c784;opacity:0.7\">"+pq+"</b>";}return"<span class=\"sz\">&#8212;</span>";}var velCA2=it.sales_ca_avg||0;if(velCA2<=0)return"<span class=\"sz\">&#8212;</span>";var tmCA=it.abc==="A"?(80/30):it.abc==="C"?1.5:2;var thCA=it.abc==="A"?80:it.abc==="C"?45:60;var dCA_days=velCA2>0?Math.floor((it.stock_ca+it.in_transit_ca)/(velCA2/30)):999;var nCA=dCA_days<thCA?Math.max(0,Math.ceil(velCA2*tmCA)-(it.stock_ca||0)-(it.in_transit_ca||0)-(it.ordered_ca||0)):0;if(nCA>0)nCA=Math.max(2,nCA);return nCA>0?"<b style=\"color:#a5d6a7\">"+nCA+"</b>":"<span class=\"sz\">&#8212;</span>";})()+"</td>"+
       "<td class=\"ca-col\">"+dCA+"</td>"+
       "<td class=\"ca-col\">"+((it.sales_ca_trend||0)>0?"<span class=\"trend-num\" onclick=\"showDetail(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_trend+"</span>":"&#8212;")+"</td>"+
       "<td class=\"ca-col\" title=\"Нажмите для расчёта\">"+((it.sales_ca_avg||0)>0?"<b style=\"color:#81c784;cursor:pointer\" onclick=\"showForecast(event,this,fData["+idx+"],'CA')\">"+it.sales_ca_avg+"</b>":"&#8212;")+"</td>"+
@@ -748,7 +749,7 @@ function openOrder(type){
         var probeQty=0;
         if(isTent){
           if(abc_us==="A"||abc_us==="B")probeQty=Math.min(3,Math.max(2,Math.ceil((it.sales_us_avg||0)*0.15)));
-          else probeQty=1; // C
+          else probeQty=2; // C — factory minimum 2
         } else {
           if(abc_us==="A")probeQty=5;
           else probeQty=2; // B or C
@@ -762,22 +763,23 @@ function openOrder(type){
     }
     var wu=isWuzhou(it.name);
     var abc=it.abc||"B";
-    var thresh=abc==="A"?(isUS?60:75):abc==="C"?(isUS?30:45):(isUS?45:60);
-    // US class A: extend to 3 months if days < 30 (running low)
-    var targetMos=abc==="A"?(isUS?2:2.5):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
+    var thresh=abc==="A"?80:abc==="C"?(isUS?30:45):(isUS?45:60);
+    var targetMos=abc==="A"?(80/30):abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
-    if(days>=thresh)return;
+    // Safety stock: if only 1 unit available — force order even if days OK
+    if(days>=thresh&&avail>=2)return;
     var target=Math.ceil(vel*targetMos);
     // Subtract current month raw sales (already committed/shipped)
     var curSold=isUS?(it._us_cur||0):((it._ca_cur||0));
     var freeAvail=Math.max(0,stock+transit-curSold);
     var qty=Math.max(0,target-freeAvail-ordered);
-    if(qty<=0)return;
+    if(qty<=0&&avail>=2)return;
     // +10% for growing products
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
     var growPct=isUS?(it.growth_pct_us||0):(it.growth_pct_ca||0);
     if(growing&&qty>0)qty=Math.ceil(qty*1.20);
+    qty=Math.max(2,qty); // factory minimum 2 units
     items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu});
   });
   // Sort by product group order (same as main table)
