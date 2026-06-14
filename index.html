@@ -394,7 +394,7 @@ function calcABC(allData){
   allData.forEach(function(it){
     var vel=it._adjVel||0;
     var med=medians[it.gn||""]||1;
-    var growing=(it.trend_us||0)>=2;
+    var growing=(it.trend_us||0)>=1;
     var aboveAvg=vel>=med*1.2;
     var fallingYoY=(it.yoy_us!=null&&it.yoy_us<-20);
     // C: vel≤2 AND не растёт
