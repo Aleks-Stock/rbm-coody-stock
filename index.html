@@ -1054,17 +1054,37 @@ var SHEET_URLS={
   ca:"/api/sheets/ca",
   cn:"/api/sheets/cn",
   stock_us:"/api/sheets/stock_us",
+  stock_cn:"/api/sheets/stock_cn",
   stock_ca:"/api/sheets/stock_ca",
-  ontheway:"/api/sheets/ontheway"
+  ontheway:"/api/sheets/ontheway",
+  ontheway_ca:"/api/sheets/ontheway_ca"
 };
 var _onthewayData={};  // {name: [{date:"06.06.2026",qty:2},...]}
 
 function parseStockUS(csvText){
   var result={};
   var rows=pcsv(csvText);
+  if(!rows.length)return result;
+  var hdr=rows[0];
+  var ordCol=4; // default col E = Заказано на заводе
+  for(var c=0;c<hdr.length;c++){if(hdr[c]&&hdr[c].replace(/\s/g,'').toLowerCase().indexOf('заказано')>=0){ordCol=c;break;}}
   rows.slice(1).forEach(function(row){
     var name=row[1]&&row[1].trim();if(!name)return;
-    result[name]={in_transit:si(row[2]),stock:si(row[3]),cn_stock:si(row[4]),ordered:Math.max(0,si(row[5]))};
+    result[name]={in_transit:si(row[2]),stock:si(row[3]),ordered:Math.max(0,si(row[ordCol])||0)};
+  });
+  return result;
+}
+function parseStockCN(csvText){
+  var result={};
+  var rows=pcsv(csvText);
+  if(!rows.length)return result;
+  var hdr=rows[0];
+  var ordCol=-1;
+  for(var c=0;c<hdr.length;c++){if(hdr[c]&&hdr[c].replace(/\s/g,'').toLowerCase().indexOf('заказано')>=0){ordCol=c;break;}}
+  rows.slice(1).forEach(function(row){
+    var name=row[1]&&row[1].trim();if(!name)return;
+    var ordered=ordCol>=0?Math.max(0,si(row[ordCol])||0):0;
+    result[name]={stock:si(row[2]),ordered:ordered};
   });
   return result;
 }
@@ -1116,22 +1136,25 @@ function doRefresh(){
   if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
   toast("Загружаю данные из Google Sheets...","");
   function sf(k){return fetchSheet(SHEET_URLS[k]).catch(function(){return "";});}
-  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_ca"),sf("ontheway")])
+  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_cn"),sf("stock_ca"),sf("ontheway"),sf("ontheway_ca")])
   .then(function(results){
     var days=new Date().getDate();
     var usMap=results[0]?parseLastMonths(results[0]):{};
     var caMap=results[1]?parseLastMonths(results[1]):{};
     var cnMap=results[2]?parseLastMonths(results[2]):{};
     var stockUS=results[3]?parseStockUS(results[3]):{};
-    var stockCA=results[4]?parseStockCA(results[4]):{};
-    if(results[5])_onthewayData=parseOntheway(results[5]);
+    var stockCN=results[4]?parseStockCN(results[4]):{};
+    var stockCA=results[5]?parseStockCA(results[5]):{};
+    if(results[6])_onthewayData=parseOntheway(results[6]);
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
       // Apply live stock data
       var sus=stockUS[r.name];
-      if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.stock_cn=sus.cn_stock;o.ordered_us=sus.ordered||0;}
+      if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.ordered_us=sus.ordered||0;}
+      var scn=stockCN[r.name];
+      if(scn){o.stock_cn=scn.stock;o.ordered_cn=scn.ordered||0;}
       var sca=stockCA[r.name];
       if(sca){o.stock_ca=sca.stock;o.in_transit_ca=sca.in_transit;o.ordered_ca=sca.ordered||0;}
       var us=usMap[r.name];
@@ -1193,7 +1216,9 @@ function doRefresh(){
         _v3:[us[30]||0,us[29]||0,us[28]||0],_sea:[us[19]||0,us[20]||0,us[21]||0],
         _months:us._months||[],_seaMonths:us._seaMonths||[],_us_cur:us[31]||0};
       var sus=stockUS[name];
-      if(sus){newItem.stock_us=sus.stock;newItem.in_transit_us=sus.in_transit;newItem.stock_cn=sus.cn_stock;newItem.ordered_us=sus.ordered||0;}
+      if(sus){newItem.stock_us=sus.stock;newItem.in_transit_us=sus.in_transit;newItem.ordered_us=sus.ordered||0;}
+      var scn2=stockCN[name];
+      if(scn2){newItem.stock_cn=scn2.stock;newItem.ordered_cn=scn2.ordered||0;}
       SOURCE.push(newItem);
       merged.push(Object.assign({},newItem));
       console.log("[auto] New product:", name);
