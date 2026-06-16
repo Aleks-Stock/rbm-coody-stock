@@ -12,9 +12,11 @@ const SHEET_URLS = {
   us:       [`${BASE_PUB}&gid=0`,           `${BASE_GVIZ}&sheet=Sales+2024-2026+USA`],
   ca:       [`${BASE_PUB}&gid=1819427614`,  `${BASE_GVIZ}&gid=1819427614`],
   cn:       [`${BASE_PUB}&gid=1442270003`,  `${BASE_GVIZ}&gid=1442270003`],
-  stock_us: [`${BASE_GVIZ}&sheet=Stock_USA-China_ORDER`],
-  stock_ca: [`${BASE_GVIZ}&sheet=Stock-Canada`],
-  ontheway: [`${BASE_GVIZ}&sheet=Ontheway_USA`]
+  stock_us:    [`${BASE_GVIZ}&sheet=Stock_USA`],
+  stock_cn:    [`${BASE_GVIZ}&sheet=Stock_China`],
+  stock_ca:    [`${BASE_GVIZ}&sheet=Stock-Canada`],
+  ontheway:    [`${BASE_GVIZ}&sheet=Ontheway_USA`],
+  ontheway_ca: [`${BASE_GVIZ}&sheet=Ontheway_CANADA`]
 };
 
 const PORT = process.env.PORT || 3000;
