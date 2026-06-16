@@ -72,6 +72,7 @@ th.ca-first{border-left:2px solid var(--ca-bd)}
 th.ca-last{display:none}
 th.ca-yoy{border-right:2px solid var(--ca-bd)}
 th.cn-first{background:var(--cn-bg);border-left:2px solid var(--cn-bd)}
+th.cn-col{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15)}
 th.cn-last{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15);border-right:2px solid var(--cn-bd)}
 tbody tr{border-top:1px solid var(--bd);transition:background .1s}
 tbody tr:hover{background:var(--sf2)}
@@ -86,6 +87,7 @@ td.ca-col{background:var(--ca-bg);border-left:1px solid rgba(76,175,80,.07)}
 td.ca-last{display:none}
 td.ca-yoy{border-right:2px solid var(--ca-bd);background:var(--ca-bg)}
 td.cn-first{background:var(--cn-bg);border-left:2px solid var(--cn-bd)}
+td.cn-col{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15)}
 td.cn-last{background:var(--cn-bg);border-left:1px solid rgba(255,193,7,.15);border-right:2px solid var(--cn-bd)}
 tr.grp-hdr td{background:var(--sf2);padding:5px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--al);border-top:2px solid var(--bd)}
 .pn{font-weight:500;font-size:13px}
@@ -245,7 +247,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
           <th rowspan="2" style="position:sticky;left:0;z-index:12;background:var(--sf2);padding:8px 10px;text-align:left;font-size:11px;color:var(--tx2);border-bottom:1px solid var(--bd);border-right:1px solid var(--bd);min-width:120px;white-space:nowrap">&#1058;&#1054;&#1042;&#1040;&#1056;</th>
           <th colspan="8" class="us-gh">&#1057;&#1064;&#1040; (US)</th>
           <th colspan="8" class="ca-gh">&#1050;&#1040;&#1053;&#1040;&#1044;&#1040; (CA)</th>
-          <th colspan="2" class="cn-gh">&#1050;&#1048;&#1058;&#1040;&#1049;</th>
+          <th colspan="3" class="cn-gh">&#1050;&#1048;&#1058;&#1040;&#1049;</th>
         </tr>
         <tr class="ch">
           <th class="us-col us-first" onclick="sortBy(0)" title="Текущий остаток на складе">&#1057;&#1082;&#1083;&#1072;&#1076;</th>
@@ -266,7 +268,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
           <th class="ca-col" style="font-size:9px;white-space:nowrap" title="Заказано для Канады на заводе">&#1047;&#1072;&#1082;&#1072;&#1079;.CA</th>
           <th class="ca-col ca-yoy" onclick="sortBy(9)" title="Продажи год к году">Y/Y</th>
           <th class="ca-col ca-last" onclick="sortBy(11)" title="Тренд продаж: рост / стабильно / падение">&#1058;&#1088;&#1077;&#1085;&#1076;</th>
-          <th class="cn-first" onclick="sortBy(12)" title="Остаток на складе в Китае">&#1057;&#1082;&#1083;&#1072;&#1076; &#1050;&#1080;&#1090;&#1072;&#1081;</th><th class="cn-last" onclick="sortBy(13)" title="Средние продажи из Китая в месяц">&#1055;&#1088;&#1086;&#1076;/&#1084;&#1077;&#1089;</th>
+          <th class="cn-first" onclick="sortBy(12)" title="Остаток на складе в Китае">&#1057;&#1082;&#1083;&#1072;&#1076; &#1050;&#1080;&#1090;&#1072;&#1081;</th><th class="cn-col" style="font-size:9px;white-space:nowrap" title="Заказано для Китая на заводе">&#1047;&#1072;&#1082;&#1072;&#1079;.CN</th><th class="cn-last" onclick="sortBy(13)" title="Средние продажи из Китая в месяц">&#1055;&#1088;&#1086;&#1076;/&#1084;&#1077;&#1089;</th>
         </tr>
       </thead>
       <tbody id="tb2"></tbody>
@@ -626,7 +628,9 @@ function renderTable(){
       "<td class=\"ca-col\" style=\"text-align:center;font-size:11px\">"+((it.ordered_ca||0)>0?"<span class=\"oc\">"+(it.ordered_ca||0)+"</span>":"<span class=\"oz\">&#8212;</span>")+"</td>"+
       "<td class=\"ca-col ca-yoy\" style=\"white-space:nowrap;font-size:11px\">"+yoyCell(it.sales_ca_season,it.yoy_ca)+"</td>"+
       "<td class=\"ca-col ca-last\">"+trendBadge(it.ca_last_trend||it.trend_ca,it.yoy_ca,it.growth_pct_ca)+"</td>"+
-"<td class=\"cn-first\">"+cnS+"</td>"+"<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
+"<td class=\"cn-first\">"+cnS+"</td>"+
+      "<td class=\"cn-col\" style=\"text-align:center;font-size:11px\">"+((it.ordered_cn||0)>0?"<span class=\"oc\">"+(it.ordered_cn||0)+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
+      "<td class=\"cn-last\">"+((it.sales_cn_avg||0)>0?"<span style=\"color:#ffca28\">"+it.sales_cn_avg+"</span>":"<span class=\"sz\">&#8212;</span>")+"</td>"+
       
       "<td style=\"display:none\">"+(bmap[it.status]||"")+"</td>"+
       "<td style=\"display:none\"><button class=\"ib\" onclick=\"openEdit("+idx+")\" title=\"Edit\">&#9998;</button></td>"+
