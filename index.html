@@ -1096,14 +1096,25 @@ function parseStockCA(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(!rows.length)return result;
-  // find "Заказано" column index from header
   var hdr=rows[0];
-  var ordCol=4; // default: col E = Заказано на заводе
-  for(var c=0;c<hdr.length;c++){if(hdr[c]&&hdr[c].replace(/\s/g,'').toLowerCase().indexOf('заказано')>=0){ordCol=c;break;}}
+  // Find columns by header name — robust against missing or reordered columns
+  var transitCol=-1,stockCol=-1,ordCol=-1;
+  for(var c=0;c<hdr.length;c++){
+    var h=hdr[c]?hdr[c].replace(/\s/g,'').toLowerCase():'';
+    if(transitCol<0&&(h.indexOf('пути')>=0||h.indexOf('транз')>=0))transitCol=c;
+    else if(stockCol<0&&(h.indexOf('остат')>=0||h.indexOf('налич')>=0))stockCol=c;
+    if(ordCol<0&&h.indexOf('заказано')>=0)ordCol=c;
+  }
+  // Fallback: if neither transit nor stock found by header, use position-based
+  if(transitCol<0&&stockCol<0){transitCol=2;stockCol=3;}
+  else if(transitCol<0){transitCol=-1;}// no В ПУТИ col yet — set transit=0
+  if(stockCol<0)stockCol=transitCol>=0?3:2;
+  if(ordCol<0)ordCol=4;
   rows.slice(1).forEach(function(row){
     var name=row[1]&&row[1].trim();if(!name)return;
+    var transit=transitCol>=0?si(row[transitCol]):0;
     var ordered=Math.max(0,si(row[ordCol])||0);
-    result[name]={in_transit:si(row[2]),stock:si(row[3]),ordered:ordered};
+    result[name]={in_transit:transit,stock:si(row[stockCol]),ordered:ordered};
   });
   return result;
 }
