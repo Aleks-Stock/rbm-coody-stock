@@ -14,7 +14,7 @@ const SHEET_URLS = {
   cn:          [`${BASE_PUB}&gid=1442270003`, `${BASE_GVIZ}&gid=1442270003`],
   stock_us:    [`${BASE_GVIZ}&sheet=Stock_USA`],
   stock_cn:    [`${BASE_GVIZ}&sheet=Stock_China`],
-  stock_ca:    [`${BASE_GVIZ}&sheet=Stock-Canada`],
+  stock_ca:    [`${BASE_GVIZ}&sheet=Stock_Canada`],
   ontheway:    [`${BASE_GVIZ}&sheet=Ontheway_USA`],
   ontheway_ca: [`${BASE_GVIZ}&sheet=Ontheway_CANADA`]
 };
