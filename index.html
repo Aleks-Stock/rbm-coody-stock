@@ -1114,16 +1114,12 @@ function parseStockCA(csvText){
   if(transitCol<0)transitCol=nameCol+1;
   if(stockCol<0)stockCol=nameCol+2;
   if(ordCol<0)ordCol=nameCol+3;
-  console.log('[CA] hdr:', JSON.stringify(hdr));
-  console.log('[CA] nameCol:',nameCol,'transitCol:',transitCol,'stockCol:',stockCol,'ordCol:',ordCol);
-  console.log('[CA] row1:', JSON.stringify(rows[1]));
   rows.slice(1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     var transit=si(row[transitCol])||0;
     var ordered=Math.max(0,si(row[ordCol])||0);
     result[name]={in_transit:transit,stock:si(row[stockCol]),ordered:ordered};
   });
-  console.log('[CA] parsed keys:', Object.keys(result).slice(0,5));
   return result;
 }
 function parseOntheway(csvText){
