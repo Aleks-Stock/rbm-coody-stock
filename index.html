@@ -1097,7 +1097,7 @@ function parseStockCA(csvText){
   var rows=pcsv(csvText);
   if(!rows.length)return result;
   var hdr=rows[0];
-  // Find columns by header name — robust against missing or reordered columns
+  // Find data columns by header name
   var transitCol=-1,stockCol=-1,ordCol=-1;
   for(var c=0;c<hdr.length;c++){
     var h=hdr[c]?hdr[c].replace(/\s/g,'').toLowerCase():'';
@@ -1105,14 +1105,18 @@ function parseStockCA(csvText){
     else if(stockCol<0&&(h.indexOf('остат')>=0||h.indexOf('налич')>=0))stockCol=c;
     if(ordCol<0&&h.indexOf('заказано')>=0)ordCol=c;
   }
-  // Fallback: if neither transit nor stock found by header, use position-based
-  if(transitCol<0&&stockCol<0){transitCol=2;stockCol=3;}
-  else if(transitCol<0){transitCol=-1;}// no В ПУТИ col yet — set transit=0
-  if(stockCol<0)stockCol=transitCol>=0?3:2;
-  if(ordCol<0)ordCol=4;
+  // Determine name column: col A (0) if sheet has no row-number prefix, else col B (1)
+  // Detect by checking if hdr[0] is a data field header — if not, it's the name column
+  var h0=hdr[0]?hdr[0].replace(/\s/g,'').toLowerCase():'';
+  var isDataHdr=h0.indexOf('пути')>=0||h0.indexOf('остат')>=0||h0.indexOf('заказано')>=0||h0.indexOf('склад')>=0;
+  var nameCol=(h0.length>0&&!isDataHdr&&!/^\d+$/.test(h0))?0:1;
+  // Fallback column positions relative to nameCol
+  if(transitCol<0)transitCol=nameCol+1;
+  if(stockCol<0)stockCol=nameCol+2;
+  if(ordCol<0)ordCol=nameCol+3;
   rows.slice(1).forEach(function(row){
-    var name=row[1]&&row[1].trim();if(!name)return;
-    var transit=transitCol>=0?si(row[transitCol]):0;
+    var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
+    var transit=si(row[transitCol])||0;
     var ordered=Math.max(0,si(row[ordCol])||0);
     result[name]={in_transit:transit,stock:si(row[stockCol]),ordered:ordered};
   });
