@@ -203,15 +203,18 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
 
 .gear-btn{background:none;border:1px solid var(--bd);color:var(--tx2);border-radius:6px;padding:4px 8px;font-size:16px;cursor:pointer;margin-left:8px;transition:all .15s}
 .gear-btn:hover{border-color:var(--ac);color:var(--tx)}
-.cfg-box{width:420px;max-width:95vw;background:var(--sf);border:1px solid var(--ac);border-radius:10px}
-.cfg-hint{font-size:11px;color:var(--tx2);margin:0 0 14px}
-.cfg-cols{display:flex;gap:24px}
+.cfg-box{width:440px;max-width:95vw;background:var(--sf);border:1px solid var(--ac);border-radius:10px;padding:20px 24px;position:relative}
+.cfg-box .modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cfg-box .close-btn{background:none;border:none;color:var(--tx2);font-size:18px;cursor:pointer;line-height:1;padding:0;position:absolute;top:14px;right:14px}
+.cfg-box .close-btn:hover{color:var(--tx)}
+.cfg-hint{font-size:11px;color:var(--tx2);margin:0 0 16px}
+.cfg-cols{display:flex;gap:28px}
 .cfg-col{flex:1}
-.cfg-col-title{font-size:12px;font-weight:bold;color:var(--al);margin-bottom:10px}
+.cfg-col-title{font-size:12px;font-weight:bold;color:var(--al);margin-bottom:12px}
 .cfg-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px;color:var(--tx2)}
 .cfg-inp{width:64px;background:var(--sf2);border:1px solid var(--bd);color:var(--tx);border-radius:4px;padding:4px 6px;font-size:13px;text-align:center}
 .cfg-inp:focus{outline:none;border-color:var(--ac)}
-.save-btn{margin-top:16px;width:100%;background:var(--ac);color:#fff;border:none;border-radius:6px;padding:9px;font-size:13px;cursor:pointer;font-weight:bold}
+.save-btn{margin-top:18px;width:100%;background:var(--ac);color:#fff;border:none;border-radius:6px;padding:9px;font-size:13px;cursor:pointer;font-weight:bold}
 .save-btn:hover{background:var(--al)}
 @media(max-width:768px){.gear-btn{display:none}}
 </style>
@@ -1555,7 +1558,7 @@ function saveCfg(){
   });
   localStorage.setItem('rbm_cfg',JSON.stringify(CFG));
   closeCfg();
-  build(allData.map(function(it){return it;}));
+  applyFilter();
   toast('\u041d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u044b','success');
 }
 </script>
