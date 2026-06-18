@@ -1490,4 +1490,55 @@ function showDetail(evt,el,item,market){
   if(!isCA){
     var now=new Date();
     var d=now.getDate();
-    var curNorm=Math.round(c
+    var curNorm=Math.round(curRaw*(30/d)*10)/10;
+    var curKey=(now.getFullYear()*100+now.getMonth()+1);
+    html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Текущий месяц (день "+d+")</div>";
+    html2+="<div class='row'><span class='lbl'>"+fmtKey(curKey)+" (факт)</span><span class='val'>"+curRaw+"</span></div>";
+    html2+="<div class='row'><span class='lbl'>→ прогноз мес</span><span class='val' style='color:var(--or)'>"+curNorm+"</span></div>";
+  }
+  html2+="<div style='margin:8px 0 4px;font-size:10px;color:var(--tx2)'>Сезон LY ("+fmtKey(sea[0])+"–"+fmtKey(sea[2])+")</div>";
+  [0,1,2].forEach(function(i){
+    var v=searaw[i]!==undefined?searaw[i]:(vals[19+i]||0);
+    html2+="<div class='row'><span class='lbl'>"+fmtKey(sea[i])+"</span><span class='val'>"+v+"</span></div>";
+  });
+  p.innerHTML=html2;
+  _popup=p;
+  document.body.appendChild(p);
+  var rect=evt.target.getBoundingClientRect();
+  var ph=p.offsetHeight||200;
+  var spaceBelow=window.innerHeight-rect.bottom-10;
+  var top=spaceBelow>=ph?rect.bottom+6:Math.max(10,rect.top-ph-6);
+  p.style.top=top+"px";
+  p.style.left=Math.min(rect.left,window.innerWidth-250)+"px";
+  evt.stopPropagation();
+}
+document.addEventListener('click',function(){if(_popup){_popup.remove();_popup=null;}});
+
+document.addEventListener("DOMContentLoaded",function(){
+  // Auto-refresh data on load
+  setTimeout(function(){doRefresh();},800);
+  document.getElementById("oModal").addEventListener("click",function(e){if(e.target===document.getElementById("oModal"))closeOrder();});
+  document.getElementById("sModal").addEventListener("click",function(e){if(e.target===document.getElementById("sModal"))closeSettings();});
+  document.getElementById("trModal").addEventListener("click",function(e){if(e.target===document.getElementById("trModal"))closeTransfer();});
+});
+</script>
+<script>
+function resizeTw(){
+  var tw=document.querySelector('.tw');
+  if(!tw)return;
+  var top=tw.getBoundingClientRect().top+window.scrollY;
+  var headerH=document.querySelector('header')?.offsetHeight||0;
+  var krH=document.getElementById('kr')?.offsetHeight||0;
+  tw.style.maxHeight=(window.innerHeight-top+window.scrollY-8)+'px';
+}
+window.addEventListener('resize',resizeTw);
+window.addEventListener('scroll',resizeTw);
+document.addEventListener('DOMContentLoaded',function(){
+  resizeTw();
+  // Re-run after KPI cards load
+  setTimeout(resizeTw,500);
+  setTimeout(resizeTw,1500);
+});
+</script>
+</body>
+</h
