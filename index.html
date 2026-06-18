@@ -761,7 +761,7 @@ function openOrder(type){
   var isUS=type===1;
   var title=isUS?"Заказ для США":"Заказ для Канады";
   document.getElementById("oTitle").textContent=title;
-  document.document.getElementById("oSub").textContent=isUS?"A: "+CFG.us_a+"д | B: "+CFG.us_b+"д | C: "+CFG.us_c+"д":"A: "+CFG.ca_a+"д | B: "+CFG.ca_b+"д | C: "+CFG.ca_c+"д";
+  document.getElementById("oSub").textContent=isUS?"A: "+CFG.us_a+"д | B: "+CFG.us_b+"д | C: "+CFG.us_c+"д":"A: "+CFG.ca_a+"д | B: "+CFG.ca_b+"д | C: "+CFG.ca_c+"д";
   
   var items=[];
   allData.forEach(function(it){
