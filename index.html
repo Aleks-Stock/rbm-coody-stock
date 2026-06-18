@@ -740,7 +740,7 @@ function openOrder(type){
   var isUS=type===1;
   var title=isUS?"Заказ для США":"Заказ для Канады";
   document.getElementById("oTitle").textContent=title;
-  document.getElementById("oSub").textContent="A: 60д (2мес) | B: 45д (1.5мес) | C: 30д (1мес)";
+  document.getElementById("oSub").textContent=isUS?"A: 80д (2мес) | B: 45д (1.5мес) | C: 30д (1мес)":"A: 60д (2мес) | B: 60д (2мес) | C: 45д (1.5мес)";
   
   var items=[];
   allData.forEach(function(it){
