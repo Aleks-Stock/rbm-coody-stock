@@ -945,7 +945,7 @@ function showOntheway(evt,el,idx){
   var html2="<h4>"+name.slice(0,30)+" — &#1042; &#1087;&#1091;&#1090;&#1080;</h4>";
   html2+="<div style=\"margin-bottom:6px;font-size:10px;color:var(--tx2)\">&#1056;&#1072;&#1089;&#1095;&#1077;&#1090;&#1085;&#1086;&#1077; &#1074;&#1088;&#1077;&#1084;&#1103; &#1087;&#1086;&#1083;&#1091;&#1095;&#1077;&#1085;&#1080;&#1103;</div>";
   data.forEach(function(s){
-    var _dl=(function(ds){var p=ds.split('.');if(p.length!==3)return null;var d=new Date(+p[2],+p[1]-1,+p[0]);var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);})(s.date);var _ds=_dl===null?'':_dl>0?' (&#1095;&#1077;&#1088;&#1077;&#1079; '+_dl+' &#1076;&#1085;.)':_dl===0?' (&#1089;&#1077;&#1075;&#1086;&#1076;&#1085;&#1103;)':' (&#1087;&#1088;&#1086;&#1089;&#1088;&#1086;&#1095;&#1077;&#1085;&#1086;)';
+    var _dl=(function(ds){var p=ds.split('.');if(p.length!==3)return null;var d=new Date(+p[2],+p[1]-1,+p[0]);var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);})(s.date);var _ds=_dl===null?'':_dl>0?' <span style="color:var(--or)">(&#1095;&#1077;&#1088;&#1077;&#1079; '+_dl+' &#1076;&#1085;.)</span>':_dl===0?' <span style="color:var(--gn)">(&#1089;&#1077;&#1075;&#1086;&#1076;&#1085;&#1103;)</span>':' <span style="color:var(--rd)">(&#1087;&#1088;&#1086;&#1089;&#1088;&#1086;&#1095;&#1077;&#1085;&#1086;)</span>';
 html2+="<div class=\"row\"><span class=\"lbl\">"+s.date+_ds+"</span><span class=\"val\">"+s.qty+" &#1096;&#1090;</span></div>";
   });
   p.innerHTML=html2;
@@ -1578,7 +1578,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
-<div id="cfgModal" class="modal-overlay" onclick="if(event.target===this)closeCfg()">
+<div id="cfgModal" class="mo" onclick="if(event.target===this)closeCfg()">
   <div class="modal-box cfg-box">
     <div class="modal-hdr"><span>&#9881; &#1053;&#1072;&#1089;&#1090;&#1088;&#1086;&#1081;&#1082;&#1080; &#1090;&#1086;&#1074;&#1072;&#1088;&#1085;&#1086;&#1075;&#1086; &#1079;&#1072;&#1087;&#1072;&#1089;&#1072;</span><button class="close-btn" onclick="closeCfg()">&#10005;</button></div>
     <p class="cfg-hint">&#1050;&#1086;&#1083;&#1080;&#1095;&#1077;&#1089;&#1090;&#1074;&#1086; &#1076;&#1085;&#1077;&#1081; &#1079;&#1072;&#1087;&#1072;&#1089;&#1072; &#1085;&#1072; &#1089;&#1082;&#1083;&#1072;&#1076;&#1077; — &#1085;&#1072; &#1089;&#1082;&#1086;&#1083;&#1100;&#1082;&#1086; &#1076;&#1085;&#1077;&#1081; &#1079;&#1072;&#1082;&#1072;&#1079;&#1099;&#1074;&#1072;&#1077;&#1084; &#1087;&#1088;&#1080; &#1087;&#1086;&#1087;&#1086;&#1083;&#1085;&#1077;&#1085;&#1080;&#1080;</p>
