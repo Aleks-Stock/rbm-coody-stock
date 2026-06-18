@@ -590,7 +590,7 @@ function renderTable(){
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
     var needUS=0;if(it.sales_us_avg>0){
       var tmUS=it.abc==="A"?2:it.abc==="C"?1:1.5;
-      var thUS=it.abc==="A"?60:it.abc==="C"?30:45;
+      var thUS=it.abc==="A"?80:it.abc==="C"?30:45;
       var availUS=it.stock_us+it.in_transit_us;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
@@ -770,7 +770,7 @@ function openOrder(type){
     }
     var wu=isWuzhou(it.name);
     var abc=it.abc||"B";
-    var thresh=abc==="A"?60:abc==="C"?(isUS?30:45):(isUS?45:60);
+    var thresh=abc==="A"?(isUS?80:60):abc==="C"?(isUS?30:45):(isUS?45:60);
     var targetMos=abc==="A"?2:abc==="C"?(isUS?1:1.5):(isUS?1.5:2);
     var avail=stock+transit;
     var days=Math.floor(avail/vel*30);
