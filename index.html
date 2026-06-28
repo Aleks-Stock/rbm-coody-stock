@@ -443,7 +443,8 @@ function build(src){
     it.go=g[0];it.gn=g[1];it.oi=oi++;
     var vu=it.sales_us_avg/30, vc=it.sales_ca_avg/30;
     var au=it.stock_us+it.in_transit_us, ac=it.stock_ca+it.in_transit_ca;
-    it.days_left_us=vu>0?Math.floor(au/vu):(au>0?999:0);
+    var au_eff=Math.max(0,au-(it._us_cur||0));
+    it.days_left_us=vu>0?Math.floor(au_eff/vu):(au_eff>0?999:0);
     it.days_left_ca=vc>0?Math.floor(ac/vc):(ac>0?999:0);
     if(it.stock_us===0&&it.in_transit_us>0&&vu===0)it.status="transit";
     else if(au===0&&vu>0)it.status="critical";
