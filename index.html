@@ -765,9 +765,11 @@ function calcNeed(it, isUS){
     if(daysEff < thresh){
       var dayNow=(new Date()).getDate();
       var curNorm=dayNow>0?curSold*(30/dayNow):0;
-      var velOrd=curNorm>vel*1.3?curNorm:vel;
+      var useGrowth=curNorm>vel*1.3;
+      var velOrd=useGrowth?curNorm:vel;
       var target = Math.ceil(velOrd*(thresh/30));
-      var free   = stock>0 ? (stock + Math.max(0, transit - curSold)) : (transit - curSold);
+      // если сработал curNorm — долг не применяем; иначе — долг когда stock=0
+      var free = (stock>0||useGrowth) ? (stock+Math.max(0,transit-curSold)) : (transit-curSold);
       need = Math.max(0, target - free - ordered);
       if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
       if(need>0) need=Math.max(2,need);
