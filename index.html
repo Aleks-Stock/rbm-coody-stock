@@ -763,7 +763,7 @@ function calcNeed(it, isUS){
     var daysEff= vu>0 ? Math.floor(au_eff/vu) : (au_eff>0?999:0);
     if(daysEff < thresh){
       var target = Math.ceil(vel*(thresh/30));
-      var free   = avail - curSold;
+      var free   = stock>1 ? avail : (avail - curSold);
       need = Math.max(0, target - free - ordered);
       if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
       if(need>0) need=Math.max(2,need);
