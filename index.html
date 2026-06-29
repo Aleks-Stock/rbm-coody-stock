@@ -850,7 +850,7 @@ function openOrder(type){
       "<td style=\"text-align:center\">"+it.vel+"</td>"+
       "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\"><b>"+it.days+"d</b></td>"+
       "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"oq"+i+"\" value=\""+it.qty+"\" min=\"0\">"+
-      (it.growing?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">"+(it.growPct>0?"+"+it.growPct+"%":"&#128640;")+"</span>":"")+"</td>"+
+      (it.growing&&it.growPct>0?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">+"+it.growPct+"%</span>":"")+"</td>"+
       "<td style=\"text-align:center\">"+cnCell+"</td>"+
       "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;\">&#128465;</button></td>"+
       "</tr>");
