@@ -617,7 +617,7 @@ function renderTable(){
       var tmUS=thUS/30;
       if(it.days_left_us<thUS){
         var tUS=Math.ceil(it.sales_us_avg*tmUS);
-        var freeUS=Math.max(0,availUS-(it._us_cur||0));
+        var freeUS=availUS-(it._us_cur||0);
         needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));
         if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);
         if(needUS>0)needUS=Math.max(2,needUS);}}
