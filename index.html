@@ -771,7 +771,7 @@ function calcNeed(it, isUS){
       // если сработал curNorm — долг не применяем; иначе — долг когда stock=0
       var free = (stock>0||useGrowth) ? (stock+Math.max(0,transit-curSold)) : (transit-curSold);
       need = Math.max(0, target - free - ordered);
-      if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
+      if(!useGrowth && need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
       if(need>0) need=Math.max(2,need);
     }
   }
