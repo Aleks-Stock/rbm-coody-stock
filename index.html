@@ -813,6 +813,14 @@ function openOrder(type){
             cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:abc_us,probe:true});
         }
       }
+      // US: проверяем calcNeed (например правило минимума палаток)
+      if(isUS){
+        var qty0=calcNeed(it,isUS);
+        if(qty0>0){
+          var wu0=isWuzhou(it.name);
+          items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:0,days:0,qty:qty0,cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:wu0});
+        }
+      }
       return;
     }
     var wu=isWuzhou(it.name);
