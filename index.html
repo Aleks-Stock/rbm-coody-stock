@@ -612,19 +612,7 @@ function renderTable(){
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
     var dUS=it.sales_us_avg>0?dbar(it.days_left_us,it.lt_us,60):"<span class=\"sz\">&#8212;</span>";
     var availUS=it.stock_us+it.in_transit_us;
-    var needUS=0;if(it.sales_us_avg>0){
-      var thUS=it.abc==="A"?CFG.us_a:it.abc==="C"?CFG.us_c:CFG.us_b;
-      var tmUS=thUS/30;
-      if(it.days_left_us<thUS){
-        var tUS=Math.ceil(it.sales_us_avg*tmUS);
-        var freeUS=availUS-(it._us_cur||0);
-        needUS=Math.max(0,tUS-freeUS-Math.max(0,it.ordered_us||0));
-        if(needUS>0&&it.trend_us>=2)needUS=Math.ceil(needUS*1.20);
-        if(needUS>0)needUS=Math.max(2,needUS);}}
-    // Safety: if nothing available and nothing ordered — order 2 (new products with 0 sales included)
-    if(needUS===0&&availUS<2&&(it.ordered_us||0)===0)needUS=2;
-    // Tent minimum: keep at least 4 units total (stock + transit + ordered) in USA
-    if(it.go===0){var totalUS=availUS+(it.ordered_us||0);if(totalUS<5)needUS=Math.max(needUS,5-totalUS);}
+    var needUS=calcNeed(it,true);
     var needUSCell=needUS>0?"<b style=\"color:#ef9a9a\">"+needUS+"</b>":"<span class=\"sz\">&#8212;</span>";
     var caAv=it.stock_ca+it.in_transit_ca;
     var caV=it.sales_ca_avg>0?it.sales_ca_avg/30:it.sales_us_avg/30;
@@ -759,6 +747,34 @@ function isWuzhou(name){
   var patterns=["Panda","UP-5","UP-2","Hexagon","Cuboid","Caminus","Kamin","Rain Fly","Floor for Hexagon","Floor for UP"];
   return patterns.some(function(p){return name.indexOf(p)>=0;});
 }
+function calcNeed(it, isUS){
+  var stock  = isUS ? it.stock_us       : it.stock_ca;
+  var transit= isUS ? it.in_transit_us  : it.in_transit_ca;
+  var vel    = isUS ? it.sales_us_avg   : (it.sales_ca_avg||0);
+  var ordered= isUS ? (it.ordered_us||0): (it.ordered_ca||0);
+  var curSold= isUS ? (it._us_cur||0)   : (it._ca_cur||0);
+  var avail  = stock + transit;
+  var abc    = it.abc||"B";
+  var thresh = abc==="A"?(isUS?CFG.us_a:CFG.ca_a):abc==="C"?(isUS?CFG.us_c:CFG.ca_c):(isUS?CFG.us_b:CFG.ca_b);
+  var need   = 0;
+  if(vel>0){
+    var au_eff = stock>1 ? avail : Math.max(0, avail-curSold);
+    var vu     = vel/30;
+    var daysEff= vu>0 ? Math.floor(au_eff/vu) : (au_eff>0?999:0);
+    if(daysEff < thresh){
+      var target = Math.ceil(vel*(thresh/30));
+      var free   = avail - curSold;
+      need = Math.max(0, target - free - ordered);
+      if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
+      if(need>0) need=Math.max(2,need);
+    }
+  }
+  // Safety: nothing available and nothing ordered → order 2
+  if(need===0 && avail<2 && ordered===0) need=2;
+  // Tent minimum USA: keep at least 5 units (stock+transit+ordered)
+  if(isUS && it.go===0){var tot=avail+ordered; if(tot<5) need=Math.max(need,5-tot);}
+  return need;
+}
 function openOrder(type){
   _deletedRows.clear();
   orderType=type;
@@ -794,24 +810,14 @@ function openOrder(type){
       return;
     }
     var wu=isWuzhou(it.name);
-    var abc=it.abc||"B";
-    var thresh=abc==="A"?(isUS?CFG.us_a:CFG.ca_a):abc==="C"?(isUS?CFG.us_c:CFG.ca_c):(isUS?CFG.us_b:CFG.ca_b);
-    var targetMos=thresh/30;
+    var qty=calcNeed(it,isUS);
+    if(qty===0)return;
     var avail=stock+transit;
-    var days=Math.floor(avail/vel*30);
-    // Safety stock: if only 1 unit available — force order even if days OK
-    if(days>=thresh&&avail>=2)return;
-    var target=Math.ceil(vel*targetMos);
-    // Subtract current month raw sales (already committed/shipped)
-    var curSold=isUS?(it._us_cur||0):((it._ca_cur||0));
-    var freeAvail=Math.max(0,stock+transit-curSold);
-    var qty=Math.max(0,target-freeAvail-ordered);
-    if(qty<=0&&avail>=2)return;
-    // +10% for growing products
+    var curSold=isUS?(it._us_cur||0):(it._ca_cur||0);
+    var avail_eff=stock>1?avail:Math.max(0,avail-curSold);
+    var days=vel>0?(avail_eff>0?Math.floor(avail_eff/vel*30):0):999;
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
     var growPct=isUS?(it.growth_pct_us||0):(it.growth_pct_ca||0);
-    if(growing&&qty>0)qty=Math.ceil(qty*1.20);
-    qty=Math.max(2,qty); // factory minimum 2 units
     items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu});
   });
   // Sort by product group order (same as main table)
