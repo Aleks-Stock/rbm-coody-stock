@@ -443,9 +443,10 @@ function build(src){
     it.go=g[0];it.gn=g[1];it.oi=oi++;
     var vu=it.sales_us_avg/30, vc=it.sales_ca_avg/30;
     var au=it.stock_us+it.in_transit_us, ac=it.stock_ca+it.in_transit_ca;
-    var au_eff=it.stock_us>1?au:Math.max(0,au-(it._us_cur||0));
+    var au_eff=it.stock_us+Math.max(0,it.in_transit_us-(it._us_cur||0));
+    var ac_eff=it.stock_ca+Math.max(0,it.in_transit_ca-(it._ca_cur||0));
     it.days_left_us=vu>0?Math.floor(au_eff/vu):(au_eff>0?999:0);
-    it.days_left_ca=vc>0?Math.floor(ac/vc):(ac>0?999:0);
+    it.days_left_ca=vc>0?Math.floor(ac_eff/vc):(ac_eff>0?999:0);
     if(it.stock_us===0&&it.in_transit_us>0&&vu===0)it.status="transit";
     else if(au===0&&vu>0)it.status="critical";
     else if(vu>0&&it.days_left_us<it.lt_us)it.status="critical";
@@ -758,12 +759,15 @@ function calcNeed(it, isUS){
   var thresh = abc==="A"?(isUS?CFG.us_a:CFG.ca_a):abc==="C"?(isUS?CFG.us_c:CFG.ca_c):(isUS?CFG.us_b:CFG.ca_b);
   var need   = 0;
   if(vel>0){
-    var au_eff = stock>1 ? avail : Math.max(0, avail-curSold);
+    var au_eff = stock + Math.max(0, transit - curSold);
     var vu     = vel/30;
     var daysEff= vu>0 ? Math.floor(au_eff/vu) : (au_eff>0?999:0);
     if(daysEff < thresh){
-      var target = Math.ceil(vel*(thresh/30));
-      var free   = stock>1 ? avail : (avail - curSold);
+      var dayNow=(new Date()).getDate();
+      var curNorm=dayNow>0?curSold*(30/dayNow):0;
+      var velOrd=curNorm>vel*1.3?curNorm:vel;
+      var target = Math.ceil(velOrd*(thresh/30));
+      var free   = stock>0 ? (stock + Math.max(0, transit - curSold)) : (transit - curSold);
       need = Math.max(0, target - free - ordered);
       if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
       if(need>0) need=Math.max(2,need);
@@ -814,7 +818,7 @@ function openOrder(type){
     if(qty===0)return;
     var avail=stock+transit;
     var curSold=isUS?(it._us_cur||0):(it._ca_cur||0);
-    var avail_eff=stock>1?avail:Math.max(0,avail-curSold);
+    var avail_eff=stock+Math.max(0,transit-curSold);
     var days=vel>0?(avail_eff>0?Math.floor(avail_eff/vel*30):0):999;
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
     var growPct=isUS?(it.growth_pct_us||0):(it.growth_pct_ca||0);
