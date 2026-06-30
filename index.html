@@ -779,6 +779,8 @@ function calcNeed(it, isUS){
   if(need===0 && avail<2 && ordered===0) need=2;
   // Tent minimum USA: keep at least 5 units (stock+transit+ordered)
   if(isUS && it.go===0){var tot=avail+ordered; if(tot<5) need=Math.max(need,5-tot);}
+  // Tarp minimum USA: keep at least 5 units (stock+transit+ordered)
+  if(isUS && it.go===1){var tot=avail+ordered; if(tot<5) need=Math.max(need,5-tot);}
   return need;
 }
 function openOrder(type){
