@@ -1113,7 +1113,8 @@ function showOntheway(evt,el,idx){
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
+    var _nl=name.toLowerCase();var _similar=Object.keys(_onthewayData).filter(function(k){var kl=k.toLowerCase();return kl.indexOf('amp')>=0||kl.indexOf('amin')>=0||kl.indexOf('stov')>=0||kl.indexOf('печ')>=0;}).join(' | ');
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.6'>Имя: ["+name+"]<br>Similar: "+(_similar||"—")+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
