@@ -1398,8 +1398,9 @@ function parseOnthewayRows(rows){
       if(qty>0)shipments.push({date:d.date,qty:qty});
     });
     if(shipments.length>0){
-      if(!result[name])result[name]=[];
-      result[name]=result[name].concat(shipments);
+      var nk=normKey(name);
+      if(!result[nk])result[nk]=[];
+      result[nk]=result[nk].concat(shipments);
     }
   });
   return result;
