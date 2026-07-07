@@ -1113,7 +1113,11 @@ function showOntheway(evt,el,idx){
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
+    var _an=_onthewayData.__allNames__||[];
+    var _nf=_an.some(function(k){return k===name||normKey(k)===normKey(name);});
+    var _dates=(_onthewayData.__dates__||[]).join(', ');
+    var _similar=_an.filter(function(k){return k.toLowerCase().indexOf('amp')>=0||k.toLowerCase().indexOf('stov')>=0;}).join(' | ');
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.6'>Имя найдено: "+(_nf?'ДА':'НЕТ')+"<br>Даты: "+(_dates||"нет")+"<br>Похожие: "+(_similar||"—")+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1380,8 +1384,11 @@ function parseOntheway(csvText){
     if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
   var nameCol=1;
+  result.__allNames__=[];
+  result.__dates__=dates.map(function(d){return d.date;});
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
+    result.__allNames__.push(name);
     var shipments=[];
     dates.forEach(function(d){
       var qty=si(row[d.col]);
