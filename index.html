@@ -1145,7 +1145,9 @@ function showOnthewayCA(evt,el,idx){
   var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;</div>";
+    var _caKeys=Object.keys(_onthewayDataCA).length;
+    var _caFirst=_caKeys>0?Object.keys(_onthewayDataCA)[0].slice(0,25):'—';
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:11px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='opacity:.6;font-size:9px'>CA keys:"+_caKeys+" ["+_caFirst+"]</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
