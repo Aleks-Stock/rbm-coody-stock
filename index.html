@@ -1410,7 +1410,7 @@ function doRefresh(){
   if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
   toast("Загружаю данные из Google Sheets...","");
   function sf(k){return fetchSheet(SHEET_URLS[k]).catch(function(){return "";});}
-  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_cn"),sf("stock_ca"),sf("vputi")])
+  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_cn"),sf("stock_ca"),sf("ontheway"),sf("ontheway_ca")])
   .then(function(results){
     var days=new Date().getDate();
     var usMap=results[0]?parseLastMonths(results[0]):{};
@@ -1419,7 +1419,8 @@ function doRefresh(){
     var stockUS=results[3]?parseStockUS(results[3]):{};
     var stockCN=results[4]?parseStockCN(results[4]):{};
     var stockCA=results[5]?parseStockCA(results[5]):{};
-    if(results[6]){var vpRows=pcsv(results[6]);_onthewayData=parseOnthewayRows(vpRows.slice(0,390));_onthewayDataCA=parseOnthewayRows(vpRows.slice(399));}
+    if(results[6])_onthewayData=parseOntheway(results[6]);
+    if(results[7])_onthewayDataCA=parseOntheway(results[7]);
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
