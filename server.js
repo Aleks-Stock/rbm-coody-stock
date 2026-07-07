@@ -16,7 +16,8 @@ const SHEET_URLS = {
   stock_cn:    [`${BASE_GVIZ}&sheet=Stock_China`],
   stock_ca:    [`${BASE_GVIZ}&sheet=Stock_Canada`],
   ontheway:    [`${BASE_GVIZ}&sheet=Ontheway_USA`],
-  ontheway_ca: [`${BASE_GVIZ}&sheet=Ontheway_CANADA`]
+  ontheway_ca: [`${BASE_GVIZ}&sheet=Ontheway_CANADA`],
+  vputi:       [`${BASE_GVIZ}&sheet=${encodeURIComponent('В пути')}`]
 };
 
 const PORT = process.env.PORT || 3000;
