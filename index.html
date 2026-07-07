@@ -1145,10 +1145,7 @@ function showOnthewayCA(evt,el,idx){
   var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _rd=_onthewayDataCA.__rowDebug__||{};
-    var _rdK=Object.keys(_rd);
-    var _rdStr=_rdK.length?(_rdK[0].slice(0,20)+': '+JSON.stringify(_rd[_rdK[0]]).slice(0,120)):'нет совпадений';
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:11px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='opacity:.6;font-size:9px'>RowDebug: "+_rdStr+"</span></div>";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути CA: "+item.in_transit_ca+" шт<br>Данных о датах нет</div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1294,7 +1291,8 @@ var SHEET_URLS={
   stock_cn:"/api/sheets/stock_cn",
   stock_ca:"/api/sheets/stock_ca",
   ontheway:"/api/sheets/ontheway",
-  ontheway_ca:"/api/sheets/ontheway_ca"
+  ontheway_ca:"/api/sheets/ontheway_ca",
+  vputi:"/api/sheets/vputi"
 };
 var _onthewayData={};   // US {name: [{date:"06.06.2026",qty:2},...]}
 var _onthewayDataCA={}; // CA
@@ -1375,9 +1373,8 @@ function normDateStr(s){
   if(/^\d{5}$/.test(s)){var n2=parseInt(s);if(n2>=40000&&n2<=55000){var sd=serialToDate(n2);if(sd)return sd;}}
   return s;
 }
-function parseOntheway(csvText){
+function parseOnthewayRows(rows){
   var result={};
-  var rows=pcsv(csvText);
   if(rows.length<2)return result;
   // Find date header row — accept DD.MM.YYYY, M/D/YYYY, YYYY-MM-DD, or date serial (5-digit ~2010-2050)
   var serialRe=/^(4[0-9]{4}|5[0-4]\d{3})$/;
@@ -1393,19 +1390,13 @@ function parseOntheway(csvText){
     if(isDateCell(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
   var nameCol=1;
-  result.__rowDebug__={};
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     var shipments=[];
-    var rowInfo=[];
     dates.forEach(function(d){
-      var raw=row[d.col];var qty=si(raw);
-      rowInfo.push({c:d.col,d:d.date,r:String(raw).slice(0,8),q:qty});
+      var qty=si(row[d.col]);
       if(qty>0)shipments.push({date:d.date,qty:qty});
     });
-    if(name.toLowerCase().indexOf('kamin')>=0||name.toLowerCase().indexOf('stov')>=0){
-      result.__rowDebug__[name]=rowInfo;
-    }
     if(shipments.length>0){
       if(!result[name])result[name]=[];
       result[name]=result[name].concat(shipments);
@@ -1413,12 +1404,13 @@ function parseOntheway(csvText){
   });
   return result;
 }
+function parseOntheway(csvText){return parseOnthewayRows(pcsv(csvText));}
 function doRefresh(){
   var btn=document.querySelector(".sb");
   if(btn){btn.disabled=true;btn.textContent="Загрузка...";}
   toast("Загружаю данные из Google Sheets...","");
   function sf(k){return fetchSheet(SHEET_URLS[k]).catch(function(){return "";});}
-  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_cn"),sf("stock_ca"),sf("ontheway"),sf("ontheway_ca")])
+  Promise.all([sf("us"),sf("ca"),sf("cn"),sf("stock_us"),sf("stock_cn"),sf("stock_ca"),sf("vputi")])
   .then(function(results){
     var days=new Date().getDate();
     var usMap=results[0]?parseLastMonths(results[0]):{};
@@ -1427,8 +1419,7 @@ function doRefresh(){
     var stockUS=results[3]?parseStockUS(results[3]):{};
     var stockCN=results[4]?parseStockCN(results[4]):{};
     var stockCA=results[5]?parseStockCA(results[5]):{};
-    if(results[6])_onthewayData=parseOntheway(results[6]);
-    if(results[7])_onthewayDataCA=parseOntheway(results[7]);
+    if(results[6]){var vpRows=pcsv(results[6]);_onthewayData=parseOnthewayRows(vpRows.slice(0,390));_onthewayDataCA=parseOnthewayRows(vpRows.slice(399));}
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
