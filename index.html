@@ -1354,18 +1354,21 @@ function parseOntheway(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
-  // Find date header row (row with dates like DD.MM.YYYY)
+  // Find date header row (row with dates like D.M.YYYY or DD.MM.YYYY)
+  var dateRe=/\d{1,2}\.\d{1,2}\.\d{4}/;
   var dateRow=null,dateRowIdx=-1;
-  for(var i=0;i<Math.min(4,rows.length);i++){
-    if(rows[i].some(function(h){return h&&/\d{2}\.\d{2}\.\d{4}/.test(h);})){dateRow=rows[i];dateRowIdx=i;break;}
+  for(var i=0;i<Math.min(6,rows.length);i++){
+    if(rows[i].some(function(h){return h&&dateRe.test(h);})){dateRow=rows[i];dateRowIdx=i;break;}
   }
   if(dateRowIdx<0)return result;
   var dates=[];
-  for(var c=2;c<dateRow.length;c++){
-    if(dateRow[c]&&/\d{2}\.\d{2}\.\d{4}/.test(dateRow[c]))dates.push({col:c,date:dateRow[c].trim()});
+  for(var c=1;c<dateRow.length;c++){
+    if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:dateRow[c].trim()});
   }
+  // Find name column: first column in data rows that is not a number
+  var nameCol=1;
   rows.slice(dateRowIdx+1).forEach(function(row){
-    var name=row[1]&&row[1].trim();if(!name)return;
+    var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     var shipments=[];
     dates.forEach(function(d){
       var qty=si(row[d.col]);
