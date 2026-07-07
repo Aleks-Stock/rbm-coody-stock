@@ -1113,8 +1113,7 @@ function showOntheway(evt,el,idx){
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _nl=name.toLowerCase();var _similar=Object.keys(_onthewayData).filter(function(k){var kl=k.toLowerCase();return kl.indexOf('amp')>=0||kl.indexOf('amin')>=0||kl.indexOf('stov')>=0||kl.indexOf('печ')>=0;}).join(' | ');
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.6'>Имя: ["+name+"]<br>Similar: "+(_similar||"—")+"</span></div>";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1354,12 +1353,23 @@ function parseStockCA(csvText){
   });
   return result;
 }
+function normDateStr(s){
+  // DD.MM.YYYY → keep as is
+  if(/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)) return s;
+  // M/D/YYYY (gviz US locale export of date cells)
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return m[2].padStart(2,'0')+'.'+m[1].padStart(2,'0')+'.'+m[3];
+  // YYYY-MM-DD (ISO)
+  m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m) return m[3]+'.'+m[2]+'.'+m[1];
+  return s;
+}
 function parseOntheway(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
-  // Find date header row (row with dates like D.M.YYYY or DD.MM.YYYY)
-  var dateRe=/\d{1,2}\.\d{1,2}\.\d{4}/;
+  // Find date header row — accept DD.MM.YYYY, M/D/YYYY, YYYY-MM-DD
+  var dateRe=/\d{1,2}\.\d{1,2}\.\d{4}|\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2}/;
   var dateRow=null,dateRowIdx=-1;
   for(var i=0;i<Math.min(6,rows.length);i++){
     if(rows[i].some(function(h){return h&&dateRe.test(h);})){dateRow=rows[i];dateRowIdx=i;break;}
@@ -1367,9 +1377,8 @@ function parseOntheway(csvText){
   if(dateRowIdx<0)return result;
   var dates=[];
   for(var c=1;c<dateRow.length;c++){
-    if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:dateRow[c].trim()});
+    if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
-  // Find name column: first column in data rows that is not a number
   var nameCol=1;
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
