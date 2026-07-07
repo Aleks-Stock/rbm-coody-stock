@@ -1102,16 +1102,18 @@ function exportTransfer(){
   toast("Excel скачан: "+fname,"success");
 }
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
+// Normalize Cyrillic lookalikes to Latin for name matching
+function normKey(s){return s.replace(/[СсАаЕеОоРрВвМмНнКкТтХх]/g,function(c){return{С:'C',с:'c',А:'A',а:'a',Е:'E',е:'e',О:'O',о:'o',Р:'P',р:'p',В:'B',в:'b',М:'M',м:'m',Н:'H',н:'h',К:'K',к:'k',Т:'T',т:'t',Х:'X',х:'x'}[c]||c;});}
+function owLookup(dict,name){return dict[name]||dict[normKey(name)]||null;}
 function showOntheway(evt,el,idx){
   if(_popup){_popup.remove();_popup=null;}
   var item=fData[idx];if(!item)return;
   var name=item.name;
-  var data=_onthewayData[name];
+  var data=owLookup(_onthewayData,name);
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _dbg="Keys:"+Object.keys(_onthewayData).length+(Object.keys(_onthewayData).length>0?" ["+Object.keys(_onthewayData)[0].slice(0,20)+"]":"");
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.5'>"+_dbg+"</span></div>";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1140,7 +1142,7 @@ function showOnthewayCA(evt,el,idx){
   if(_popup){_popup.remove();_popup=null;}
   var item=fData[idx];if(!item)return;
   var name=item.name;
-  var data=_onthewayDataCA[name];
+  var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
     p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;</div>";
