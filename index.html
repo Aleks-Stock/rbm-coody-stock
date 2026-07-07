@@ -1113,11 +1113,9 @@ function showOntheway(evt,el,idx){
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _an=_onthewayData.__allNames__||[];
-    var _nf=_an.some(function(k){return k===name||normKey(k)===normKey(name);});
-    var _dates=(_onthewayData.__dates__||[]).join(', ');
-    var _similar=_an.filter(function(k){return k.toLowerCase().indexOf('amp')>=0||k.toLowerCase().indexOf('stov')>=0;}).join(' | ');
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.6'>Имя найдено: "+(_nf?'ДА':'НЕТ')+"<br>Даты: "+(_dates||"нет")+"<br>Похожие: "+(_similar||"—")+"</span></div>";
+    var _dbg=_onthewayData.__debug_row__;
+    var _dbgStr=_dbg?JSON.stringify(_dbg.dateCols).slice(0,200):"нет";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.7'>RAW: "+_dbgStr+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1389,6 +1387,9 @@ function parseOntheway(csvText){
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     result.__allNames__.push(name);
+    if(name.toLowerCase().indexOf('kamin')>=0||name.toLowerCase().indexOf('stove')>=0){
+      result.__debug_row__={name:name,cols:row.slice(),dateCols:dates.map(function(d){return{col:d.col,date:d.date,raw:row[d.col]};})};
+    }
     var shipments=[];
     dates.forEach(function(d){
       var qty=si(row[d.col]);
