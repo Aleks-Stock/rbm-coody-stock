@@ -1114,8 +1114,8 @@ function showOntheway(evt,el,idx){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
     var _dbg=_onthewayData.__debug_row__;
-    var _dbgStr=_dbg?JSON.stringify(_dbg.dateCols).slice(0,200):"нет";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.7'>RAW: "+_dbgStr+"</span></div>";
+    var _dbgStr=_dbg?JSON.stringify(_dbg.nonEmpty).slice(0,300):"нет";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.7'>NonEmpty cols: "+_dbgStr+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1388,7 +1388,7 @@ function parseOntheway(csvText){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     result.__allNames__.push(name);
     if(name.toLowerCase().indexOf('kamin')>=0||name.toLowerCase().indexOf('stove')>=0){
-      result.__debug_row__={name:name,cols:row.slice(),dateCols:dates.map(function(d){return{col:d.col,date:d.date,raw:row[d.col]};})};
+      result.__debug_row__={name:name,nonEmpty:row.map(function(v,i){return(v&&v!=='')?{i:i,v:String(v).slice(0,20)}:null;}).filter(Boolean)};
     }
     var shipments=[];
     dates.forEach(function(d){
