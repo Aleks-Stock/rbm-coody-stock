@@ -1145,9 +1145,7 @@ function showOnthewayCA(evt,el,idx){
   var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _dbgCA=_onthewayDataCA.__debug_row__;
-    var _dbgCAStr=_dbgCA?JSON.stringify(_dbgCA.nonEmpty).slice(0,300):"нет";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='font-size:9px;opacity:.7'>CA NonEmpty: "+_dbgCAStr+"</span></div>";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;</div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1355,6 +1353,12 @@ function parseStockCA(csvText){
   });
   return result;
 }
+function serialToDate(n){
+  // Google Sheets serial: 1=Jan1 1900 (with leap-year bug: offset 25569 to Unix epoch)
+  var d=new Date((n-25569)*86400000);
+  if(isNaN(d.getTime()))return null;
+  return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();
+}
 function normDateStr(s){
   // DD.MM.YYYY → keep as is
   if(/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)) return s;
@@ -1364,22 +1368,26 @@ function normDateStr(s){
   // YYYY-MM-DD (ISO)
   m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if(m) return m[3]+'.'+m[2]+'.'+m[1];
+  // Date serial number (40000-55000 = years ~2009-2050)
+  if(/^\d{5}$/.test(s)){var n2=parseInt(s);if(n2>=40000&&n2<=55000){var sd=serialToDate(n2);if(sd)return sd;}}
   return s;
 }
 function parseOntheway(csvText){
   var result={};
   var rows=pcsv(csvText);
   if(rows.length<2)return result;
-  // Find date header row — accept DD.MM.YYYY, M/D/YYYY, YYYY-MM-DD
+  // Find date header row — accept DD.MM.YYYY, M/D/YYYY, YYYY-MM-DD, or date serial (5-digit ~2010-2050)
+  var serialRe=/^(4[0-9]{4}|5[0-4]\d{3})$/;
+  function isDateCell(v){return v&&(/\d{1,2}\.\d{1,2}\.\d{4}/.test(v)||/\d{1,2}\/\d{1,2}\/\d{4}/.test(v)||/\d{4}-\d{2}-\d{2}/.test(v)||(serialRe.test(v.trim())&&parseInt(v)>=40000&&parseInt(v)<=55000));}
   var dateRe=/\d{1,2}\.\d{1,2}\.\d{4}|\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2}/;
   var dateRow=null,dateRowIdx=-1;
   for(var i=0;i<Math.min(6,rows.length);i++){
-    if(rows[i].some(function(h){return h&&dateRe.test(h);})){dateRow=rows[i];dateRowIdx=i;break;}
+    if(rows[i].some(function(h){return isDateCell(h);})){dateRow=rows[i];dateRowIdx=i;break;}
   }
   if(dateRowIdx<0)return result;
   var dates=[];
   for(var c=1;c<dateRow.length;c++){
-    if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
+    if(isDateCell(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
   var nameCol=1;
   rows.slice(dateRowIdx+1).forEach(function(row){
