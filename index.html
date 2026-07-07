@@ -1113,9 +1113,7 @@ function showOntheway(evt,el,idx){
   if(!data||!data.length){
     // Show basic info even without dates
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _dbg=_onthewayData.__debug_row__;
-    var _dbgStr=_dbg?JSON.stringify(_dbg.nonEmpty).slice(0,300):"нет";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет<br><span style='font-size:9px;opacity:.7'>NonEmpty cols: "+_dbgStr+"</span></div>";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">В пути: "+item.in_transit_us+" шт<br>Данных о датах нет</div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1147,7 +1145,9 @@ function showOnthewayCA(evt,el,idx){
   var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;</div>";
+    var _dbgCA=_onthewayDataCA.__debug_row__;
+    var _dbgCAStr=_dbgCA?JSON.stringify(_dbgCA.nonEmpty).slice(0,300):"нет";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:10px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='font-size:9px;opacity:.7'>CA NonEmpty: "+_dbgCAStr+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1382,14 +1382,8 @@ function parseOntheway(csvText){
     if(dateRow[c]&&dateRe.test(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
   var nameCol=1;
-  result.__allNames__=[];
-  result.__dates__=dates.map(function(d){return d.date;});
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
-    result.__allNames__.push(name);
-    if(name.toLowerCase().indexOf('kamin')>=0||name.toLowerCase().indexOf('stove')>=0){
-      result.__debug_row__={name:name,nonEmpty:row.map(function(v,i){return(v&&v!=='')?{i:i,v:String(v).slice(0,20)}:null;}).filter(Boolean)};
-    }
     var shipments=[];
     dates.forEach(function(d){
       var qty=si(row[d.col]);
