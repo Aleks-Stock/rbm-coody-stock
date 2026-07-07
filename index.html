@@ -1145,10 +1145,10 @@ function showOnthewayCA(evt,el,idx){
   var data=owLookup(_onthewayDataCA,name);
   if(!data||!data.length){
     var p2=document.createElement("div");p2.className="detail-popup";
-    var _caKeys=Object.keys(_onthewayDataCA);
-    var _caSim=_caKeys.filter(function(k){var kl=k.toLowerCase();return kl.indexOf('amp')>=0||kl.indexOf('stov')>=0||kl.indexOf('amin')>=0||kl.indexOf('печ')>=0;});
-    var _caSimStr=_caSim.length?_caSim[0].slice(0,40):'нет';
-    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:11px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='opacity:.6;font-size:9px'>Similar in CA: ["+_caSimStr+"]<br>Src:["+name.slice(0,35)+"]</span></div>";
+    var _rd=_onthewayDataCA.__rowDebug__||{};
+    var _rdK=Object.keys(_rd);
+    var _rdStr=_rdK.length?(_rdK[0].slice(0,20)+': '+JSON.stringify(_rd[_rdK[0]]).slice(0,120)):'нет совпадений';
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:11px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;<br><span style='opacity:.6;font-size:9px'>RowDebug: "+_rdStr+"</span></div>";
     _popup=p2;document.body.appendChild(p2);
     var r2=evt.target.getBoundingClientRect();
     p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
@@ -1393,13 +1393,19 @@ function parseOntheway(csvText){
     if(isDateCell(dateRow[c]))dates.push({col:c,date:normDateStr(dateRow[c].trim())});
   }
   var nameCol=1;
+  result.__rowDebug__={};
   rows.slice(dateRowIdx+1).forEach(function(row){
     var name=row[nameCol]&&row[nameCol].trim();if(!name)return;
     var shipments=[];
+    var rowInfo=[];
     dates.forEach(function(d){
-      var qty=si(row[d.col]);
+      var raw=row[d.col];var qty=si(raw);
+      rowInfo.push({c:d.col,d:d.date,r:String(raw).slice(0,8),q:qty});
       if(qty>0)shipments.push({date:d.date,qty:qty});
     });
+    if(name.toLowerCase().indexOf('kamin')>=0||name.toLowerCase().indexOf('stov')>=0){
+      result.__rowDebug__[name]=rowInfo;
+    }
     if(shipments.length>0){
       if(!result[name])result[name]=[];
       result[name]=result[name].concat(shipments);
