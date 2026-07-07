@@ -15,9 +15,8 @@ const SHEET_URLS = {
   stock_us:    [`${BASE_GVIZ}&sheet=Stock_USA`],
   stock_cn:    [`${BASE_GVIZ}&sheet=Stock_China`],
   stock_ca:    [`${BASE_GVIZ}&sheet=Stock_Canada`],
-  ontheway:    [`${BASE_GVIZ}&sheet=Ontheway_USA`],
-  ontheway_ca: [`${BASE_GVIZ}&sheet=Ontheway_CANADA`],
-  vputi:       [`${BASE_GVIZ}&sheet=${encodeURIComponent('В пути')}`]
+  ontheway:    [`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1897742133`],
+  ontheway_ca: [`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=27744994`]
 };
 
 const PORT = process.env.PORT || 3000;
@@ -38,7 +37,12 @@ function fetchUrl(url) {
 
 async function fetchSheet(sheet) {
   for (let i = 0; i < SHEET_URLS[sheet].length; i++) {
-    try { const d = await fetchUrl(SHEET_URLS[sheet][i]); console.log(`[${sheet}] OK`); return d; }
+    try {
+      let url = SHEET_URLS[sheet][i];
+      if (url.includes('gviz/tq')) url += '&_t=' + Date.now();
+      const d = await fetchUrl(url);
+      console.log(`[${sheet}] OK`); return d;
+    }
     catch(e) { console.log(`[${sheet}] URL${i+1} failed: ${e.message}`); }
   }
   throw new Error(`All URLs failed for ${sheet}`);
