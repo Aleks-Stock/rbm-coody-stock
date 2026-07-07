@@ -754,7 +754,7 @@ function renderTable(){
       rows.push("<tr class=\"grp-hdr\"><td colspan=\"22\">"+it.gn+"</td></tr>");
     }
     var usT=it.in_transit_us>0?"<span class=\"trb\">+"+it.in_transit_us+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
-    var caT=it.in_transit_ca>0?"<span class=\"trb\">+"+it.in_transit_ca+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
+    var caT=it.in_transit_ca>0?"<span class=\"transit-badge\" style=\"cursor:pointer;background:rgba(66,165,245,.25);border:1px solid var(--bl)\" onclick=\"showOnthewayCA(event,this,"+idx+")\" title=\"Клик — даты поставки CA\">+"+it.in_transit_ca+" &#128674;</span>":"<span class=\"sz\">&#8212;</span>";
     var usS=it.stock_us>0?"<b>"+it.stock_us+"</b>":"<span class=\"sz\">0</span>";
     var caS=it.stock_ca>0?"<b>"+it.stock_ca+"</b>":"<span class=\"sz\">0</span>";
     var cnS=it.stock_cn>0?"<b style=\"color:#ffca28\">"+it.stock_cn+"</b>":"<span class=\"sz\">&#8212;</span>";
@@ -1135,6 +1135,38 @@ html2+="<div class=\"row\"><span class=\"lbl\">"+s.date+_ds+"</span><span class=
   p.style.left=Math.min(rect.left,window.innerWidth-250)+"px";
   evt.stopPropagation();
 }
+function showOnthewayCA(evt,el,idx){
+  if(_popup){_popup.remove();_popup=null;}
+  var item=fData[idx];if(!item)return;
+  var name=item.name;
+  var data=_onthewayDataCA[name];
+  if(!data||!data.length){
+    var p2=document.createElement("div");p2.className="detail-popup";
+    p2.innerHTML="<h4>"+name.slice(0,30)+"</h4><div style=\"color:var(--tx2);font-size:12px\">&#1042; &#1087;&#1091;&#1090;&#1080; CA: "+item.in_transit_ca+" &#1096;&#1090;<br>&#1044;&#1072;&#1085;&#1085;&#1099;&#1093; &#1086; &#1076;&#1072;&#1090;&#1072;&#1093; &#1085;&#1077;&#1090;</div>";
+    _popup=p2;document.body.appendChild(p2);
+    var r2=evt.target.getBoundingClientRect();
+    p2.style.top=(r2.bottom+6)+"px";p2.style.left=Math.min(r2.left,window.innerWidth-250)+"px";
+    evt.stopPropagation();return;
+  }
+  var p=document.createElement("div");
+  p.className="detail-popup";
+  var html2="<h4>"+name.slice(0,30)+" — &#1042; &#1087;&#1091;&#1090;&#1080; CA</h4>";
+  html2+="<div style=\"margin-bottom:6px;font-size:10px;color:var(--tx2)\">&#1056;&#1072;&#1089;&#1095;&#1077;&#1090;&#1085;&#1086;&#1077; &#1074;&#1088;&#1077;&#1084;&#1103; &#1087;&#1086;&#1083;&#1091;&#1095;&#1077;&#1085;&#1080;&#1103;</div>";
+  data.forEach(function(s){
+    var _dl=(function(ds){var p=ds.split('.');if(p.length!==3)return null;var d=new Date(+p[2],+p[1]-1,+p[0]);var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);})(s.date);
+    var _ds=_dl===null?'':_dl>0?' <span style="color:var(--or)">(&#1095;&#1077;&#1088;&#1077;&#1079; '+_dl+' &#1076;&#1085;.)</span>':_dl===0?' <span style="color:var(--gn)">(&#1089;&#1077;&#1075;&#1086;&#1076;&#1085;&#1103;)</span>':' <span style="color:var(--rd)">(&#1087;&#1088;&#1086;&#1089;&#1088;&#1086;&#1095;&#1077;&#1085;&#1086;)</span>';
+    html2+="<div class=\"row\"><span class=\"lbl\">"+s.date+_ds+"</span><span class=\"val\">"+s.qty+" &#1096;&#1090;</span></div>";
+  });
+  p.innerHTML=html2;
+  _popup=p;document.body.appendChild(p);
+  var rect=evt.target.getBoundingClientRect();
+  var ph=p.offsetHeight||120;
+  var spaceBelow=window.innerHeight-rect.bottom-10;
+  var top=spaceBelow>=ph?rect.bottom+6:Math.max(10,rect.top-ph-6);
+  p.style.top=top+"px";
+  p.style.left=Math.min(rect.left,window.innerWidth-250)+"px";
+  evt.stopPropagation();
+}
 function toggleOrderRow(btn){
   var row=btn.closest("tr");
   var inp=row.querySelector("input.qinput");
@@ -1258,7 +1290,8 @@ var SHEET_URLS={
   ontheway:"/api/sheets/ontheway",
   ontheway_ca:"/api/sheets/ontheway_ca"
 };
-var _onthewayData={};  // {name: [{date:"06.06.2026",qty:2},...]}
+var _onthewayData={};   // US {name: [{date:"06.06.2026",qty:2},...]}
+var _onthewayDataCA={}; // CA
 
 function parseStockUS(csvText){
   var result={};
@@ -1360,6 +1393,7 @@ function doRefresh(){
     var stockCN=results[4]?parseStockCN(results[4]):{};
     var stockCA=results[5]?parseStockCA(results[5]):{};
     if(results[6])_onthewayData=parseOntheway(results[6]);
+    if(results[7])_onthewayDataCA=parseOntheway(results[7]);
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
