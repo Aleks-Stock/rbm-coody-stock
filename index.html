@@ -441,7 +441,6 @@ var SOURCE=[
 {"name":"Сamp stove «Kamin» Small","stock_cn":4,"stock_us":9,"in_transit_us":0,"stock_ca":7,"in_transit_ca":0,"ordered_us":7,"ordered_ca":0,"sales_us_trend":5.3,"sales_us_season":3.3,"sales_us_avg":4.1,"yoy_us":61,"trend_us":1,"sales_ca_trend":0.7,"sales_ca_season":1.0,"sales_ca_avg":0.9,"yoy_ca":-30,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":9,"growth_pct_ca":0},
 {"name":"Floor for Hexagon","stock_cn":106,"stock_us":5,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":2.0,"sales_us_season":1.7,"sales_us_avg":4.0,"yoy_us":-24,"trend_us":3,"sales_ca_trend":0.7,"sales_ca_season":0.3,"sales_ca_avg":0.5,"yoy_ca":133,"trend_ca":0,"sales_cn_avg":0.0,"growth_pct_us":150,"growth_pct_ca":0},
 {"name":"Floor for Cuboid 4.40","stock_cn":30,"stock_us":0,"in_transit_us":5,"stock_ca":0,"in_transit_ca":0,"ordered_us":30,"ordered_ca":0,"sales_us_trend":0.0,"sales_us_season":0.0,"sales_us_avg":0.0,"yoy_us":null,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":0,"growth_pct_ca":0},
-{"name":"Floor for Cuboid 2.20","stock_cn":25,"stock_us":0,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":0.0,"sales_us_season":0.0,"sales_us_avg":0.0,"yoy_us":null,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":0,"growth_pct_ca":0},
 {"name":"Floor for UP-5","stock_cn":68,"stock_us":17,"in_transit_us":0,"stock_ca":1,"in_transit_ca":0,"ordered_us":1,"ordered_ca":0,"sales_us_trend":4.7,"sales_us_season":3.7,"sales_us_avg":12.5,"yoy_us":27,"trend_us":3,"sales_ca_trend":1.0,"sales_ca_season":2.7,"sales_ca_avg":2.0,"yoy_ca":-63,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":75,"growth_pct_ca":0},
 {"name":"Floor for UP-2","stock_cn":54,"stock_us":14,"in_transit_us":0,"stock_ca":2,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":3.3,"sales_us_season":3.0,"sales_us_avg":3.1,"yoy_us":10,"trend_us":0,"sales_ca_trend":0.3,"sales_ca_season":1.3,"sales_ca_avg":0.9,"yoy_ca":-77,"trend_ca":0,"sales_cn_avg":0.0,"growth_pct_us":0,"growth_pct_ca":0},
 {"name":"Floor for UP-2 mini","stock_cn":64,"stock_us":11,"in_transit_us":0,"stock_ca":2,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":0.3,"sales_us_season":1.7,"sales_us_avg":1.1,"yoy_us":-82,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":0,"growth_pct_ca":0},
@@ -579,9 +578,11 @@ function calcABC(allData){
 
 
 
+var EXCLUDED=["Floor for Cuboid 2.20"];
 function build(src){
   var oi=0;
   allData=src.map(function(r){
+    if(EXCLUDED.indexOf(r.name)>=0)return null;
     var g=getGrp(r.name);if(!g)return null;
     var s=uSet[r.name]||{};
     var it={};for(var k in r)it[k]=r[k];
@@ -1467,7 +1468,8 @@ function doRefresh(){
     // Auto-detect new products from sales sheet
     var BLOCKED_PRODUCTS=new Set(["Rain Fly Panda Large","Rain Fly Panda Medium",
       "Pipe for Caminus M (2 pcs.)","Pipe for Caminus S (3 pcs.)",
-      "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L","Repair kit (various spare parts)"]);
+      "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L","Repair kit (various spare parts)",
+      "Floor for Cuboid 2.20"]);
     var sourceNames=new Set(SOURCE.map(function(r){return r.name;}));
     Object.keys(usMap).forEach(function(name){
       if(sourceNames.has(name)||BLOCKED_PRODUCTS.has(name))return;
