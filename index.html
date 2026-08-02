@@ -578,11 +578,12 @@ function calcABC(allData){
 
 
 
-var EXCLUDED=["Floor for Cuboid 2.20"];
+var EXCLUDED_SUBSTR=["Cuboid 2.20","Cuboid 2,20"];
+function isExcluded(name){var n=name.trim().toLowerCase();return EXCLUDED_SUBSTR.some(function(e){return n.indexOf(e.toLowerCase())>=0;});}
 function build(src){
   var oi=0;
   allData=src.map(function(r){
-    if(EXCLUDED.indexOf(r.name)>=0)return null;
+    if(isExcluded(r.name))return null;
     var g=getGrp(r.name);if(!g)return null;
     var s=uSet[r.name]||{};
     var it={};for(var k in r)it[k]=r[k];
@@ -1472,7 +1473,7 @@ function doRefresh(){
       "Floor for Cuboid 2.20"]);
     var sourceNames=new Set(SOURCE.map(function(r){return r.name;}));
     Object.keys(usMap).forEach(function(name){
-      if(sourceNames.has(name)||BLOCKED_PRODUCTS.has(name))return;
+      if(sourceNames.has(name)||BLOCKED_PRODUCTS.has(name)||isExcluded(name))return;
       var g=getGrp(name); if(!g)return;
       var us=usMap[name]; if(!us)return;
       var _sus2=stockUS[name]; var _hasStockUS=_sus2&&((_sus2.stock||0)+(_sus2.in_transit||0)+(_sus2.ordered||0))>0;
