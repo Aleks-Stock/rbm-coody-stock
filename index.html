@@ -567,7 +567,7 @@ function calcABC(allData){
     var med=medians[it.gn||""]||1;
     var growing=(it.trend_us||0)>=1;
     var aboveAvg=vel>=med*1.2;
-    var fallingYoY=(it.yoy_us!=null&&it.yoy_us<-20);
+    var fallingYoY=(it.yoy_us!=null&&it.yoy_us<-20)&&(it.trend_us||0)<2;
     // C: vel≤2 AND не растёт
     if(vel<=2&&!growing){it.abc="C";}
     // A: vel>2 AND (рост или выше медианы) AND не падающий YoY
@@ -910,24 +910,17 @@ function calcNeed(it, isUS){
     var vu     = vel/30;
     var daysEff= vu>0 ? Math.floor(au_eff/vu) : (au_eff>0?999:0);
     if(daysEff < thresh){
-      var dayNow=(new Date()).getDate();
-      var curNorm=dayNow>0?curSold*(30/dayNow):0;
-      var useGrowth=curNorm>vel*1.3;
-      var velOrd=useGrowth?curNorm:vel;
-      var target = Math.ceil(velOrd*(thresh/30));
-      // если сработал curNorm — долг не применяем; иначе — долг когда stock=0
-      var free = (stock>0||useGrowth) ? (stock+Math.max(0,transit-curSold)) : (transit-curSold);
+      var target = Math.ceil(vel*(thresh/30));
+      // долг когда stock=0
+      var free = stock>0 ? (stock+Math.max(0,transit-curSold)) : (transit-curSold);
       need = Math.max(0, target - free - ordered);
-      if(!useGrowth && need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
+      if(need>0 && ((isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2))) need=Math.ceil(need*1.20);
       if(need>0) need=Math.max(2,need);
     }
   }
-  // Safety: nothing available and nothing ordered → order 2
-  if(need===0 && avail<2 && ordered===0) need=2;
-  // Tent minimum USA: keep at least 5 units (stock+transit+ordered)
-  if(isUS && it.go===0){var tot=avail+ordered; if(tot<5) need=Math.max(need,5-tot);}
-  // Tarp minimum USA: keep at least 5 units (stock+transit+ordered)
-  if(isUS && it.go===1){var tot=avail+ordered; if(tot<5) need=Math.max(need,5-tot);}
+  // Universal minimum: total (stock+transit+ordered) must be ≥ 6
+  var totAll=avail+ordered;
+  if(totAll<6) need=Math.max(need,6-totAll);
   return need;
 }
 function openOrder(type){
