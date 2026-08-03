@@ -609,6 +609,9 @@ function build(src){
     else it.status_ca="ok";
     return it;
   }).filter(Boolean);
+  // Deduplicate by case-insensitive name (SOURCE entry wins over auto-added)
+  var _seen={};
+  allData=allData.filter(function(it){var k=it.name.toLowerCase().trim();if(_seen[k])return false;_seen[k]=true;return true;});
   calcABC(allData);
   applyFilter();
 }
@@ -1472,8 +1475,9 @@ function doRefresh(){
       "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L","Repair kit (various spare parts)",
       "Floor for Cuboid 2.20"]);
     var sourceNames=new Set(SOURCE.map(function(r){return r.name;}));
+    var sourceNamesLower=new Set(SOURCE.map(function(r){return r.name.toLowerCase().trim();}));
     Object.keys(usMap).forEach(function(name){
-      if(sourceNames.has(name)||BLOCKED_PRODUCTS.has(name)||isExcluded(name))return;
+      if(sourceNames.has(name)||sourceNamesLower.has(name.toLowerCase().trim())||BLOCKED_PRODUCTS.has(name)||isExcluded(name))return;
       var g=getGrp(name); if(!g)return;
       var us=usMap[name]; if(!us)return;
       var _sus2=stockUS[name]; var _hasStockUS=_sus2&&((_sus2.stock||0)+(_sus2.in_transit||0)+(_sus2.ordered||0))>0;
