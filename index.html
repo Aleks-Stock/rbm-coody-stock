@@ -1420,18 +1420,26 @@ function doRefresh(){
     var stockCA=results[5]?parseStockCA(results[5]):{};
     if(results[6])_onthewayData=parseOntheway(results[6]);
     if(results[7])_onthewayDataCA=parseOntheway(results[7]);
+    // Build case-insensitive lookup wrappers (built once, used per product)
+    function mkCI(dict){var m={};for(var k in dict)m[k.toLowerCase().trim()]=dict[k];return m;}
+    function ciS(ci,name){return ci[name.toLowerCase().trim()];}
+    var stockUSci=mkCI(stockUS),stockCNci=mkCI(stockCN),stockCAci=mkCI(stockCA);
+    var usMapCI=mkCI(usMap),caMapCI=mkCI(caMap);
     var updated=0;
     var merged=SOURCE.map(function(r){
       var o={};for(var k in r)o[k]=r[k];
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
-      // Apply live stock data
-      var sus=stockUS[r.name];
+      // Apply live stock data (case-insensitive lookup)
+      var sus=ciS(stockUSci,r.name);
       if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.ordered_us=sus.ordered||0;}
-      var scn=stockCN[r.name];
+      else{o.in_transit_us=0;o.stock_us=0;o.ordered_us=0;}
+      var scn=ciS(stockCNci,r.name);
       if(scn){o.stock_cn=scn.stock;o.ordered_cn=scn.ordered||0;}
-      var sca=stockCA[r.name];
+      else{o.stock_cn=0;}
+      var sca=ciS(stockCAci,r.name);
       if(sca){o.stock_ca=sca.stock;o.in_transit_ca=sca.in_transit;o.ordered_ca=sca.ordered||0;}
-      var us=usMap[r.name];
+      else{o.in_transit_ca=0;o.stock_ca=0;o.ordered_ca=0;}
+      var us=ciS(usMapCI,r.name);
       if(us){
         var curNorm=0;
         if(us[31]>0)curNorm=Math.round(us[31]*(30/days)*10)/10;
@@ -1445,7 +1453,7 @@ function doRefresh(){
         o._us_cur=us[31]||0;
         updated++;
       }
-      var ca=caMap[r.name];
+      var ca=ciS(caMapCI,r.name);
       if(ca){
         var curNormCA=0;
         if(ca[31]>0)curNormCA=Math.round(ca[31]*(30/days)*10)/10;
