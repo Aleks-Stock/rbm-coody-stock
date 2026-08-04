@@ -609,9 +609,9 @@ function build(src){
     else it.status_ca="ok";
     return it;
   }).filter(Boolean);
-  // Deduplicate by case-insensitive name (SOURCE entry wins over auto-added)
+  // Deduplicate by normalized name (Cyrillic→Latin + lowercase; SOURCE entry wins)
   var _seen={};
-  allData=allData.filter(function(it){var k=it.name.toLowerCase().trim();if(_seen[k])return false;_seen[k]=true;return true;});
+  allData=allData.filter(function(it){var k=normKey(it.name).toLowerCase().trim();if(_seen[k])return false;_seen[k]=true;return true;});
   calcABC(allData);
   applyFilter();
 }
@@ -1421,8 +1421,8 @@ function doRefresh(){
     if(results[6])_onthewayData=parseOntheway(results[6]);
     if(results[7])_onthewayDataCA=parseOntheway(results[7]);
     // Build case-insensitive lookup wrappers (built once, used per product)
-    function mkCI(dict){var m={};for(var k in dict)m[k.toLowerCase().trim()]=dict[k];return m;}
-    function ciS(ci,name){return ci[name.toLowerCase().trim()];}
+    function mkCI(dict){var m={};for(var k in dict)m[normKey(k).toLowerCase().trim()]=dict[k];return m;}
+    function ciS(ci,name){return ci[normKey(name).toLowerCase().trim()];}
     var stockUSci=mkCI(stockUS),stockCNci=mkCI(stockCN),stockCAci=mkCI(stockCA);
     var usMapCI=mkCI(usMap),caMapCI=mkCI(caMap);
     var updated=0;
@@ -1483,9 +1483,9 @@ function doRefresh(){
       "Каркас УП-2 мини старого образца, длинные","Каркас надувной Panda L","Repair kit (various spare parts)",
       "Floor for Cuboid 2.20"]);
     var sourceNames=new Set(SOURCE.map(function(r){return r.name;}));
-    var sourceNamesLower=new Set(SOURCE.map(function(r){return r.name.toLowerCase().trim();}));
+    var sourceNamesNorm=new Set(SOURCE.map(function(r){return normKey(r.name).toLowerCase().trim();}));
     Object.keys(usMap).forEach(function(name){
-      if(sourceNames.has(name)||sourceNamesLower.has(name.toLowerCase().trim())||BLOCKED_PRODUCTS.has(name)||isExcluded(name))return;
+      if(sourceNames.has(name)||sourceNamesNorm.has(normKey(name).toLowerCase().trim())||BLOCKED_PRODUCTS.has(name)||isExcluded(name))return;
       var g=getGrp(name); if(!g)return;
       var us=usMap[name]; if(!us)return;
       var _sus2=stockUS[name]; var _hasStockUS=_sus2&&((_sus2.stock||0)+(_sus2.in_transit||0)+(_sus2.ordered||0))>0;
