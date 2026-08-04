@@ -1102,7 +1102,7 @@ function exportTransfer(){
 function closeOrder(){document.getElementById("oModal").classList.remove("open");}
 // Normalize Cyrillic lookalikes to Latin for name matching
 function normKey(s){return s.replace(/[СсАаЕеОоРрВвМмНнКкТтХх]/g,function(c){return{С:'C',с:'c',А:'A',а:'a',Е:'E',е:'e',О:'O',о:'o',Р:'P',р:'p',В:'B',в:'b',М:'M',м:'m',Н:'H',н:'h',К:'K',к:'k',Т:'T',т:'t',Х:'X',х:'x'}[c]||c;});}
-function owLookup(dict,name){return dict[name]||dict[normKey(name)]||null;}
+function owLookup(dict,name){return dict[name]||dict[normKey(name)]||dict[name.toLowerCase()]||dict[normKey(name).toLowerCase()]||null;}
 function showOntheway(evt,el,idx){
   if(_popup){_popup.remove();_popup=null;}
   var item=fData[idx];if(!item)return;
@@ -1396,7 +1396,7 @@ function parseOnthewayRows(rows){
       if(qty>0)shipments.push({date:d.date,qty:qty});
     });
     if(shipments.length>0){
-      var nk=normKey(name);
+      var nk=normKey(name).toLowerCase();
       if(!result[nk])result[nk]=[];
       result[nk]=result[nk].concat(shipments);
     }
