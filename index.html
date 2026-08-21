@@ -315,6 +315,7 @@ tr.deleted td{opacity:.35;text-decoration:line-through}
         <tbody id="oBody"></tbody>
       </table>
     </div>
+    <div id="oTotals" style="display:flex;gap:20px;align-items:center;justify-content:flex-end;padding:10px 12px;margin-top:8px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;font-size:13px"></div>
     <div class="ma">
       <button class="btn bs" onclick="closeOrder()">&#1047;&#1072;&#1082;&#1088;&#1099;&#1090;&#1100;</button>
       <button class="restore-btn" onclick="restoreOrder()">&#8635; &#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100; &#1074;&#1089;&#1077;</button>
@@ -957,7 +958,7 @@ function openOrder(type){
         }
         if(probeQty>0){
           items.push({name:it.name,stock:0,transit:0,ordered:0,vel:0,days:0,qty:probeQty,
-            cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:abc_us,probe:true});
+            cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:isWuzhou(it.name),abc:abc_us,probe:true,vol:it.vol||0,wt:it.wt||0});
         }
       }
       // US: проверяем calcNeed (например правило минимума палаток)
@@ -965,7 +966,7 @@ function openOrder(type){
         var qty0=calcNeed(it,isUS);
         if(qty0>0){
           var wu0=isWuzhou(it.name);
-          items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:0,days:0,qty:qty0,cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:wu0});
+          items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:0,days:0,qty:qty0,cn:it.stock_cn,growing:false,growPct:0,go:it.go||0,oi:it.origIdx||0,wu:wu0,vol:it.vol||0,wt:it.wt||0});
         }
       }
       return;
@@ -979,7 +980,7 @@ function openOrder(type){
     var days=vel>0?(avail_eff>0?Math.floor(avail_eff/vel*30):0):999;
     var growing=(isUS&&it.trend_us>=2)||(!isUS&&it.trend_ca>=2);
     var growPct=isUS?(it.growth_pct_us||0):(it.growth_pct_ca||0);
-    items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu});
+    items.push({name:it.name,stock:stock,transit:transit,ordered:ordered,vel:vel,days:days,qty:qty,cn:it.stock_cn,growing:growing,growPct:growPct,go:it.go||0,oi:it.origIdx||0,wu:wu,vol:it.vol||0,wt:it.wt||0});
   });
   // Sort by product group order (same as main table)
   // Coody first, Wuzhou second; within each group keep stock sheet order
@@ -1004,7 +1005,7 @@ function openOrder(type){
       "<td style=\"text-align:center\">"+it.ordered+"</td>"+
       "<td style=\"text-align:center\">"+it.vel+"</td>"+
       "<td style=\"text-align:center;color:"+(it.days<30?"var(--rd)":"var(--or)")+"\"><b>"+it.days+"d</b></td>"+
-      "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"oq"+i+"\" value=\""+it.qty+"\" min=\"0\">"+
+      "<td style=\"text-align:center\"><input class=\"qinput\" type=\"number\" id=\"oq"+i+"\" value=\""+it.qty+"\" min=\"0\" oninput=\"updateOrderTotals()\">"+
       (it.growing&&it.growPct>0?"<span class=\"badge bbs\" style=\"font-size:10px\" title=\"+10% к заказу (рост продаж)\">+"+it.growPct+"%</span>":"")+"</td>"+
       "<td style=\"text-align:center\">"+cnCell+"</td>"+
       "<td style=\"text-align:center\"><button class=\"del-btn\" onclick=\"toggleOrderRow(this)\" title=\"&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;\">&#128465;</button></td>"+
@@ -1013,9 +1014,32 @@ function openOrder(type){
   
   document.getElementById("oBody").innerHTML=rows.join("")||"<tr><td colspan=\"8\" style=\"text-align:center;padding:20px;color:var(--tx2)\">Нет товаров требующих заказа</td></tr>";
   document.getElementById("oModal").classList.add("open");
-  
+
   // Store items for export
   window._orderItems=items;
+  updateOrderTotals();
+}
+
+// Recalculate SKU count, volume and weight from current quantity inputs
+function updateOrderTotals(){
+  var el=document.getElementById("oTotals");
+  if(!el||!window._orderItems)return;
+  var sku=0,vol=0,wt=0;
+  window._orderItems.forEach(function(it,i){
+    var row=document.querySelector('.order-row[data-idx="'+i+'"]');
+    if(row&&row.classList.contains("deleted"))return;
+    var inp=document.getElementById("oq"+i);
+    var q=inp?Math.max(0,parseInt(inp.value)||0):(it.qty||0);
+    if(q<=0)return;
+    sku++;
+    vol+=(it.vol||0)*q;
+    wt+=(it.wt||0)*q;
+  });
+  var volColor=vol>30?"var(--rd)":"var(--gn)";
+  el.innerHTML=
+    "<span style='color:var(--tx2)'>SKU: <b style='color:var(--tx)'>"+sku+"</b></span>"+
+    "<span style='color:var(--tx2)'>Объём: <b style='color:"+volColor+"'>"+vol.toFixed(2)+" м³</b></span>"+
+    "<span style='color:var(--tx2)'>Вес: <b style='color:var(--tx)'>"+wt.toFixed(1)+" кг</b></span>";
 }
 
 var _transferItems=[];var _transferType=0;
@@ -1184,6 +1208,7 @@ function toggleOrderRow(btn){
     btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
     btn.innerHTML="&#8635;";
   }
+  updateOrderTotals();
 }
 function restoreOrder(){
   _deletedRows.clear();
@@ -1194,6 +1219,7 @@ function restoreOrder(){
     var btn=r.querySelector(".del-btn");
     if(btn){btn.innerHTML="&#128465;";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
   });
+  updateOrderTotals();
 }
 
 function exportOrder(){
@@ -1259,6 +1285,8 @@ function pcsv(txt){
   return rows.filter(function(r){return r.some(function(f){return f.trim();});});
 }
 function si(v){try{return Math.max(0,parseInt(String(v).trim())||0);}catch(e){return 0;}}
+// Parse decimal number with comma separator and unit suffix: "0,205 м³" → 0.205
+function sdec(v){try{var s=String(v).replace(/[^\d.,-]/g,'').replace(',','.');var n=parseFloat(s);return isNaN(n)?0:Math.max(0,n);}catch(e){return 0;}}
 
 // ─── SETTINGS ────────────────────────────────────────────────────────────────
 function openEdit(idx){
@@ -1301,10 +1329,18 @@ function parseStockUS(csvText){
   if(!rows.length)return result;
   var hdr=rows[0];
   var ordCol=4; // default col E = Заказано на заводе
-  for(var c=0;c<hdr.length;c++){if(hdr[c]&&hdr[c].replace(/\s/g,'').toLowerCase().indexOf('заказано')>=0){ordCol=c;break;}}
+  var volCol=-1, wtCol=-1;
+  for(var c=0;c<hdr.length;c++){
+    if(!hdr[c])continue;
+    var h=hdr[c].replace(/\s/g,'').toLowerCase();
+    if(h.indexOf('заказано')>=0&&ordCol===4)ordCol=c;
+    if(h.indexOf('объем')>=0||h.indexOf('объём')>=0)volCol=c;
+    if(h.indexOf('вес')>=0)wtCol=c;
+  }
   rows.slice(1).forEach(function(row){
     var name=row[1]&&row[1].trim();if(!name)return;
-    result[name]={in_transit:si(row[2]),stock:si(row[3]),ordered:Math.max(0,si(row[ordCol])||0)};
+    result[name]={in_transit:si(row[2]),stock:si(row[3]),ordered:Math.max(0,si(row[ordCol])||0),
+      vol:volCol>=0?sdec(row[volCol]):0, wt:wtCol>=0?sdec(row[wtCol]):0};
   });
   return result;
 }
@@ -1431,7 +1467,7 @@ function doRefresh(){
       var ov=ovr[r.name]||{};for(var k in ov)o[k]=ov[k];
       // Apply live stock data (case-insensitive lookup)
       var sus=ciS(stockUSci,r.name);
-      if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.ordered_us=sus.ordered||0;}
+      if(sus){o.stock_us=sus.stock;o.in_transit_us=sus.in_transit;o.ordered_us=sus.ordered||0;o.vol=sus.vol||0;o.wt=sus.wt||0;}
       else{o.in_transit_us=0;o.stock_us=0;o.ordered_us=0;}
       var scn=ciS(stockCNci,r.name);
       if(scn){o.stock_cn=scn.stock;o.ordered_cn=scn.ordered||0;}
@@ -1501,7 +1537,7 @@ function doRefresh(){
         _v3:[us[30]||0,us[29]||0,us[28]||0],_sea:[us[19]||0,us[20]||0,us[21]||0],
         _months:us._months||[],_seaMonths:us._seaMonths||[],_us_cur:us[31]||0};
       var sus=stockUS[name];
-      if(sus){newItem.stock_us=sus.stock;newItem.in_transit_us=sus.in_transit;newItem.ordered_us=sus.ordered||0;}
+      if(sus){newItem.stock_us=sus.stock;newItem.in_transit_us=sus.in_transit;newItem.ordered_us=sus.ordered||0;newItem.vol=sus.vol||0;newItem.wt=sus.wt||0;}
       var scn2=stockCN[name];
       if(scn2){newItem.stock_cn=scn2.stock;newItem.ordered_cn=scn2.ordered||0;}
       SOURCE.push(newItem);
