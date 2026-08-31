@@ -1198,13 +1198,13 @@ function toggleOrderRow(btn){
   if(row.classList.contains("deleted")){
     // Restore
     row.classList.remove("deleted");
-    if(inp&&inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");
+    if(inp){inp.disabled=false;if(inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");}
     btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";
     btn.innerHTML="&#128465;";
   }else{
     // Delete
     row.classList.add("deleted");
-    if(inp){inp.setAttribute("data-saved",inp.value);inp.value=0;}
+    if(inp){inp.setAttribute("data-saved",inp.value);inp.value=0;inp.disabled=true;}
     btn.title="&#1042;&#1086;&#1089;&#1089;&#1090;&#1072;&#1085;&#1086;&#1074;&#1080;&#1090;&#1100;";
     btn.innerHTML="&#8635;";
   }
@@ -1215,7 +1215,7 @@ function restoreOrder(){
   document.querySelectorAll("#oBody tr.deleted").forEach(function(r){
     r.classList.remove("deleted");
     var inp=r.querySelector("input.qinput");
-    if(inp&&inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");
+    if(inp){inp.disabled=false;if(inp.getAttribute("data-saved"))inp.value=inp.getAttribute("data-saved");}
     var btn=r.querySelector(".del-btn");
     if(btn){btn.innerHTML="&#128465;";btn.title="&#1059;&#1076;&#1072;&#1083;&#1080;&#1090;&#1100; &#1080;&#1079; &#1079;&#1072;&#1082;&#1072;&#1079;&#1072;";}
   });
@@ -1225,8 +1225,13 @@ function restoreOrder(){
 function exportOrder(){
   var items=window._orderItems||[];
   var rows=[["Товар","Остаток","В пути","Заказано","Прогноз/мес","Дней","К заказу","Склад Китай","Рост"]];
-  items.forEach(function(it,i){
-    var qty=parseInt(document.getElementById("oq"+i).value)||0;
+  // Read straight from visible rows: skip deleted ones, honour edited quantities
+  document.querySelectorAll("#oBody tr.order-row").forEach(function(row){
+    if(row.classList.contains("deleted"))return;
+    var i=parseInt(row.getAttribute("data-idx"));
+    var it=items[i]; if(!it)return;
+    var inp=document.getElementById("oq"+i);
+    var qty=inp?(parseInt(inp.value)||0):0;
     if(qty>0)rows.push([it.name,it.stock,it.transit,it.ordered,it.vel,it.days,qty,it.cn>0?it.cn:0,it.growing?"🚀":""]);
   });
   var ws=XLSX.utils.aoa_to_sheet(rows);
