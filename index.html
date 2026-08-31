@@ -56,6 +56,9 @@ input[type=file]{display:none}
 .obtn.ca{background:#388e3c}.obtn.ca:hover{background:#4caf50}
 .tw{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow-x:auto;overflow-y:auto;position:relative}
 table{width:100%;border-collapse:collapse;table-layout:auto;min-width:1200px}
+/* On wide screens size the main table by its content instead of stretching
+   the product column to fill the gap */
+.tw table{width:auto}
 thead tr.gh th{padding:6px 10px;font-size:10px;font-weight:700;text-align:center;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--bd)}
 th.us-gh{background:var(--us-hd);color:var(--bl);border-left:2px solid var(--us-bd);border-right:2px solid var(--us-bd)}
 th.ca-gh{background:var(--ca-hd);color:#81c784;border-left:2px solid var(--ca-bd);border-right:2px solid var(--ca-bd)}
