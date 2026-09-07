@@ -899,7 +899,12 @@ function _descBase(v0,v1,v2,seaAvg,base){
   if(active[active.length-1]===0)return "ноль в конце → среднее: ("+active.join("+")+")÷"+active.length+"="+base;
   if(active.length===1)return "1 месяц → "+base;
   if(active.length===2)return "2 месяца → последний: "+base;
-  if(active[0]<active[1]&&active[1]<active[2]){var sl=Math.round((active[2]-active[0])/2*10)/10;return "устойчивый рост → линейно: "+active[2]+"+("+active[2]+"-"+active[0]+")/2="+base;}
+  if(active[0]<active[1]&&active[1]<active[2]){
+    var raw=Math.max(active[2],Math.round((active[2]+(active[2]-active[0])/2)*10)/10);
+    var txt="устойчивый рост → линейно: "+active[2]+"+("+active[2]+"-"+active[0]+")/2="+raw;
+    if(raw>base)txt+=" → ограничено пиком LY: "+base;
+    return txt;
+  }
   var t3=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
   if(seaAvg>0&&t3>0)return "60/40 blend: "+seaAvg+"×0.6 + "+t3+"×0.4 = "+base;
   return "среднее: ("+active.join("+")+")÷"+active.length+"="+base;
@@ -1729,7 +1734,12 @@ function calcAvg3(vals){
   if(active.length===2)return active[1];
   if(active[0]>0&&active[1]>active[0]&&active[2]>active[1]){
     var slope=(active[2]-active[0])/2;
-    return Math.max(active[2],Math.round((active[2]+slope)*10)/10);
+    var proj=Math.max(active[2],Math.round((active[2]+slope)*10)/10);
+    // Cap linear growth at last year's seasonal peak — a jump out of a seasonal
+    // trough shouldn't project above what the product actually sold at its peak.
+    var seaPeak=Math.max(vals[19]||0,vals[20]||0,vals[21]||0);
+    if(seaPeak>0&&proj>seaPeak)proj=Math.max(active[2],seaPeak);
+    return proj;
   }
   var trend3=Math.round(active.reduce(function(a,b){return a+b;},0)/active.length*10)/10;
   // Skip season blend if trend >> season (season is outdated)
