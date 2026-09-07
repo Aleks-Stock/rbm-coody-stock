@@ -492,7 +492,6 @@ var SOURCE=[
 {"name":"13.6 ground sheet PVC","stock_cn":0,"stock_us":16,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":10,"ordered_ca":0,"sales_us_trend":9.3,"sales_us_season":0.0,"sales_us_avg":9.3,"yoy_us":null,"trend_us":1,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":32,"growth_pct_ca":0},
 {"name":"Hub ground Sheet PVC","stock_cn":0,"stock_us":11,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":1.7,"sales_us_season":0.0,"sales_us_avg":1.7,"yoy_us":null,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":30,"growth_pct_ca":0},
 {"name":"Bestona ground sheet PVC","stock_cn":0,"stock_us":5,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":2.5,"sales_us_season":0.0,"sales_us_avg":5.5,"yoy_us":null,"trend_us":3,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":180,"growth_pct_ca":0},
-{"name":"10 ground sheet PVC","stock_cn":0,"stock_us":4,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":15,"ordered_ca":0,"sales_us_trend":4.7,"sales_us_season":0.0,"sales_us_avg":9.0,"yoy_us":null,"trend_us":3,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":43,"growth_pct_ca":0},
 {"name":"8 ground sheet PVC","stock_cn":0,"stock_us":6,"in_transit_us":5,"stock_ca":0,"in_transit_ca":0,"ordered_us":10,"ordered_ca":0,"sales_us_trend":5.0,"sales_us_season":0.0,"sales_us_avg":9.0,"yoy_us":null,"trend_us":3,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":40,"growth_pct_ca":0},
 {"name":"TPU door beige for tent Coody 17.2 PRO","stock_cn":0,"stock_us":10,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":1.3,"sales_us_season":0.0,"sales_us_avg":1.3,"yoy_us":null,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":0,"growth_pct_ca":0},
 {"name":"TPU door khaki for tent Coody 17.2 PRO","stock_cn":0,"stock_us":3,"in_transit_us":0,"stock_ca":0,"in_transit_ca":0,"ordered_us":0,"ordered_ca":0,"sales_us_trend":7,"sales_us_season":0.0,"sales_us_avg":7,"yoy_us":null,"trend_us":0,"sales_ca_trend":0,"sales_ca_season":0,"sales_ca_avg":0,"yoy_ca":null,"trend_ca":0,"sales_cn_avg":0,"growth_pct_us":300,"growth_pct_ca":0},
@@ -584,7 +583,12 @@ function calcABC(allData){
 
 
 var EXCLUDED_SUBSTR=["Cuboid 2.20","Cuboid 2,20"];
-function isExcluded(name){var n=name.trim().toLowerCase();return EXCLUDED_SUBSTR.some(function(e){return n.indexOf(e.toLowerCase())>=0;});}
+var EXCLUDED_EXACT=["10 ground sheet PVC"];
+function isExcluded(name){
+  var n=name.trim().toLowerCase();
+  if(EXCLUDED_EXACT.some(function(e){return n===e.toLowerCase();}))return true;
+  return EXCLUDED_SUBSTR.some(function(e){return n.indexOf(e.toLowerCase())>=0;});
+}
 function build(src){
   var oi=0;
   allData=src.map(function(r){
