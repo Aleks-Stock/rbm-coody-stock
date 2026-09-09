@@ -148,6 +148,17 @@ thead tr.ch th{font-size:8.5px!important;letter-spacing:.2px;padding:5px 3px!imp
 @media(min-width:769px){
   td:not(.pn){padding:4px 3px!important}
 }
+/* Centre every data cell and its header; product column stays left-aligned */
+thead tr.ch th:not(:first-child),tbody td:not(.pn){text-align:center!important}
+/* Hard vertical dividers between the three market blocks */
+th.us-first,td.us-first{border-left:3px solid var(--bl)!important}
+th.ca-first,td.ca-first{border-left:3px solid var(--gn)!important}
+th.cn-first,td.cn-first{border-left:3px solid var(--ye)!important}
+th.us-edge,td.us-edge{border-right:3px solid var(--bl)!important}
+th.ca-edge,td.ca-edge{border-right:3px solid var(--gn)!important}
+thead tr.gh th.us-gh{border-left:3px solid var(--bl);border-right:3px solid var(--bl)}
+thead tr.gh th.ca-gh{border-left:3px solid var(--gn);border-right:3px solid var(--gn)}
+thead tr.gh th.cn-gh{border-left:3px solid var(--ye)}
 thead tr.gh th{top:0;z-index:11}
 thead tr.ch th{top:27px;z-index:10}
 .md tbody td{padding:7px 10px;border-top:1px solid var(--bd);font-size:13px}
