@@ -823,7 +823,7 @@ function showForecast(evt,el,item,market){
   var ms=isCA?(item._ca_months||item._months||[]):(item._months||[]);
   var sea=isCA?(item._ca_sea||[0,0,0]):(item._sea||[0,0,0]);
   var seaMs=isCA?(item._ca_seaMonths||item._seaMonths||[]):(item._seaMonths||[]);
-  var curRaw=isCA?0:(item._us_cur||0);
+  var curRaw=isCA?(item._ca_cur||0):(item._us_cur||0);
   var ruMon=["янв","февр","мар","апр","мая","июн","июл","авг","сент","окт","нояб","дек"];
   function fmtM(k){if(!k)return"—";var yr=Math.floor(k/100),mo=k%100;return ruMon[mo-1]+"."+yr;}
   var days=new Date().getDate();
@@ -1810,8 +1810,8 @@ function showDetail(evt,el,item,market){
     html2+="<div class='row'><span class='lbl'>"+fmtKey(k)+"</span><span class='val'>"+v+"</span></div>";
   });
   // Current month
-  var curRaw=isCA?0:(item._us_cur||0);
-  if(!isCA){
+  var curRaw=isCA?(item._ca_cur||0):(item._us_cur||0);
+  {
     var now=new Date();
     var d=now.getDate();
     var curNorm=Math.round(curRaw*(30/d)*10)/10;
